@@ -577,11 +577,6 @@
       <div class="container">
         <span class="section-label">Research Projects</span>
         <h2 id="projects-heading" class="section-heading">연구 프로젝트</h2>
-        <p class="section-sub">
-          KAIST I&amp;TM 코어 수업 5개와 ITM580 케이스 스터디 1개로 구성된 6개 프로젝트.
-          각 프로젝트는 서로 다른 연구 방법론 — 네트워크 분석, 인과 추론, AI 델파이,
-          사용자 수용 모델, 합성 설문(Synthetic Survey), 케이스 스터디 — 을 적용합니다.
-        </p>
 
         <div class="card-grid" id="projects-grid">
           <!-- Cards populated via JS -->
@@ -595,8 +590,8 @@
         <span class="section-label">AI Bot Collections</span>
         <h2 id="bots-heading" class="section-heading">존경하는 학자 AI 봇</h2>
         <p class="section-sub">
-          AI OS 연구 여정에서 대화 상대로 삼고 싶은 네 명의 학자를 AI 페르소나 봇으로
-          구현한 쇼케이스. 기술·조직·인간·사고 네 축을 커버합니다.
+          AI OS 연구 여정에서 대화 상대로 삼고 싶은 세 명의 학자를 AI 페르소나 봇으로
+          구현한 쇼케이스. 기술·인문·조직 세 축을 커버합니다.
         </p>
 
         <div class="card-grid" id="bots-grid">
@@ -732,11 +727,14 @@
       },
       {
         meta: "ITM580 · 지적재산권법 개론",
-        title: "NYT vs OpenAI 저작권 분쟁",
-        titleEn: "Copyright Case Study",
-        desc: "생성형 AI 학습 데이터 쟁점을 다룬 NYT vs OpenAI 사건 케이스 스터디. 사건 전개를 동적(인터랙티브) 타임라인으로 구현하고 Fair Use 4요소·유사 판례를 비교.",
+        title: "NYT v. OpenAI 저작권 분쟁",
+        titleEn: "Training-Data Copyright Case Study",
+        desc: "NYT v. OpenAI를 중심으로 Thomson Reuters v. Ross(2025)·Kneschke v. LAION(2024)·Andersen v. Stability 등 최근 7건을 Fair Use 4요소 프레임으로 비교. 미국 저작권청 3부 보고서(2024–25)와 중국·EU·일본·영국·한국 법제 대비로 AI 학습 데이터의 글로벌 규제 지도를 도출.",
         slug: "ai-copyright-case",
-        badge: "Case Study"
+        badge: "Case Study",
+        image: "assets/images/projects/ai-copyright-case.svg",
+        imageFit: "cover",
+        ready: true
       }
     ];
 
@@ -777,33 +775,37 @@
         meta: "Running Log",
         title: "러닝 기록",
         titleEn: "Running Log",
-        desc: "한강·남산 중심 러닝 경로, 주별 거리·페이스, 누적 거리 카운터. Leaflet 기반 지도 시각화.",
+        desc: "한강·남산 중심 러닝 경로와 누적 1,247km. FIT 파일을 GPT-4o 코치에 넘겨 주간 훈련 플랜을 받는 AI 파이프라인과 페이스·케이던스 분포 시각화.",
         slug: "running",
-        badge: "Leaflet"
+        badge: "AI Coach",
+        ready: true
       },
       {
         meta: "Reading Log",
         title: "독서 기록",
         titleEn: "Reading Log",
-        desc: "최근 읽은 책 표지 그리드, 평점·장르 필터, 월별 독서량 차트. 짧은 감상 메모 포함.",
+        desc: "Claude Projects에 책을 통째로 올려 주요 논지·개념맵·반대 관점을 구조화 추출. 장르 필터·월별 완독량·구조 요약 카드 공개.",
         slug: "reading",
-        badge: "Books"
+        badge: "Claude Projects",
+        ready: true
       },
       {
         meta: "AI-Managed Nutrition",
         title: "AI 식단 관리",
         titleEn: "AI-Managed Nutrition",
-        desc: "건강 관리를 AI에 위탁한 식단 설계. 주간 식단표·영양소 레이더·AI 추천 대화 로그 공개.",
+        desc: "주간 식단 설계를 GPT-4o + 식약처 영양 DB RAG에 위탁. 훈련 부하 연동 주간 식단표·미량 영양소 레이더·AI 대화 로그 공개.",
         slug: "meals",
-        badge: "Nutrition"
+        badge: "AI Nutritionist",
+        ready: true
       },
       {
         meta: "AI-Managed Portfolio",
         title: "AI 포트폴리오 관리",
         titleEn: "AI-Managed Portfolio",
-        desc: "투자 포트폴리오를 AI에 위탁한 실험. 자산 배분 도넛·월별 수익률·리밸런싱 이력 공개.",
+        desc: "분기 리밸런싱을 Claude Opus + GPT-4o 듀얼 컨센서스에 위탁. 자산 배분·누적 TWR·AI 리밸런싱 결정 로그 6건 공개.",
         slug: "portfolio",
-        badge: "Finance"
+        badge: "Dual Consensus",
+        ready: true
       }
     ];
 

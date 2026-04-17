@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" role="img" aria-label="AI Copyright Case Study: Fair Use 4-factor comparison heatmap across 7 AI training cases">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#F8FAFC"/>
+    <stop offset="100%" stop-color="#DCE8FB"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="55%" cy="50%" r="60%">
+    <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.14"/>
+    <stop offset="100%" stop-color="#60A5FA" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+<rect width="800" height="450" fill="url(#bg)"/>
+<rect width="800" height="450" fill="url(#glow)"/>
+
+<!-- Left panel text -->
+<text x="40" y="50" font-family="Inter" font-size="11" fill="#3B82F6" font-weight="600" letter-spacing="1.2">CASE STUDY · ITM580</text>
+<text x="40" y="86" font-family="Inter" font-size="24" fill="#0F172A" font-weight="700">Fair Use</text>
+<text x="40" y="114" font-family="Inter" font-size="24" fill="#0F172A" font-weight="700">Matrix</text>
+<text x="40" y="146" font-family="Inter" font-size="12" fill="#475569">NYT v. OpenAI + 6 cases</text>
+<text x="40" y="164" font-family="Inter" font-size="12" fill="#475569">× 4 statutory factors</text>
+
+<!-- Legend -->
+<g transform="translate(40, 240)">
+  <text x="0" y="0" font-family="Inter" font-size="10" fill="#64748B" font-weight="600" letter-spacing="0.5">JUDICIAL DIRECTION</text>
+  <rect x="0" y="12" width="14" height="10" fill="#1E40AF"/>
+  <text x="20" y="21" font-family="Inter" font-size="10" fill="#0F172A">원고 유리 (+1)</text>
+  <rect x="0" y="30" width="14" height="10" fill="#93C5FD"/>
+  <text x="20" y="39" font-family="Inter" font-size="10" fill="#0F172A">중립</text>
+  <rect x="0" y="48" width="14" height="10" fill="#94A3B8"/>
+  <text x="20" y="57" font-family="Inter" font-size="10" fill="#0F172A">피고 유리 (−1)</text>
+</g>
+
+<!-- Heatmap layout -->
+<!-- Cases (rows): 7; Factors (columns): 4 -->
+<!-- Grid starts at x=310, y=60; cell 70 x 44 -->
+
+<!-- Column headers -->
+<text x="345" y="54" font-family="Inter" font-size="10" fill="#1E40AF" font-weight="600" text-anchor="middle">F1</text>
+<text x="345" y="66" font-family="Inter" font-size="8" fill="#64748B" text-anchor="middle">목적</text>
+<text x="415" y="54" font-family="Inter" font-size="10" fill="#1E40AF" font-weight="600" text-anchor="middle">F2</text>
+<text x="415" y="66" font-family="Inter" font-size="8" fill="#64748B" text-anchor="middle">성질</text>
+<text x="485" y="54" font-family="Inter" font-size="10" fill="#1E40AF" font-weight="600" text-anchor="middle">F3</text>
+<text x="485" y="66" font-family="Inter" font-size="8" fill="#64748B" text-anchor="middle">양</text>
+<text x="555" y="54" font-family="Inter" font-size="10" fill="#1E40AF" font-weight="600" text-anchor="middle">F4</text>
+<text x="555" y="66" font-family="Inter" font-size="8" fill="#64748B" text-anchor="middle">시장</text>
+
+<!-- Row labels and cells -->
+<!-- Row 1: NYT v. OpenAI (highlight) -->
+<text x="300" y="98" font-family="Inter" font-size="10" fill="#1E3A8A" font-weight="700" text-anchor="end">NYT v. OpenAI</text>
+<rect x="310" y="78" width="70" height="36" fill="#2F4FC2" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="380" y="78" width="70" height="36" fill="#4669CC" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="450" y="78" width="70" height="36" fill="#1E40AF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="520" y="78" width="70" height="36" fill="#1E40AF" stroke="#FFFFFF" stroke-width="1"/>
+
+<!-- Row 2: Thomson Reuters v. Ross -->
+<text x="300" y="136" font-family="Inter" font-size="10" fill="#0F172A" text-anchor="end">T. Reuters v. Ross</text>
+<rect x="310" y="116" width="70" height="36" fill="#1E40AF" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="380" y="116" width="70" height="36" fill="#4669CC" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="450" y="116" width="70" height="36" fill="#2F4FC2" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="520" y="116" width="70" height="36" fill="#1E40AF" stroke="#FFFFFF" stroke-width="1"/>
+
+<!-- Row 3: Andersen v. Stability -->
+<text x="300" y="174" font-family="Inter" font-size="10" fill="#0F172A" text-anchor="end">Andersen v. Stability</text>
+<rect x="310" y="154" width="70" height="36" fill="#7F9BE1" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="380" y="154" width="70" height="36" fill="#4669CC" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="450" y="154" width="70" height="36" fill="#4669CC" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="520" y="154" width="70" height="36" fill="#7F9BE1" stroke="#FFFFFF" stroke-width="1"/>
+
+<!-- Row 4: Kadrey v. Meta -->
+<text x="300" y="212" font-family="Inter" font-size="10" fill="#0F172A" text-anchor="end">Kadrey v. Meta</text>
+<rect x="310" y="192" width="70" height="36" fill="#B8C9ED" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="380" y="192" width="70" height="36" fill="#93AFE7" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="450" y="192" width="70" height="36" fill="#4669CC" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="520" y="192" width="70" height="36" fill="#A5BDEA" stroke="#FFFFFF" stroke-width="1"/>
+
+<!-- Row 5: Concord v. Anthropic -->
+<text x="300" y="250" font-family="Inter" font-size="10" fill="#0F172A" text-anchor="end">Concord v. Anthropic</text>
+<rect x="310" y="230" width="70" height="36" fill="#D8DEE6" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="380" y="230" width="70" height="36" fill="#93AFE7" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="450" y="230" width="70" height="36" fill="#7F9BE1" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="520" y="230" width="70" height="36" fill="#B8C2D0" stroke="#FFFFFF" stroke-width="1"/>
+
+<!-- Row 6: Authors Guild v. Google -->
+<text x="300" y="288" font-family="Inter" font-size="10" fill="#0F172A" text-anchor="end">Authors Guild v. Google</text>
+<rect x="310" y="268" width="70" height="36" fill="#77859A" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="380" y="268" width="70" height="36" fill="#C7CCD5" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="450" y="268" width="70" height="36" fill="#B8C2D0" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="520" y="268" width="70" height="36" fill="#8B9AAF" stroke="#FFFFFF" stroke-width="1"/>
+
+<!-- Row 7: Kneschke v. LAION -->
+<text x="300" y="326" font-family="Inter" font-size="10" fill="#0F172A" text-anchor="end">Kneschke v. LAION</text>
+<rect x="310" y="306" width="70" height="36" fill="#7F8FA5" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="380" y="306" width="70" height="36" fill="#B8C2D0" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="450" y="306" width="70" height="36" fill="#C7CCD5" stroke="#FFFFFF" stroke-width="1"/>
+<rect x="520" y="306" width="70" height="36" fill="#94A3B8" stroke="#FFFFFF" stroke-width="1"/>
+
+<!-- Bottom annotation: color scale bar -->
+<g transform="translate(310, 368)">
+  <defs>
+    <linearGradient id="scale" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#64748B"/>
+      <stop offset="50%" stop-color="#EFF4FB"/>
+      <stop offset="100%" stop-color="#1E40AF"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="280" height="8" fill="url(#scale)"/>
+  <text x="0" y="22" font-family="Inter" font-size="9" fill="#64748B">피고 유리</text>
+  <text x="140" y="22" font-family="Inter" font-size="9" fill="#64748B" text-anchor="middle">중립</text>
+  <text x="280" y="22" font-family="Inter" font-size="9" fill="#1E40AF" text-anchor="end" font-weight="600">원고 유리</text>
+</g>
+
+<!-- Flag icons for jurisdictions -->
+<g transform="translate(620, 80)">
+  <text x="0" y="0" font-family="Inter" font-size="9" fill="#64748B" font-weight="600" letter-spacing="0.5">JURISDICTIONS</text>
+  <text x="0" y="22" font-family="Inter" font-size="14">🇺🇸</text>
+  <text x="22" y="22" font-family="Inter" font-size="9" fill="#475569">United States</text>
+  <text x="0" y="42" font-family="Inter" font-size="14">🇪🇺</text>
+  <text x="22" y="42" font-family="Inter" font-size="9" fill="#475569">EU AI Act</text>
+  <text x="0" y="62" font-family="Inter" font-size="14">🇯🇵</text>
+  <text x="22" y="62" font-family="Inter" font-size="9" fill="#475569">Japan §30-4</text>
+  <text x="0" y="82" font-family="Inter" font-size="14">🇨🇳</text>
+  <text x="22" y="82" font-family="Inter" font-size="9" fill="#475569">China AIGC</text>
+  <text x="0" y="102" font-family="Inter" font-size="14">🇬🇧</text>
+  <text x="22" y="102" font-family="Inter" font-size="9" fill="#475569">UK CDPA</text>
+  <text x="0" y="122" font-family="Inter" font-size="14">🇰🇷</text>
+  <text x="22" y="122" font-family="Inter" font-size="9" fill="#475569">Korea §35-5</text>
+</g>
+
+<!-- Section divider bar -->
+<line x1="280" y1="42" x2="280" y2="360" stroke="#CBD5E1" stroke-width="0.6" stroke-dasharray="3 4"/>
+
+<!-- Badge -->
+<rect x="670" y="410" width="110" height="26" rx="4" fill="#0F172A" fill-opacity="0.9"/>
+<text x="725" y="427" font-family="Inter" font-size="10" fill="#DBEAFE" text-anchor="middle" letter-spacing="1.2" font-weight="600">FAIR USE MATRIX</text>
+</svg>

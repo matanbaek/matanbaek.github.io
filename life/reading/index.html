@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>독서 기록 · Reading Log | 백마탄</title>
+  <meta name="description" content="최근 읽은 책과 감상 기록. Claude Projects로 책을 통째로 업로드해 구조화된 요약·다음 독서 추천을 받는 파이프라인. 백마탄 개인 라이프로그 mockup.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+
+  <style>
+    :root {
+      --primary: #1E40AF; --secondary: #3B82F6; --accent: #60A5FA;
+      --bg: #F8FAFC; --bg-elev: #FFFFFF; --bg-soft: #EFF4FB;
+      --text-primary: #0F172A; --text-secondary: #475569;
+      --border: #E2E8F0;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+      --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
+      --max-width: 1200px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: "Inter", "Noto Sans KR", sans-serif; font-size: 16px;
+      line-height: 1.6; color: var(--text-primary); background: var(--bg); -webkit-font-smoothing: antialiased; }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { color: var(--secondary); }
+    h1, h2, h3, h4 { color: var(--text-primary); line-height: 1.25; margin: 0 0 .5em; font-weight: 600; }
+    h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); font-weight: 700; letter-spacing: -0.02em; }
+    h2 { font-size: clamp(1.5rem, 3vw, 2rem); }
+    h3 { font-size: 1.15rem; margin-top: 1.4em; }
+    p { margin: 0 0 1em; color: var(--text-secondary); }
+    code { font-family: "JetBrains Mono", monospace; font-size: 0.85em; background: var(--bg-soft);
+      padding: 2px 6px; border-radius: 4px; color: var(--primary); }
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+
+    header.site-nav {
+      position: sticky; top: 0; z-index: 500;
+      background: rgba(248, 250, 252, 0.88);
+      backdrop-filter: saturate(180%) blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .nav-brand { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); }
+    .nav-links { display: flex; gap: 18px; list-style: none; padding: 0; margin: 0; flex-wrap: wrap; }
+    .nav-links a { font-size: 0.82rem; font-weight: 500; color: var(--text-secondary); }
+    .nav-links a:hover { color: var(--primary); }
+    @media (max-width: 860px) { .nav-links { display: none; } }
+
+    section { padding: 72px 0; }
+    section + section { border-top: 1px solid var(--border); }
+    .section-label {
+      display: inline-block; font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--secondary); margin-bottom: 12px;
+    }
+    .section-sub { max-width: 760px; margin-bottom: 40px; color: var(--text-secondary); }
+
+    .project-hero { padding: 72px 0 48px; }
+    .project-meta {
+      display: inline-block; padding: 4px 12px;
+      background: var(--bg-soft); border: 1px solid var(--border);
+      color: var(--primary); border-radius: 999px;
+      font-size: 0.78rem; font-weight: 500; margin-bottom: 20px;
+    }
+    .project-subtitle { font-size: 1.08rem; color: var(--text-secondary); max-width: 760px; margin-bottom: 24px; }
+    .meta-callout {
+      background: linear-gradient(135deg, #EFF4FB 0%, #DBEAFE 100%);
+      border-left: 3px solid var(--primary); border-radius: var(--radius-md);
+      padding: 16px 20px; margin: 16px 0 8px; max-width: 760px;
+      font-size: 0.95rem; color: var(--text-primary);
+    }
+    .meta-callout strong { color: var(--primary); }
+
+    .stat-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 14px; margin-top: 28px;
+    }
+    .stat-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 18px; box-shadow: var(--shadow-sm);
+    }
+    .stat-num {
+      font-size: 1.6rem; font-weight: 700; color: var(--primary);
+      letter-spacing: -0.02em; margin-bottom: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-label { font-size: 0.8rem; color: var(--text-secondary); }
+
+    .disclaimer {
+      background: #FEF3C7; border: 1px solid #FDE68A; color: #92400E;
+      padding: 12px 16px; border-radius: var(--radius-sm);
+      font-size: 0.88rem; margin: 16px 0;
+    }
+    .disclaimer strong { color: #78350F; }
+
+    /* Filters */
+    .filter-bar {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
+    }
+    .filter-chip {
+      padding: 6px 14px; background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: 999px; font-size: 0.82rem; color: var(--text-secondary);
+      cursor: pointer; transition: all 0.15s ease; font-weight: 500;
+      user-select: none;
+    }
+    .filter-chip:hover { border-color: var(--accent); color: var(--primary); }
+    .filter-chip.active { background: var(--primary); color: #FFFFFF; border-color: var(--primary); }
+
+    /* Book grid */
+    .book-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .book-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 16px;
+      box-shadow: var(--shadow-sm); transition: all 0.15s ease;
+      display: flex; flex-direction: column;
+    }
+    .book-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .book-cover {
+      width: 100%; aspect-ratio: 2/3; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      color: #FFFFFF; padding: 14px; text-align: center;
+      font-size: 0.88rem; font-weight: 600; line-height: 1.3;
+      margin-bottom: 12px;
+    }
+    .book-title { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+    .book-author { font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 8px; }
+    .book-meta {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.74rem; color: var(--text-secondary); margin-top: auto;
+      padding-top: 8px; border-top: 1px solid var(--border);
+    }
+    .book-rating { color: #D97706; font-weight: 600; letter-spacing: 1px; }
+    .book-genre {
+      font-size: 0.68rem; padding: 2px 8px;
+      background: var(--bg-soft); color: var(--primary);
+      border-radius: 999px; font-weight: 500; align-self: flex-start;
+      margin-bottom: 6px;
+    }
+    .book-note {
+      font-size: 0.8rem; color: var(--text-secondary); font-style: italic;
+      line-height: 1.4; margin-bottom: 8px;
+    }
+
+    .chart-container {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 22px;
+      box-shadow: var(--shadow-sm); margin-bottom: 20px;
+    }
+    .chart-title { font-size: 0.98rem; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+    .chart-desc { font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 14px; }
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    @media (max-width: 860px) { .chart-row { grid-template-columns: 1fr; } }
+
+    /* AI stack */
+    .ai-stack {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 22px 24px;
+      box-shadow: var(--shadow-sm); margin-bottom: 20px;
+    }
+    .ai-stack h3 { margin-top: 0; color: var(--primary); font-size: 1rem; }
+    .pipeline {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px; margin: 12px 0;
+    }
+    .pipe-step {
+      background: var(--bg-soft); border-radius: var(--radius-sm);
+      padding: 12px 14px; font-size: 0.85rem; color: var(--text-primary);
+      border-left: 3px solid var(--secondary);
+    }
+    .pipe-step strong { display: block; color: var(--primary); font-size: 0.82rem; margin-bottom: 2px; }
+    .pipe-step span { font-size: 0.76rem; color: var(--text-secondary); }
+
+    /* Chat log */
+    .chat-log {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 20px 24px;
+      box-shadow: var(--shadow-sm); margin: 20px 0;
+    }
+    .chat-turn { display: flex; gap: 12px; margin-bottom: 16px; }
+    .chat-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 0.82rem; flex-shrink: 0;
+    }
+    .chat-user .chat-avatar { background: var(--bg-soft); color: var(--primary); }
+    .chat-ai .chat-avatar { background: var(--primary); color: #FFFFFF; }
+    .chat-bubble {
+      background: var(--bg-soft); padding: 10px 14px;
+      border-radius: var(--radius-md); font-size: 0.88rem;
+      color: var(--text-primary); max-width: 680px;
+    }
+    .chat-ai .chat-bubble { background: #E5EEFB; }
+    .chat-name {
+      font-size: 0.72rem; color: var(--secondary); font-weight: 600;
+      letter-spacing: 0.04em; margin-bottom: 2px;
+    }
+
+    /* Summary card (structured) */
+    .summary-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 20px 22px;
+      box-shadow: var(--shadow-sm); margin-bottom: 16px;
+    }
+    .summary-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; }
+    .summary-title { font-size: 1rem; font-weight: 600; color: var(--primary); margin-bottom: 2px; }
+    .summary-sub { font-size: 0.78rem; color: var(--text-secondary); }
+    .summary-body { font-size: 0.88rem; color: var(--text-primary); margin-bottom: 10px; }
+    .summary-body ul { margin: 6px 0 10px; padding-left: 20px; color: var(--text-secondary); }
+    .summary-body li { margin-bottom: 4px; font-size: 0.86rem; }
+    .summary-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .summary-tag {
+      font-size: 0.72rem; padding: 3px 10px; background: var(--bg-soft);
+      color: var(--primary); border-radius: 999px; font-weight: 500;
+    }
+
+    footer { border-top: 1px solid var(--border); padding: 32px 0 40px; }
+    .footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between;
+      gap: 12px; align-items: center; font-size: 0.85rem; color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+
+  <header class="site-nav">
+    <div class="container nav-inner">
+      <a href="../../index.html" class="nav-brand">← 백마탄 포트폴리오</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#library">서재</a></li>
+          <li><a href="#charts">독서 패턴</a></li>
+          <li><a href="#ai">AI 파이프라인</a></li>
+          <li><a href="#summaries">구조 요약</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="project-hero">
+      <div class="container">
+        <span class="project-meta">Personal Dashboard · Reading</span>
+        <h1>독서 기록 · Reading Log</h1>
+        <p class="project-subtitle">
+          업무·연구 관련 기술경영 서적 중심의 개인 서재. <strong>Claude Projects</strong>에 책을 통째로 업로드해 구조화된 요약과 다음 독서 후보를 추천받는 <strong>AI 독서 보조 파이프라인</strong>을 운영합니다.
+        </p>
+        <div class="meta-callout">
+          📚 <strong>AI 활용 포인트</strong> — 전자책(EPUB/PDF)을 Claude Projects에 올려 <em>"주요 논지 5줄, 핵심 개념 10개, 반대 관점, 내 연구 주제(에이전트 AI OS)와의 연결점"</em>을 고정 템플릿으로 추출합니다. 독서 후에는 Kahneman·Christensen 봇과 대화해 개념을 상호검증합니다.
+        </div>
+        <div class="disclaimer">
+          <strong>⚠ Mock-up Notice.</strong> 서재·평점·감상·AI 대화는 시범용 모의 데이터입니다. 실제 구매·열람 기록이 아닙니다.
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-num">84 권</div><div class="stat-label">누적 독서 (2024–2026 Q2)</div></div>
+          <div class="stat-card"><div class="stat-num">3.2 권</div><div class="stat-label">월평균 완독</div></div>
+          <div class="stat-card"><div class="stat-num">4.2 / 5</div><div class="stat-label">평균 평점</div></div>
+          <div class="stat-card"><div class="stat-num">62 %</div><div class="stat-label">AI 요약 생성률</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="library">
+      <div class="container">
+        <span class="section-label">Section 1 — 서재</span>
+        <h2>최근 완독 12권</h2>
+        <p class="section-sub">장르 필터로 기술경영·조직·철학·데이터 등 주제별로 추려봅니다. 카드 하단의 감상은 Claude 요약을 제가 손보고 남긴 한 줄입니다.</p>
+
+        <div class="filter-bar" id="filter-bar"></div>
+        <div class="book-grid" id="book-grid"></div>
+      </div>
+    </section>
+
+    <section id="charts">
+      <div class="container">
+        <span class="section-label">Section 2 — 독서 패턴</span>
+        <h2>장르 분포와 월별 완독량</h2>
+        <p class="section-sub">장르별 누적 독서 분포, 월별 완독량 추세, 평점·페이지 수 분포를 함께 확인합니다.</p>
+
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">월별 완독량 (최근 15개월)</div>
+            <div class="chart-desc">막대: 월별 완독 권수 · 선: 3개월 이동평균. 학기 중(9·10월) 감소, 방학 중 증가 패턴.</div>
+            <div id="chart-monthly" style="width:100%;height:340px;"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">장르 분포 (누적 84권)</div>
+            <div class="chart-desc">기술경영·조직·데이터과학 3대 축 중심. 철학·소설은 주말 페이스메이커로 섞어 읽습니다.</div>
+            <div id="chart-genre" style="width:100%;height:340px;"></div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-title">평점 × 페이지 수 산점</div>
+          <div class="chart-desc">장르별 색 구분. 500쪽 이상 장편은 평점 편차가 크며, 200~350쪽 구간이 가장 안정적.</div>
+          <div id="chart-scatter" style="width:100%;height:380px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="ai">
+      <div class="container">
+        <span class="section-label">Section 3 — AI 독서 파이프라인</span>
+        <h2>Claude Projects 기반 구조화 독서</h2>
+        <p class="section-sub">책 한 권을 "읽고 치우는 자료"가 아니라 <strong>재사용 가능한 지식 자산</strong>으로 만들기 위해 AI를 활용합니다.</p>
+
+        <div class="ai-stack">
+          <h3>파이프라인</h3>
+          <div class="pipeline">
+            <div class="pipe-step"><strong>1. 업로드</strong><span>EPUB/PDF → Claude Projects</span></div>
+            <div class="pipe-step"><strong>2. 템플릿 추출</strong><span>Opus-4 고정 JSON 스키마</span></div>
+            <div class="pipe-step"><strong>3. 개념 맵</strong><span>핵심 개념 10개 + 정의</span></div>
+            <div class="pipe-step"><strong>4. 반대 관점</strong><span>학계 비판·반례 탐색</span></div>
+            <div class="pipe-step"><strong>5. 크로스 체크</strong><span>Kahneman·Christensen 봇 검증</span></div>
+            <div class="pipe-step"><strong>6. 아카이브</strong><span>Notion 독서 DB + 태그</span></div>
+          </div>
+          <p style="margin-top: 16px; font-size: 0.9rem;">
+            시스템 프롬프트에는 <em>"주장→근거→반례→내 연구 주제와의 접점"</em> 4단 구조가 고정되어 있어, 매번 동일한 포맷으로 기록이 쌓입니다. Notion에 들어가는 태그는 저의 주요 키워드(에이전트 AI OS·플랫폼 경쟁·혁신 확산)와 일치해 검색·연결이 쉽습니다.
+          </p>
+        </div>
+
+        <h3>대화 로그 예시 (2026-04-10, 『혁신기업의 딜레마』 재독)</h3>
+        <div class="chat-log">
+          <div class="chat-turn chat-user">
+            <div class="chat-avatar">BM</div>
+            <div>
+              <div class="chat-name">백마탄</div>
+              <div class="chat-bubble">
+                방금 『혁신기업의 딜레마』 7장 업로드했어. 에이전트 AI OS 관점에서 파괴적 혁신 기준 3개만 꼽아주고, OpenAI가 파괴자인지 존속 혁신자인지도 의견 달아줘.
+              </div>
+            </div>
+          </div>
+          <div class="chat-turn chat-ai">
+            <div class="chat-avatar">C</div>
+            <div>
+              <div class="chat-name">Claude Opus 4</div>
+              <div class="chat-bubble">
+                7장 기준 세 가지: (1) <strong>비소비자(non-consumption)에서 시작</strong>, (2) <strong>기존 성능 지표로는 열등</strong>, (3) <strong>궤적 변화</strong>. 이 기준으로 보면 ChatGPT는 모바일 앱 생태계 관점에서 <em>존속적</em>(기존 사용자·기존 과제), 에이전트 AI OS 관점에서는 <em>파괴적</em>(기존 OS 성능지표로는 열등하나 '의도 이해'라는 새 지표 생성). 판단은 <strong>어느 성능 지표를 기준으로 보느냐</strong>에 따라 갈립니다.
+              </div>
+            </div>
+          </div>
+          <div class="chat-turn chat-user">
+            <div class="chat-avatar">BM</div>
+            <div>
+              <div class="chat-name">백마탄</div>
+              <div class="chat-bubble">좋아. 이 책의 반례도 찾아줘. 최근 10년간 파괴적 혁신 이론이 비판받은 포인트.</div>
+            </div>
+          </div>
+          <div class="chat-turn chat-ai">
+            <div class="chat-avatar">C</div>
+            <div>
+              <div class="chat-name">Claude Opus 4</div>
+              <div class="chat-bubble">
+                대표 비판 3가지: Jill Lepore(2014, New Yorker) "사후 정의 fallacy" · King & Baatartogtokh(2015, MIT SMR) "77개 사례 중 9%만 이론과 부합" · Weeks(2019) "측정 기준 주관적". 실무 시사점: 파괴적 혁신 <em>라벨</em>보다 <strong>어떤 성능 축이 새로 생기는지</strong>를 묻는 게 더 실용적. 이 질문으로 Christensen 봇에 재질의를 권합니다.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="summaries">
+      <div class="container">
+        <span class="section-label">Section 4 — 구조 요약 예시</span>
+        <h2>책 1권 → 구조화된 지식 카드</h2>
+        <p class="section-sub">Claude가 생성한 JSON 템플릿을 사람이 읽기 좋게 펼친 형태. 실제 Notion DB에는 스키마 그대로 저장됩니다.</p>
+
+        <div class="summary-card">
+          <div class="summary-head">
+            <div>
+              <div class="summary-title">『플랫폼 레볼루션』 · Parker, Van Alstyne, Choudary (2016)</div>
+              <div class="summary-sub">Read: 2026-03-22 · Rating: 4.5/5 · 380p · 기술경영</div>
+            </div>
+          </div>
+          <div class="summary-body">
+            <strong>핵심 논지</strong>
+            <ul>
+              <li>파이프라인 기업은 가치사슬이 선형, 플랫폼 기업은 양면·다면 네트워크 효과를 조직한다.</li>
+              <li>플랫폼 설계의 핵심은 <em>코어 인터랙션</em> 정의 · 참여자 · 가치단위 · 필터.</li>
+              <li>외부 자원 조직화 → 경계 기업(boundary firm)으로 확장.</li>
+              <li>지배 규칙: 네트워크 효과 &gt; 규모의 경제 &gt; 시장 장악.</li>
+              <li>실패 패턴: cold start 해결 실패, 거버넌스 부재.</li>
+            </ul>
+            <strong>내 연구 주제(에이전트 AI OS)와의 연결</strong>
+            <ul>
+              <li>에이전트 OS는 전형적 다면 플랫폼 — 개발자 · 사용자 · MCP/툴 제공자 · 데이터 공급자.</li>
+              <li>코어 인터랙션은 "사용자 의도 → 에이전트 분해 → 툴 호출" 삼각형.</li>
+              <li>cold start는 툴 카탈로그 &lt; 500개 구간에서 발생. 초기 시드 전략 필수.</li>
+            </ul>
+          </div>
+          <div class="summary-tags">
+            <span class="summary-tag">플랫폼</span>
+            <span class="summary-tag">네트워크효과</span>
+            <span class="summary-tag">Agent AI OS</span>
+            <span class="summary-tag">MCP Catalog</span>
+            <span class="summary-tag">Cold Start</span>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-head">
+            <div>
+              <div class="summary-title">『Competing in the Age of AI』 · Iansiti, Lakhani (2020)</div>
+              <div class="summary-sub">Read: 2026-02-14 · Rating: 4.5/5 · 280p · 기술경영</div>
+            </div>
+          </div>
+          <div class="summary-body">
+            <strong>핵심 논지</strong>
+            <ul>
+              <li>AI factory = 데이터 파이프라인 + 알고리즘 + 실험 · 의사결정 단위가 '모델'로 이동.</li>
+              <li>기업의 운영 아키텍처가 "디지털 오퍼레이팅 모델"로 재편.</li>
+              <li>네트워크·학습·규모의 3중 플라이휠.</li>
+              <li>가치 충돌: 데이터·프라이버시·알고리즘 책임.</li>
+            </ul>
+            <strong>반대 관점</strong>
+            <ul>
+              <li>AI 공장 모델은 소비자 접점이 디지털화된 업종에 편향(Acemoglu 비판).</li>
+              <li>제조·헬스케어 등 물리적 마찰이 큰 영역은 모델 적용 경계 필요.</li>
+            </ul>
+          </div>
+          <div class="summary-tags">
+            <span class="summary-tag">AI Factory</span>
+            <span class="summary-tag">Operating Model</span>
+            <span class="summary-tag">Flywheel</span>
+            <span class="summary-tag">반례-물리산업</span>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-head">
+            <div>
+              <div class="summary-title">『생각에 관한 생각』 · Daniel Kahneman (2011)</div>
+              <div class="summary-sub">Read: 2026-01-05 · Rating: 5/5 · 592p · 심리·의사결정</div>
+            </div>
+          </div>
+          <div class="summary-body">
+            <strong>핵심 논지</strong>
+            <ul>
+              <li>시스템 1(빠른·직관) vs 시스템 2(느린·분석) 이중 프로세스 모델.</li>
+              <li>대표성·가용성·정박 편향 → 확률·추정 과제에서 체계적 오류.</li>
+              <li>전망이론: 손실 회피, 확률 가중, 준거점 의존.</li>
+              <li>경험하는 자아 vs 기억하는 자아 분리.</li>
+            </ul>
+            <strong>내 연구 주제와의 연결</strong>
+            <ul>
+              <li>에이전트 UX 설계 시 <em>시스템 1 유도</em>(디폴트 권장)와 <em>시스템 2 개입</em>(중요 결정 브레이크) 분기가 필요.</li>
+              <li>투자 판단·제품 결정 회고에 편향 체크리스트를 도입.</li>
+            </ul>
+          </div>
+          <div class="summary-tags">
+            <span class="summary-tag">System 1·2</span>
+            <span class="summary-tag">Prospect Theory</span>
+            <span class="summary-tag">UX 분기</span>
+            <span class="summary-tag">Bias Checklist</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div>© 2026 백마탄 · Baek Ma-tan · <a href="mailto:matanbaek@gmail.com">matanbaek@gmail.com</a></div>
+      <div><a href="../../index.html">메인 페이지로 ↗</a></div>
+    </div>
+  </footer>
+
+  <script>
+    /* ---------- Mock book data ---------- */
+    const BOOKS = [
+      { title: "혁신기업의 딜레마", author: "Clayton M. Christensen", genre: "기술경영", rating: 5, pages: 320, read: "2026-04-02", color: "#1E40AF",
+        note: "파괴적 혁신 기준 재독. 에이전트 OS 관점으로 해석 시 성능지표 재정의가 핵심." },
+      { title: "플랫폼 레볼루션", author: "Parker, Van Alstyne, Choudary", genre: "기술경영", rating: 4.5, pages: 380, read: "2026-03-22", color: "#2F4FC2",
+        note: "양면시장·cold start 전략. 에이전트 OS 초기 시드 전략 설계에 직접 인용." },
+      { title: "Competing in the Age of AI", author: "Iansiti, Lakhani", genre: "기술경영", rating: 4.5, pages: 280, read: "2026-02-14", color: "#3B82F6",
+        note: "AI factory 개념. 다만 디지털 접점 편향 — 제조·헬스케어 예외 고려." },
+      { title: "생각에 관한 생각", author: "Daniel Kahneman", genre: "심리", rating: 5, pages: 592, read: "2026-01-05", color: "#4669CC",
+        note: "재독. 투자·제품 결정 회고 시 편향 체크리스트 기반서로 활용 중." },
+      { title: "기브 앤 테이크", author: "Adam Grant", genre: "조직", rating: 4, pages: 420, read: "2025-12-18", color: "#60A5FA",
+        note: "기버의 성공 조건 = 높은 관계 자본. 팀 온보딩 프로세스 재설계에 반영." },
+      { title: "The Structure of Scientific Revolutions", author: "Thomas S. Kuhn", genre: "철학", rating: 4.5, pages: 226, read: "2025-11-30", color: "#7F9BE1",
+        note: "패러다임 전환 개념. AI 패러다임 교체 시점에 대한 해석 프레임." },
+      { title: "가치혁신의 전략", author: "Kim & Mauborgne", genre: "기술경영", rating: 4, pages: 340, read: "2025-10-14", color: "#2F4FC2",
+        note: "ITM622 보조교재. 블루오션 전략의 에이전트 OS 적용 가능성 분석." },
+      { title: "Weapons of Math Destruction", author: "Cathy O'Neil", genre: "데이터", rating: 4, pages: 272, read: "2025-09-02", color: "#1E40AF",
+        note: "알고리즘 편향의 사회적 함의. AI 거버넌스 설계에 반드시 반영해야 할 관점." },
+      { title: "악의 평범성", author: "Hannah Arendt", genre: "철학", rating: 5, pages: 440, read: "2025-08-17", color: "#4669CC",
+        note: "관료제·기술·책임 회피. AI 시대 인간 책임 문제와 정확히 포개짐." },
+      { title: "Diffusion of Innovations", author: "Everett M. Rogers", genre: "기술경영", rating: 4.5, pages: 576, read: "2025-07-20", color: "#3B82F6",
+        note: "ITM501 핵심 교재. S-curve·채택자 범주 이론 — 검색 확산 프로젝트에 직접 적용." },
+      { title: "불편한 편의점", author: "김호연", genre: "소설", rating: 4, pages: 268, read: "2025-06-08", color: "#60A5FA",
+        note: "주말 페이스메이커. 도시·관계·회복의 온도." },
+      { title: "데이터로 읽는 기업 혁신", author: "Linda Hill", genre: "조직", rating: 4, pages: 310, read: "2025-05-25", color: "#7F9BE1",
+        note: "조직 혁신 역량 진단 프레임. ITM560 리포트 보조 자료." }
+    ];
+
+    const GENRES = ["전체", ...Array.from(new Set(BOOKS.map(b => b.genre)))];
+
+    /* ---------- Filter bar ---------- */
+    const filterBar = document.getElementById("filter-bar");
+    let activeGenre = "전체";
+    GENRES.forEach(g => {
+      const chip = document.createElement("div");
+      chip.className = "filter-chip" + (g === activeGenre ? " active" : "");
+      chip.textContent = g;
+      chip.onclick = () => {
+        activeGenre = g;
+        document.querySelectorAll(".filter-chip").forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+        renderBooks();
+      };
+      filterBar.appendChild(chip);
+    });
+
+    /* ---------- Book grid ---------- */
+    function renderBooks() {
+      const grid = document.getElementById("book-grid");
+      grid.innerHTML = "";
+      const filtered = activeGenre === "전체" ? BOOKS : BOOKS.filter(b => b.genre === activeGenre);
+      filtered.forEach(b => {
+        const card = document.createElement("div");
+        card.className = "book-card";
+        const stars = "★".repeat(Math.floor(b.rating)) + (b.rating % 1 ? "½" : "");
+        card.innerHTML = `
+          <div class="book-cover" style="background: linear-gradient(135deg, ${b.color} 0%, ${shade(b.color, -15)} 100%);">
+            ${b.title}
+          </div>
+          <span class="book-genre">${b.genre}</span>
+          <div class="book-title">${b.title}</div>
+          <div class="book-author">${b.author}</div>
+          <div class="book-note">"${b.note}"</div>
+          <div class="book-meta">
+            <span class="book-rating">${stars}</span>
+            <span>${b.pages}p · ${b.read}</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+    function shade(hex, pct) {
+      const num = parseInt(hex.replace("#", ""), 16);
+      const r = Math.max(0, Math.min(255, (num >> 16) + pct * 2));
+      const g = Math.max(0, Math.min(255, ((num >> 8) & 0xff) + pct * 2));
+      const b = Math.max(0, Math.min(255, (num & 0xff) + pct * 2));
+      return "#" + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
+    }
+    renderBooks();
+
+    /* ---------- Charts ---------- */
+    const blue = {
+      primary: "#1E40AF", secondary: "#3B82F6", accent: "#60A5FA",
+      soft: "#DBEAFE", border: "#CBD5E1", text: "#0F172A", muted: "#64748B"
+    };
+    const commonLayout = {
+      font: { family: "Inter, Noto Sans KR, sans-serif", color: blue.text, size: 11 },
+      paper_bgcolor: "#FFFFFF", plot_bgcolor: "#FFFFFF",
+      margin: { t: 20, r: 24, b: 48, l: 56 },
+      xaxis: { gridcolor: "#F1F5F9", linecolor: blue.border, tickcolor: blue.border, zeroline: false },
+      yaxis: { gridcolor: "#F1F5F9", linecolor: blue.border, tickcolor: blue.border, zeroline: false }
+    };
+
+    /* Monthly reading */
+    const months = ["2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04"];
+    const counts = [4, 3, 5, 4, 3, 2, 4, 5, 1, 2, 4, 5, 6, 4, 5, 3];
+    const ma3 = counts.map((_, i, arr) => {
+      const slice = arr.slice(Math.max(0, i - 2), i + 1);
+      return slice.reduce((a, b) => a + b, 0) / slice.length;
+    });
+    Plotly.newPlot("chart-monthly", [
+      { type: "bar", x: months, y: counts, name: "월별 완독",
+        marker: { color: blue.secondary, line: { color: blue.primary, width: 0.5 } } },
+      { type: "scatter", mode: "lines", x: months, y: ma3, name: "3개월 이동평균",
+        line: { color: blue.primary, width: 2.4 } }
+    ], { ...commonLayout,
+      legend: { orientation: "h", y: -0.18 },
+      xaxis: { ...commonLayout.xaxis, tickangle: -45 },
+      yaxis: { ...commonLayout.yaxis, title: "권" }
+    }, { displayModeBar: false, responsive: true });
+
+    /* Genre pie */
+    const genreLabels = ["기술경영", "조직", "데이터", "심리", "철학", "소설"];
+    const genreValues = [28, 14, 12, 10, 11, 9];
+    const genreColors = ["#1E40AF", "#2F4FC2", "#3B82F6", "#4669CC", "#60A5FA", "#93C5FD"];
+    Plotly.newPlot("chart-genre", [
+      { type: "pie", labels: genreLabels, values: genreValues,
+        marker: { colors: genreColors, line: { color: "#FFFFFF", width: 2 } },
+        hole: 0.55, textinfo: "label+percent", textfont: { size: 11 } }
+    ], { ...commonLayout,
+      showlegend: false,
+      annotations: [{ text: `<b>${genreValues.reduce((a,b)=>a+b,0)}</b><br>권`, showarrow: false, font: { size: 16, color: blue.primary } }]
+    }, { displayModeBar: false, responsive: true });
+
+    /* Rating × pages scatter */
+    const scatterTraces = genreLabels.map((g, i) => {
+      const books = BOOKS.filter(b => b.genre === g);
+      return {
+        type: "scatter", mode: "markers", name: g,
+        x: books.map(b => b.pages), y: books.map(b => b.rating),
+        text: books.map(b => b.title),
+        marker: { size: 12, color: genreColors[i % genreColors.length], line: { color: "#FFFFFF", width: 1.5 } },
+        hovertemplate: "<b>%{text}</b><br>%{x}p · 평점 %{y}<extra></extra>"
+      };
+    }).filter(t => t.x.length > 0);
+    Plotly.newPlot("chart-scatter", scatterTraces, { ...commonLayout,
+      legend: { orientation: "h", y: -0.16 },
+      xaxis: { ...commonLayout.xaxis, title: "페이지 수" },
+      yaxis: { ...commonLayout.yaxis, title: "평점", range: [3.5, 5.2] }
+    }, { displayModeBar: false, responsive: true });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>러닝 기록 · Running Log | 백마탄</title>
+  <meta name="description" content="한강·남산 중심 러닝 기록. FIT 파일을 AI 코치에 넘겨 주간 훈련 플랜을 받는 파이프라인과 누적 1,247km·주별 거리·페이스 분포 시각화. 백마탄 개인 라이프로그 mockup.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+
+  <style>
+    :root {
+      --primary: #1E40AF; --secondary: #3B82F6; --accent: #60A5FA;
+      --bg: #F8FAFC; --bg-elev: #FFFFFF; --bg-soft: #EFF4FB;
+      --text-primary: #0F172A; --text-secondary: #475569;
+      --border: #E2E8F0;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
+      --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
+      --max-width: 1200px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: "Inter", "Noto Sans KR", sans-serif; font-size: 16px;
+      line-height: 1.6; color: var(--text-primary); background: var(--bg); -webkit-font-smoothing: antialiased; }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { color: var(--secondary); }
+    h1, h2, h3, h4 { color: var(--text-primary); line-height: 1.25; margin: 0 0 .5em; font-weight: 600; }
+    h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); font-weight: 700; letter-spacing: -0.02em; }
+    h2 { font-size: clamp(1.5rem, 3vw, 2rem); }
+    h3 { font-size: 1.15rem; margin-top: 1.4em; }
+    p { margin: 0 0 1em; color: var(--text-secondary); }
+    code { font-family: "JetBrains Mono", monospace; font-size: 0.85em; background: var(--bg-soft);
+      padding: 2px 6px; border-radius: 4px; color: var(--primary); }
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+
+    header.site-nav {
+      position: sticky; top: 0; z-index: 500;
+      background: rgba(248, 250, 252, 0.88);
+      backdrop-filter: saturate(180%) blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .nav-brand { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); }
+    .nav-links { display: flex; gap: 18px; list-style: none; padding: 0; margin: 0; flex-wrap: wrap; }
+    .nav-links a { font-size: 0.82rem; font-weight: 500; color: var(--text-secondary); }
+    .nav-links a:hover { color: var(--primary); }
+    @media (max-width: 860px) { .nav-links { display: none; } }
+
+    section { padding: 72px 0; }
+    section + section { border-top: 1px solid var(--border); }
+    .section-label {
+      display: inline-block; font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--secondary); margin-bottom: 12px;
+    }
+    .section-sub { max-width: 760px; margin-bottom: 40px; color: var(--text-secondary); }
+
+    .project-hero { padding: 72px 0 48px; }
+    .project-meta {
+      display: inline-block; padding: 4px 12px;
+      background: var(--bg-soft); border: 1px solid var(--border);
+      color: var(--primary); border-radius: 999px;
+      font-size: 0.78rem; font-weight: 500; margin-bottom: 20px;
+    }
+    .project-subtitle { font-size: 1.08rem; color: var(--text-secondary); max-width: 760px; margin-bottom: 24px; }
+    .meta-callout {
+      background: linear-gradient(135deg, #EFF4FB 0%, #DBEAFE 100%);
+      border-left: 3px solid var(--primary); border-radius: var(--radius-md);
+      padding: 16px 20px; margin: 16px 0 8px; max-width: 760px;
+      font-size: 0.95rem; color: var(--text-primary);
+    }
+    .meta-callout strong { color: var(--primary); }
+    .stat-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 14px; margin-top: 28px;
+    }
+    .stat-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 18px; box-shadow: var(--shadow-sm);
+    }
+    .stat-num {
+      font-size: 1.6rem; font-weight: 700; color: var(--primary);
+      letter-spacing: -0.02em; margin-bottom: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-label { font-size: 0.8rem; color: var(--text-secondary); }
+
+    .disclaimer {
+      background: #FEF3C7; border: 1px solid #FDE68A; color: #92400E;
+      padding: 12px 16px; border-radius: var(--radius-sm);
+      font-size: 0.88rem; margin: 16px 0;
+    }
+    .disclaimer strong { color: #78350F; }
+
+    .chart-container {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 22px;
+      box-shadow: var(--shadow-sm); margin-bottom: 20px;
+    }
+    .chart-title { font-size: 0.98rem; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+    .chart-desc { font-size: 0.84rem; color: var(--text-secondary); margin-bottom: 14px; }
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    @media (max-width: 860px) { .chart-row { grid-template-columns: 1fr; } }
+
+    #map { width: 100%; height: 440px; border-radius: var(--radius-md); overflow: hidden;
+      background: var(--bg-soft); }
+
+    /* AI stack panel */
+    .ai-stack {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 22px 24px;
+      box-shadow: var(--shadow-sm); margin-bottom: 20px;
+    }
+    .ai-stack h3 { margin-top: 0; color: var(--primary); font-size: 1rem; }
+    .pipeline {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px; margin: 12px 0;
+    }
+    .pipe-step {
+      background: var(--bg-soft); border-radius: var(--radius-sm);
+      padding: 12px 14px; font-size: 0.85rem; color: var(--text-primary);
+      border-left: 3px solid var(--secondary);
+    }
+    .pipe-step strong { display: block; color: var(--primary); font-size: 0.82rem; margin-bottom: 2px; }
+    .pipe-step span { font-size: 0.76rem; color: var(--text-secondary); }
+
+    /* Chat log */
+    .chat-log {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 20px 24px;
+      box-shadow: var(--shadow-sm); margin: 20px 0;
+    }
+    .chat-turn { display: flex; gap: 12px; margin-bottom: 16px; }
+    .chat-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 0.82rem; flex-shrink: 0;
+    }
+    .chat-user .chat-avatar { background: var(--bg-soft); color: var(--primary); }
+    .chat-ai .chat-avatar { background: var(--primary); color: #FFFFFF; }
+    .chat-bubble {
+      background: var(--bg-soft); padding: 10px 14px;
+      border-radius: var(--radius-md); font-size: 0.88rem;
+      color: var(--text-primary); max-width: 680px;
+    }
+    .chat-ai .chat-bubble { background: #E5EEFB; }
+    .chat-name {
+      font-size: 0.72rem; color: var(--secondary); font-weight: 600;
+      letter-spacing: 0.04em; margin-bottom: 2px;
+    }
+
+    footer { border-top: 1px solid var(--border); padding: 32px 0 40px; }
+    .footer-inner { display: flex; flex-wrap: wrap; justify-content: space-between;
+      gap: 12px; align-items: center; font-size: 0.85rem; color: var(--text-secondary); }
+
+    .leaflet-container { font-family: "Inter", sans-serif; }
+  </style>
+</head>
+<body>
+
+  <header class="site-nav">
+    <div class="container nav-inner">
+      <a href="../../index.html" class="nav-brand">← 백마탄 포트폴리오</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#map-section">지도</a></li>
+          <li><a href="#charts">주간·페이스</a></li>
+          <li><a href="#ai">AI 코치</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="project-hero">
+      <div class="container">
+        <span class="project-meta">Personal Dashboard · Running</span>
+        <h1>러닝 기록 · Running Log</h1>
+        <p class="project-subtitle">
+          한강·남산 중심 주 3회 러닝. GPS 트레일·페이스·심박 데이터를 <strong>AI 코치(GPT-4o)</strong>에게 넘겨 주간 훈련 플랜을 받고, 누적 거리를 추적합니다.
+        </p>
+        <div class="meta-callout">
+          🏃 <strong>AI 활용 포인트</strong> — Garmin Connect에서 내려받은 FIT 파일을 Python(<code>fitparse</code>)로 파싱해 JSON으로 변환한 뒤, GPT-4o에게 <em>"지난 주 훈련 부하 + 심박 회복 패턴 + 페이스 일관성"</em>을 분석시키고 다음 주 인터벌/LSD 분배를 받습니다. 통증·컨디션 메모를 함께 주면 회복일을 제안합니다.
+        </div>
+        <div class="disclaimer">
+          <strong>⚠ Mock-up Notice.</strong> 표시된 GPS 트레일·거리·페이스·AI 대화는 모의 데이터입니다. 실제 개인 건강·위치 정보는 포함되지 않습니다.
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-num">1,247 km</div><div class="stat-label">누적 거리 (2024–2026 Q2)</div></div>
+          <div class="stat-card"><div class="stat-num">28.4 km</div><div class="stat-label">주간 평균 거리</div></div>
+          <div class="stat-card"><div class="stat-num">4'52"</div><div class="stat-label">10K 베스트 페이스</div></div>
+          <div class="stat-card"><div class="stat-num">62 회</div><div class="stat-label">AI 코치 세션</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="map-section">
+      <div class="container">
+        <span class="section-label">Section 1 — 지도</span>
+        <h2>최근 러닝 경로 (서울)</h2>
+        <p class="section-sub">한강(잠원–반포–잠실)·남산 순환·청계천 세 코스의 대표 GPS 트레일. 지도 위 구간 클릭 시 거리·소요·AI 평가 요약 팝업.</p>
+        <div class="chart-container" style="padding: 0;">
+          <div id="map"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="charts">
+      <div class="container">
+        <span class="section-label">Section 2 — 주간·페이스 분석</span>
+        <h2>훈련 부하와 페이스 분포</h2>
+        <p class="section-sub">주별 거리와 누적 거리, 페이스 히스토그램, 케이던스·심박 산점을 함께 확인합니다.</p>
+
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">주별 거리 (최근 12주)</div>
+            <div class="chart-desc">막대: 주 거리 (km) · 선: 누적 거리 · Atkinson rule 10% 증가 상한 점검.</div>
+            <div id="chart-weekly" style="width:100%;height:340px;"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">페이스 히스토그램</div>
+            <div class="chart-desc">최근 90일 세션의 평균 페이스 분포. 목표 Easy 5'40"~6'10", Tempo 4'45"~5'05".</div>
+            <div id="chart-pace" style="width:100%;height:340px;"></div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-title">케이던스 × 심박 산점</div>
+          <div class="chart-desc">러닝 효율 지표. 케이던스 180 spm 이상, 심박 Zone 2(138–148 bpm) 영역을 "효율 스윗 스팟"으로 가이드.</div>
+          <div id="chart-cadence" style="width:100%;height:360px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="ai">
+      <div class="container">
+        <span class="section-label">Section 3 — AI 코치 파이프라인</span>
+        <h2>GPT-4o에 주 1회 훈련 플래닝 위탁</h2>
+        <p class="section-sub">Garmin FIT → Python 파싱 → JSON → GPT-4o 프롬프트 → 다음 주 플랜까지의 파이프라인.</p>
+
+        <div class="ai-stack">
+          <h3>파이프라인</h3>
+          <div class="pipeline">
+            <div class="pipe-step"><strong>1. 수집</strong><span>Garmin Connect API · FIT 파일</span></div>
+            <div class="pipe-step"><strong>2. 파싱</strong><span>Python <code>fitparse</code> → JSON</span></div>
+            <div class="pipe-step"><strong>3. 집계</strong><span>주간 총량·심박 존·페이스 구간</span></div>
+            <div class="pipe-step"><strong>4. 프롬프팅</strong><span>GPT-4o + 훈련 이론 시스템 프롬프트</span></div>
+            <div class="pipe-step"><strong>5. 검토</strong><span>본인 컨디션 메모로 조정</span></div>
+            <div class="pipe-step"><strong>6. 실행</strong><span>다음 주 캘린더 자동 기입</span></div>
+          </div>
+          <p style="margin-top: 16px; font-size: 0.9rem;">
+            시스템 프롬프트에는 Jack Daniels의 VDOT 표, 80/20 분배(Seiler), 회복 이론이 압축되어 있습니다. 모델은 단순 답변 대신 <em>구체적 페이스·km·인터벌 세트</em>를 제시하도록 제약됩니다.
+          </p>
+        </div>
+
+        <h3>대화 로그 예시 (2026-04-14)</h3>
+        <div class="chat-log">
+          <div class="chat-turn chat-user">
+            <div class="chat-avatar">BM</div>
+            <div>
+              <div class="chat-name">백마탄</div>
+              <div class="chat-bubble">
+                지난 주 주간 26km, 마지막 세션에서 오른쪽 무릎 바깥쪽이 살짝 당겼어. 이번 주 목표는 10K 5'00" 유지. 이번 주 플랜 짜줘.
+              </div>
+            </div>
+          </div>
+          <div class="chat-turn chat-ai">
+            <div class="chat-avatar">GPT</div>
+            <div>
+              <div class="chat-name">AI 코치 (GPT-4o)</div>
+              <div class="chat-bubble">
+                무릎 바깥쪽 통증은 IT band 신호일 수 있어 강도 15% 감량을 권장합니다. <br>
+                <strong>월</strong> 휴식 · <strong>화</strong> Easy 6km @ 5'55" + 사이드 크런치 20×3 ·
+                <strong>수</strong> 휴식 · <strong>목</strong> 인터벌 1km×5 @ 4'40" (rest 90s) · <strong>금</strong> Easy 5km · <strong>토</strong> LSD 12km @ 6'00" · <strong>일</strong> 휴식. 주간 총 28km.<br>
+                <em>조건</em>: 화요일 Easy에서도 통증 지속 시 목요일 인터벌은 Tempo 5km @ 5'00"로 전환.
+              </div>
+            </div>
+          </div>
+          <div class="chat-turn chat-user">
+            <div class="chat-avatar">BM</div>
+            <div>
+              <div class="chat-name">백마탄</div>
+              <div class="chat-bubble">토요일 비 예보인데 트레드밀 가능? 페이스 어떻게 조정?</div>
+            </div>
+          </div>
+          <div class="chat-turn chat-ai">
+            <div class="chat-avatar">GPT</div>
+            <div>
+              <div class="chat-name">AI 코치 (GPT-4o)</div>
+              <div class="chat-bubble">
+                트레드밀은 공기저항이 없어 야외보다 약 2~3% 편합니다. 같은 생리적 부하를 주려면 <strong>경사 1.0%</strong>로 설정하고 페이스는 <strong>5'50" (10.3 km/h)</strong>를 유지하세요. 거리·시간은 그대로 12km·72분.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3>AI 코치가 지난 12주간 조정한 훈련 요소 Top 5</h3>
+        <div class="chart-container">
+          <div class="chart-title">AI 개입 유형 빈도</div>
+          <div class="chart-desc">LLM 응답을 사후 태깅해 어떤 범주의 조정이 많았는지 집계. 회복·페이스 조정·근력 보강·유연성·영양 순.</div>
+          <div id="chart-ai-freq" style="width:100%;height:320px;"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div><strong style="color: var(--text-primary);">백마탄</strong> · Personal Dashboard · Running Log<br>
+        <span style="font-size: 0.8rem;">시범용 모의 데이터 (2026-04 스냅샷)</span></div>
+      <div><a href="../../index.html">← 포트폴리오 홈</a></div>
+    </div>
+  </footer>
+
+  <script>
+    // Leaflet map
+    (function renderMap() {
+      const map = L.map('map', { zoomControl: true }).setView([37.5320, 127.0020], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap'
+      }).addTo(map);
+
+      // Route 1: 한강 (잠원 – 반포 – 잠실)
+      const hanRoute = [
+        [37.5263, 127.0050], [37.5220, 127.0120], [37.5180, 127.0210],
+        [37.5160, 127.0330], [37.5152, 127.0470], [37.5130, 127.0610],
+        [37.5155, 127.0790], [37.5175, 127.0920], [37.5180, 127.1030]
+      ];
+      L.polyline(hanRoute, { color: '#1E40AF', weight: 4, opacity: 0.85 })
+        .bindPopup('<b>한강 잠원–잠실</b><br>12.8 km · 평균 5\'48"/km<br>AI 평가: Easy Z2 성공')
+        .addTo(map);
+
+      // Route 2: 남산 순환
+      const namsanRoute = [
+        [37.5504, 126.9905], [37.5520, 126.9920], [37.5535, 126.9945],
+        [37.5555, 126.9980], [37.5550, 127.0010], [37.5530, 127.0020],
+        [37.5510, 127.0005], [37.5505, 126.9980], [37.5504, 126.9905]
+      ];
+      L.polyline(namsanRoute, { color: '#3B82F6', weight: 4, opacity: 0.85 })
+        .bindPopup('<b>남산 순환</b><br>7.2 km · 평균 5\'35"/km · 고도 +180m<br>AI 평가: Threshold 자극')
+        .addTo(map);
+
+      // Route 3: 청계천
+      const cheongRoute = [
+        [37.5690, 126.9780], [37.5695, 126.9830], [37.5700, 126.9880],
+        [37.5705, 126.9930], [37.5710, 126.9990], [37.5715, 127.0060],
+        [37.5720, 127.0130]
+      ];
+      L.polyline(cheongRoute, { color: '#60A5FA', weight: 4, opacity: 0.9, dashArray: '6 6' })
+        .bindPopup('<b>청계천 동서 왕복</b><br>8.6 km · 평균 6\'02"/km<br>AI 평가: Recovery Jog')
+        .addTo(map);
+
+      L.marker([37.5252, 127.0100]).addTo(map).bindPopup('잠원 한강공원 (홈)');
+      L.marker([37.5512, 126.9934]).addTo(map).bindPopup('남산 북측 출발점');
+    })();
+
+    const COMMON_LAYOUT = {
+      font: { family: 'Inter, "Noto Sans KR", sans-serif', color: '#0F172A', size: 12 },
+      paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+      margin: { l: 50, r: 20, t: 20, b: 50 },
+      hoverlabel: { bgcolor: '#FFFFFF' },
+    };
+    const COMMON_CONFIG = { responsive: true, displaylogo: false };
+
+    // Weekly distance
+    (function weekly() {
+      const weeks = Array.from({length: 12}, (_, i) => `W-${12-i}`);
+      const dist = [22, 24, 28, 26, 30, 27, 29, 31, 25, 28, 30, 28];
+      let cum = 0; const cumul = dist.map(d => cum += d);
+      const traces = [
+        { type: 'bar', x: weeks, y: dist, name: '주간 거리 (km)', marker: { color: '#3B82F6' } },
+        { type: 'scatter', mode: 'lines+markers', x: weeks, y: cumul, name: '누적 (km)',
+          line: { color: '#1E40AF', width: 2 }, marker: { size: 5 }, yaxis: 'y2' }
+      ];
+      Plotly.newPlot('chart-weekly', traces, {
+        ...COMMON_LAYOUT,
+        xaxis: { tickfont: { size: 10 }, gridcolor: '#E2E8F0' },
+        yaxis: { title: 'km', gridcolor: '#E2E8F0' },
+        yaxis2: { title: '누적 km', overlaying: 'y', side: 'right', showgrid: false },
+        legend: { orientation: 'h', y: -0.18, x: 0.5, xanchor: 'center', font: { size: 10 } },
+      }, COMMON_CONFIG);
+    })();
+
+    // Pace histogram
+    (function pace() {
+      // Simulated pace samples (min/km) — normal around 5:40, some tempo/interval
+      function rand(seed) { let t = seed >>> 0; return () => { t = (t + 0x6D2B79F5) | 0;
+        let r = Math.imul(t ^ (t >>> 15), 1 | t); r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296; }; }
+      const r = rand(20260417);
+      function bm() { let u=0,v=0; while(u===0) u=r(); while(v===0) v=r();
+        return Math.sqrt(-2*Math.log(u)) * Math.cos(2*Math.PI*v); }
+      const paces = [];
+      for (let i = 0; i < 200; i++) paces.push(5.7 + bm() * 0.35);
+      for (let i = 0; i < 40;  i++) paces.push(4.95 + bm() * 0.15);
+      for (let i = 0; i < 20;  i++) paces.push(4.55 + bm() * 0.10);
+      Plotly.newPlot('chart-pace', [{
+        type: 'histogram', x: paces, nbinsx: 30,
+        marker: { color: '#3B82F6', line: { color: '#1E40AF', width: 0.6 } }, opacity: 0.9,
+        hovertemplate: '페이스 %{x:.2f}분/km<br>세션 %{y}<extra></extra>',
+      }], {
+        ...COMMON_LAYOUT,
+        xaxis: { title: 'min/km (낮을수록 빠름)', gridcolor: '#E2E8F0' },
+        yaxis: { title: '세션 수', gridcolor: '#E2E8F0' },
+        shapes: [
+          { type: 'rect', x0: 5.67, x1: 6.17, y0: 0, y1: 1, yref: 'paper',
+            fillcolor: '#60A5FA', opacity: 0.10, line: { width: 0 } },
+          { type: 'rect', x0: 4.75, x1: 5.08, y0: 0, y1: 1, yref: 'paper',
+            fillcolor: '#1E40AF', opacity: 0.12, line: { width: 0 } },
+        ],
+        annotations: [
+          { x: 5.92, y: 0.95, yref: 'paper', text: 'Easy Z2', showarrow: false, font: { size: 10, color: '#1E40AF' } },
+          { x: 4.92, y: 0.95, yref: 'paper', text: 'Tempo', showarrow: false, font: { size: 10, color: '#1E40AF' } },
+        ]
+      }, COMMON_CONFIG);
+    })();
+
+    // Cadence × HR scatter
+    (function cadence() {
+      function rand(seed) { let t = seed >>> 0; return () => { t = (t + 0x6D2B79F5) | 0;
+        let r = Math.imul(t ^ (t >>> 15), 1 | t); r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r;
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296; }; }
+      const r = rand(20260418);
+      const cad = [], hr = [], col = [];
+      for (let i = 0; i < 180; i++) {
+        const c = 172 + r() * 18;
+        const h = 128 + (c - 175) * 1.6 + (r() - 0.5) * 16;
+        cad.push(c); hr.push(h);
+        col.push(c > 180 && h > 138 && h < 148 ? '#1E40AF' : '#93C5FD');
+      }
+      Plotly.newPlot('chart-cadence', [{
+        type: 'scatter', mode: 'markers',
+        x: cad, y: hr,
+        marker: { size: 6, color: col, opacity: 0.75, line: { width: 0 } },
+        hovertemplate: '케이던스 %{x:.0f} spm<br>HR %{y:.0f} bpm<extra></extra>',
+      }], {
+        ...COMMON_LAYOUT,
+        xaxis: { title: '케이던스 (spm)', gridcolor: '#E2E8F0' },
+        yaxis: { title: '심박 (bpm)', gridcolor: '#E2E8F0' },
+        shapes: [
+          { type: 'rect', x0: 180, x1: 192, y0: 138, y1: 148,
+            fillcolor: '#1E40AF', opacity: 0.08, line: { color: '#1E40AF', width: 1, dash: 'dot' } }
+        ],
+        annotations: [
+          { x: 186, y: 143, text: '<b>효율 스윗 스팟</b>', showarrow: false, font: { size: 11, color: '#1E40AF' } }
+        ]
+      }, COMMON_CONFIG);
+    })();
+
+    // AI freq
+    (function aifreq() {
+      const types = ['회복일 제안', '페이스 조정', '근력 보강', '유연성 운동', '영양·수분', '장비 교체'];
+      const freq = [18, 14, 11, 8, 7, 4];
+      Plotly.newPlot('chart-ai-freq', [{
+        type: 'bar', orientation: 'h',
+        y: types.slice().reverse(), x: freq.slice().reverse(),
+        marker: { color: ['#94A3B8', '#93C5FD', '#60A5FA', '#3B82F6', '#2F4FC2', '#1E40AF'].reverse() },
+        hovertemplate: '<b>%{y}</b>: %{x} 회<extra></extra>',
+      }], {
+        ...COMMON_LAYOUT,
+        margin: { l: 110, r: 20, t: 20, b: 40 },
+        xaxis: { title: '제안 횟수 (12주)', gridcolor: '#E2E8F0' },
+        yaxis: { tickfont: { size: 11 } },
+      }, COMMON_CONFIG);
+    })();
+  </script>
+</body>
+</html>
