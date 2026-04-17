@@ -1,5 +1,5 @@
 # ===========================================================
-# matanbaek.github.io — .gitignore
+# changmirae.github.io — .gitignore
 # ===========================================================
 
 # OS / filesystem
@@ -37,4 +37,4 @@ __pycache__/
 
 # Large unused originals (원본 사진 백업은 로컬에만)
 # 필요 시 주석 해제하여 특정 파일 제외
-# /*원본*.png
+# /*원본*.png
