@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Synthetic Persona Survey: UTAUT2 Acceptance Radar across 3 persona segments">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#F8FAFC"/>
+    <stop offset="100%" stop-color="#DCE8FB"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="50%" cy="50%" r="60%">
+    <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.18"/>
+    <stop offset="100%" stop-color="#60A5FA" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+<rect width="800" height="450" fill="url(#bg)"/>
+<rect width="800" height="450" fill="url(#glow)"/>
+
+<!-- Grid rings -->
+<polygon points="400,183.75 429.16,195.84 441.25,225 429.16,254.16 400,266.25 370.84,254.16 358.75,225 370.84,195.84" fill="none" stroke="#CBD5E1" stroke-width="0.6" stroke-dasharray="2 3"/>
+<polygon points="400,142.5 458.33,166.67 482.5,225 458.33,283.33 400,307.5 341.67,283.33 317.5,225 341.67,166.67" fill="none" stroke="#CBD5E1" stroke-width="0.6" stroke-dasharray="2 3"/>
+<polygon points="400,101.25 487.5,137.5 523.75,225 487.5,312.5 400,348.75 312.5,312.5 276.25,225 312.5,137.5" fill="none" stroke="#CBD5E1" stroke-width="0.6" stroke-dasharray="2 3"/>
+<polygon points="400,60 516.66,108.34 565,225 516.66,341.66 400,390 283.34,341.66 235,225 283.34,108.34" fill="none" stroke="#94A3B8" stroke-width="0.9"/>
+
+<!-- Axes -->
+<line x1="400" y1="225" x2="400" y2="60" stroke="#CBD5E1" stroke-width="0.6"/>
+<line x1="400" y1="225" x2="516.66" y2="108.34" stroke="#CBD5E1" stroke-width="0.6"/>
+<line x1="400" y1="225" x2="565" y2="225" stroke="#CBD5E1" stroke-width="0.6"/>
+<line x1="400" y1="225" x2="516.66" y2="341.66" stroke="#CBD5E1" stroke-width="0.6"/>
+<line x1="400" y1="225" x2="400" y2="390" stroke="#CBD5E1" stroke-width="0.6"/>
+<line x1="400" y1="225" x2="283.34" y2="341.66" stroke="#CBD5E1" stroke-width="0.6"/>
+<line x1="400" y1="225" x2="235" y2="225" stroke="#CBD5E1" stroke-width="0.6"/>
+<line x1="400" y1="225" x2="283.34" y2="108.34" stroke="#CBD5E1" stroke-width="0.6"/>
+
+<!-- Axis labels -->
+<text x="400" y="48" font-family="Inter" font-size="11" font-weight="600" fill="#1E40AF" text-anchor="middle">Performance</text>
+<text x="530" y="100" font-family="Inter" font-size="11" font-weight="600" fill="#1E40AF" text-anchor="start">Effort</text>
+<text x="580" y="229" font-family="Inter" font-size="11" font-weight="600" fill="#1E40AF" text-anchor="start">Hedonic</text>
+<text x="530" y="355" font-family="Inter" font-size="11" font-weight="600" fill="#1E40AF" text-anchor="start">Price Value</text>
+<text x="400" y="408" font-family="Inter" font-size="11" font-weight="600" fill="#1E40AF" text-anchor="middle">Habit</text>
+<text x="270" y="355" font-family="Inter" font-size="11" font-weight="600" fill="#1E40AF" text-anchor="end">Social</text>
+<text x="220" y="229" font-family="Inter" font-size="11" font-weight="600" fill="#1E40AF" text-anchor="end">Trust</text>
+<text x="270" y="100" font-family="Inter" font-size="11" font-weight="600" fill="#1E40AF" text-anchor="end">Privacy</text>
+
+<!-- Scale labels (on top axis) -->
+<text x="408" y="187" font-family="Inter" font-size="8" fill="#94A3B8">0.25</text>
+<text x="408" y="146" font-family="Inter" font-size="8" fill="#94A3B8">0.50</text>
+<text x="408" y="105" font-family="Inter" font-size="8" fill="#94A3B8">0.75</text>
+<text x="408" y="64" font-family="Inter" font-size="8" fill="#94A3B8">1.00</text>
+
+<!-- Disengaged Senior polygon (slate) -->
+<polygon points="400,175.5 429.16,195.84 457.75,225 452.50,277.50 400,258 365.0,260.0 358.75,225 306.68,131.68"
+  fill="#94A3B8" fill-opacity="0.22" stroke="#64748B" stroke-width="1.6" stroke-linejoin="round"/>
+
+<!-- Mainstream Late polygon (bright blue) -->
+<polygon points="400,117.75 464.16,160.84 499,225 472.33,297.33 400,307.5 332.34,292.66 309.25,225 330.01,155.01"
+  fill="#3B82F6" fill-opacity="0.22" stroke="#2563EB" stroke-width="1.8" stroke-linejoin="round"/>
+
+<!-- Power User polygon (deep blue) -->
+<polygon points="400,79.8 499.16,125.84 548.5,225 491.0,316.0 400,360.3 312.5,312.5 268.0,225 359.17,184.17"
+  fill="#1E40AF" fill-opacity="0.30" stroke="#1E3A8A" stroke-width="2.0" stroke-linejoin="round"/>
+
+<!-- Data point dots for Power User -->
+<circle cx="400" cy="79.8" r="3.2" fill="#1E3A8A"/>
+<circle cx="499.16" cy="125.84" r="3.2" fill="#1E3A8A"/>
+<circle cx="548.5" cy="225" r="3.2" fill="#1E3A8A"/>
+<circle cx="491.0" cy="316.0" r="3.2" fill="#1E3A8A"/>
+<circle cx="400" cy="360.3" r="3.2" fill="#1E3A8A"/>
+<circle cx="312.5" cy="312.5" r="3.2" fill="#1E3A8A"/>
+<circle cx="268.0" cy="225" r="3.2" fill="#1E3A8A"/>
+<circle cx="359.17" cy="184.17" r="3.2" fill="#1E3A8A"/>
+
+<!-- Left panel: title + caption -->
+<text x="40" y="50" font-family="Inter" font-size="11" fill="#3B82F6" font-weight="600" letter-spacing="1.2">SYNTHETIC PERSONA N=2,000</text>
+<text x="40" y="84" font-family="Inter" font-size="22" fill="#0F172A" font-weight="700">AI가 본 AI</text>
+<text x="40" y="108" font-family="Inter" font-size="22" fill="#0F172A" font-weight="700">수용도</text>
+<text x="40" y="140" font-family="Inter" font-size="12" fill="#475569">KOSIS 2024 · IPF · UTAUT2</text>
+<text x="40" y="158" font-family="Inter" font-size="12" fill="#475569">3-LLM validation (JS 0.043)</text>
+
+<!-- Legend -->
+<g transform="translate(40, 300)">
+  <rect x="0" y="0" width="14" height="10" fill="#1E40AF" fill-opacity="0.55" stroke="#1E3A8A" stroke-width="1.2"/>
+  <text x="20" y="9" font-family="Inter" font-size="10.5" fill="#0F172A" font-weight="600">Power User</text>
+  <text x="20" y="22" font-family="Inter" font-size="9.5" fill="#64748B">n ≈ 312 · 9.8%</text>
+
+  <rect x="0" y="36" width="14" height="10" fill="#3B82F6" fill-opacity="0.55" stroke="#2563EB" stroke-width="1.2"/>
+  <text x="20" y="45" font-family="Inter" font-size="10.5" fill="#0F172A" font-weight="600">Mainstream Late</text>
+  <text x="20" y="58" font-family="Inter" font-size="9.5" fill="#64748B">n ≈ 684 · 34.2%</text>
+
+  <rect x="0" y="72" width="14" height="10" fill="#94A3B8" fill-opacity="0.55" stroke="#64748B" stroke-width="1.2"/>
+  <text x="20" y="81" font-family="Inter" font-size="10.5" fill="#0F172A" font-weight="600">Disengaged Senior</text>
+  <text x="20" y="94" font-family="Inter" font-size="9.5" fill="#64748B">n ≈ 418 · 20.9%</text>
+</g>
+
+<!-- Badge -->
+<rect x="670" y="410" width="110" height="26" rx="4" fill="#0F172A" fill-opacity="0.9"/>
+<text x="725" y="427" font-family="Inter" font-size="10" fill="#DBEAFE" text-anchor="middle" letter-spacing="1.2" font-weight="600">UTAUT2 RADAR</text>
+</svg>

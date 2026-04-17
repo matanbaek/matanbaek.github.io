@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 에이전트 특허 지도 · AI 델파이 TRL 평가 | 백마탄</title>
+  <meta name="description" content="국내 AI 에이전트 특허 3,420건의 기술지도와 AI Delphi 기반 Technology Readiness Level 자동 평가. KAIST I&TM ITM660 프로젝트 mockup.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+
+  <style>
+    :root {
+      --primary:        #1E40AF;
+      --secondary:      #3B82F6;
+      --accent:         #60A5FA;
+      --bg:             #F8FAFC;
+      --bg-elev:        #FFFFFF;
+      --bg-soft:        #EFF4FB;
+      --text-primary:   #0F172A;
+      --text-secondary: #475569;
+      --border:         #E2E8F0;
+      --shadow-sm:      0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-md:      0 4px 12px rgba(15, 23, 42, 0.06);
+      --shadow-lg:      0 12px 32px rgba(15, 23, 42, 0.08);
+      --radius-sm:      6px;
+      --radius-md:      10px;
+      --radius-lg:      16px;
+      --max-width:      1200px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Inter", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px; line-height: 1.6;
+      color: var(--text-primary); background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--primary); text-decoration: none; transition: color .15s ease; }
+    a:hover { color: var(--secondary); }
+    h1, h2, h3, h4 { color: var(--text-primary); line-height: 1.25; margin: 0 0 .5em; font-weight: 600; }
+    h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); font-weight: 700; letter-spacing: -0.02em; }
+    h2 { font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.01em; }
+    h3 { font-size: 1.2rem; margin-top: 1.5em; }
+    h4 { font-size: 1rem; }
+    p { margin: 0 0 1em; color: var(--text-secondary); }
+    code { font-family: "JetBrains Mono", monospace; font-size: 0.85em;
+           background: var(--bg-soft); padding: 2px 6px; border-radius: 4px; color: var(--primary); }
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+
+    /* Nav */
+    header.site-nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(248, 250, 252, 0.88);
+      backdrop-filter: saturate(180%) blur(10px);
+      -webkit-backdrop-filter: saturate(180%) blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .nav-brand { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); letter-spacing: -0.01em; }
+    .nav-brand:hover { color: var(--primary); }
+    .nav-links { display: flex; gap: 18px; list-style: none; padding: 0; margin: 0; flex-wrap: wrap; }
+    .nav-links a { font-size: 0.82rem; font-weight: 500; color: var(--text-secondary); }
+    .nav-links a:hover { color: var(--primary); }
+    @media (max-width: 860px) { .nav-links { display: none; } }
+
+    /* Sections */
+    section { padding: 80px 0; }
+    section + section { border-top: 1px solid var(--border); }
+    .section-label {
+      display: inline-block;
+      font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--secondary); margin-bottom: 12px;
+    }
+    .section-heading { margin-bottom: 16px; }
+    .section-sub { max-width: 760px; margin-bottom: 40px; color: var(--text-secondary); }
+
+    .project-hero { padding: 80px 0 56px; }
+    .project-meta {
+      display: inline-block; padding: 4px 12px;
+      background: var(--bg-soft); border: 1px solid var(--border);
+      color: var(--primary); border-radius: 999px;
+      font-size: 0.78rem; font-weight: 500; margin-bottom: 20px;
+    }
+    .project-hero h1 { margin-bottom: 12px; }
+    .project-subtitle {
+      font-size: 1.1rem; color: var(--text-secondary);
+      max-width: 760px; margin-bottom: 24px;
+    }
+    .meta-callout {
+      background: linear-gradient(135deg, #EFF4FB 0%, #DBEAFE 100%);
+      border-left: 3px solid var(--primary);
+      border-radius: var(--radius-md);
+      padding: 16px 20px; margin: 16px 0 8px; max-width: 760px;
+      font-size: 0.95rem; color: var(--text-primary);
+    }
+    .meta-callout strong { color: var(--primary); }
+    .stat-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px; margin-top: 32px;
+    }
+    .stat-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm);
+    }
+    .stat-num {
+      font-size: 1.75rem; font-weight: 700;
+      color: var(--primary); letter-spacing: -0.02em; margin-bottom: 4px;
+    }
+    .stat-label { font-size: 0.82rem; color: var(--text-secondary); }
+
+    .disclaimer {
+      background: #FEF3C7; border: 1px solid #FDE68A; color: #92400E;
+      padding: 12px 16px; border-radius: var(--radius-sm);
+      font-size: 0.88rem; margin: 16px 0;
+    }
+    .disclaimer strong { color: #78350F; }
+
+    .rq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .rq-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-sm);
+    }
+    .rq-num {
+      display: inline-block; font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.12em; color: var(--secondary); margin-bottom: 12px;
+    }
+    .rq-text { font-size: 1rem; color: var(--text-primary); font-weight: 500; margin-bottom: 8px; }
+    .rq-method { font-size: 0.85rem; color: var(--text-secondary); }
+
+    .lit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+    .lit-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 20px 22px; box-shadow: var(--shadow-sm);
+    }
+    .lit-card .lit-cite {
+      font-size: 0.8rem; color: var(--secondary); font-weight: 600;
+      margin-bottom: 6px; letter-spacing: 0.01em;
+    }
+    .lit-card h4 { margin: 0 0 8px; font-size: 0.95rem; color: var(--text-primary); }
+    .lit-card p { font-size: 0.87rem; margin: 0; }
+    .lit-tag {
+      display: inline-block; padding: 2px 8px; font-size: 0.7rem;
+      font-weight: 500; background: var(--bg-soft);
+      color: var(--primary); border-radius: 999px; margin-top: 10px;
+    }
+
+    table.simple-table {
+      width: 100%; border-collapse: collapse; font-size: 0.88rem;
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); overflow: hidden;
+    }
+    table.simple-table th {
+      text-align: left; padding: 11px 14px;
+      background: var(--bg-soft); font-weight: 600;
+      font-size: 0.75rem; color: var(--text-secondary);
+      letter-spacing: 0.04em; text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    table.simple-table td {
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      color: var(--text-primary); vertical-align: top;
+    }
+    table.simple-table tr:last-child td { border-bottom: none; }
+    table.simple-table .num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; font-size: 0.83rem; }
+    table.simple-table .trl-cell { font-weight: 600; text-align: center; }
+
+    ul.method-list, ol.method-list { padding-left: 1.4em; margin: 0 0 1em; }
+    ul.method-list li, ol.method-list li { margin-bottom: 8px; color: var(--text-secondary); }
+    ul.method-list li::marker, ol.method-list li::marker { color: var(--secondary); font-weight: 600; }
+
+    .formula {
+      background: var(--bg-soft); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 16px 20px;
+      font-family: "JetBrains Mono", monospace; font-size: 0.9rem;
+      color: var(--text-primary); margin: 12px 0 16px;
+      overflow-x: auto; white-space: pre;
+    }
+    .formula-label {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--secondary); font-weight: 600; margin-bottom: 6px;
+    }
+
+    .chart-container {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 24px;
+      box-shadow: var(--shadow-sm); margin-bottom: 20px;
+    }
+    .chart-title { font-size: 1rem; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+    .chart-desc { font-size: 0.86rem; color: var(--text-secondary); margin-bottom: 16px; }
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    @media (max-width: 860px) { .chart-row { grid-template-columns: 1fr; } }
+
+    .insight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .insight-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-left: 3px solid var(--primary); border-radius: var(--radius-md);
+      padding: 20px 22px; box-shadow: var(--shadow-sm);
+    }
+    .insight-card h4 {
+      color: var(--primary); margin: 0 0 8px;
+      font-size: 0.95rem; font-weight: 600;
+    }
+    .insight-card p { font-size: 0.92rem; margin: 0; }
+
+    .step-list { display: grid; gap: 10px; }
+    .step {
+      display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start;
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 16px 18px; box-shadow: var(--shadow-sm);
+    }
+    .step-num {
+      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--primary); color: white; font-weight: 700; font-size: 0.82rem;
+    }
+    .step-body h4 { margin: 0 0 4px; font-size: 0.95rem; }
+    .step-body p { margin: 0; font-size: 0.87rem; }
+
+    /* Persona grid */
+    .persona-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+    .persona-chip {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 10px 14px;
+      font-size: 0.85rem;
+    }
+    .persona-chip .p-role { font-weight: 600; color: var(--primary); margin-bottom: 2px; font-size: 0.83rem; }
+    .persona-chip .p-desc { color: var(--text-secondary); font-size: 0.78rem; line-height: 1.4; }
+    .persona-chip .p-model {
+      display: inline-block; font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem; background: var(--bg-soft); color: var(--secondary);
+      padding: 2px 6px; border-radius: 4px; margin-top: 4px;
+    }
+
+    /* TRL badge */
+    .trl { display: inline-block; width: 24px; height: 24px; border-radius: 50%;
+           text-align: center; line-height: 24px; font-weight: 700; font-size: 0.75rem; color: white; }
+    .trl-1, .trl-2 { background: #DBEAFE; color: #1E40AF; }
+    .trl-3, .trl-4 { background: #93C5FD; color: #1E40AF; }
+    .trl-5, .trl-6 { background: #3B82F6; }
+    .trl-7, .trl-8 { background: #1E40AF; }
+    .trl-9         { background: #0F172A; }
+
+    footer { border-top: 1px solid var(--border); padding: 32px 0 40px; }
+    .footer-inner {
+      display: flex; flex-wrap: wrap; justify-content: space-between;
+      gap: 12px; align-items: center;
+      font-size: 0.85rem; color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-nav">
+    <div class="container nav-inner">
+      <a href="../../index.html" class="nav-brand">← 백마탄 포트폴리오</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#purpose">목적</a></li>
+          <li><a href="#lit">선행연구</a></li>
+          <li><a href="#rq">RQ</a></li>
+          <li><a href="#data">데이터·Delphi</a></li>
+          <li><a href="#eda">EDA</a></li>
+          <li><a href="#main">TRL 분석</a></li>
+          <li><a href="#conclusion">결론</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="project-hero">
+      <div class="container">
+        <span class="project-meta">ITM660 · 하이테크 전략적 혁신경영</span>
+        <h1>AI 에이전트 특허 지도 · AI Delphi TRL 평가</h1>
+        <p class="project-subtitle">
+          Patent Landscape &amp; AI-Delphi-Based TRL Assessment for Korean AI Agent Patents —
+          KIPRIS 기반 국내 AI 에이전트 특허 <strong>3,420건</strong>에 대해 2D 기술지도를 그리고, 9인 LLM 전문가 페르소나로 구성된 <strong>AI Delphi</strong>가 각 특허의 Technology Readiness Level(TRL 1~9)을 자동 평가합니다.
+        </p>
+        <div class="meta-callout">
+          🔎 <strong>본 연구의 의의</strong> — 기술 지형 조사는 통상 수개월의 특허 분석가 노동이 필요하지만, 본 연구는 <em>UMAP 2D 임베딩 + 다인 LLM 패널 AI Delphi</em>를 결합해 <strong>3,420건 전수</strong>의 기술 클러스터링·TRL 평가를 자동화했습니다. Teece(1986)의 전유성 프레임워크와 Dosi(1982)의 기술 궤적을 실증 가능한 형태로 재구성하고, Kendall's W로 <em>전문가 간 수렴도</em>까지 정량화해 국내 AI 에이전트 특허 경쟁 지형의 기업별 포지셔닝을 수치로 드러냅니다.
+        </div>
+        <div class="disclaimer">
+          <strong>⚠ Mock-up Notice.</strong> 본 페이지는 연구 설계를 시각화한 <em>시범 목업</em>입니다. 표시된 특허 수·TRL 분포·AI Delphi 수렴 지표는 실제 KIPRIS 수집 없이 시드 고정된 합성 데이터로 생성되었습니다. 설계에 따라 실제 데이터를 수집·평가하면 유사한 형태의 결과가 산출될 것으로 기대됩니다.
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-num">3,420</div>
+            <div class="stat-label">분석 대상 특허 (2019-01 ~ 2026-03)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">9 × 3</div>
+            <div class="stat-label">AI Delphi 페르소나 × 토론 라운드</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">TRL 4.2</div>
+            <div class="stat-label">전체 평균 기술 성숙도 (AI Delphi)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">ICC 0.81</div>
+            <div class="stat-label">인간 3인 패널 대비 일치도 (N=120)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. PURPOSE -->
+    <section id="purpose">
+      <div class="container">
+        <div class="section-label">01 · Research Purpose</div>
+        <h2 class="section-heading">연구 목적</h2>
+        <p class="section-sub">
+          국내 AI 에이전트 특허의 <strong>(i) 기술 지형 파악</strong>과 <strong>(ii) 전체 특허 모집단에 대한 TRL 스케일링</strong>을 동시에 달성하는 것이 본 연구의 목적입니다. 기존 방식(인간 패널 Delphi)으로는 수천 건 특허를 평가하기 어려우므로, <strong>AI Delphi</strong>라는 확장 가능한 프로토콜을 설계하고 그 신뢰성을 검증합니다.
+        </p>
+        <div class="insight-grid">
+          <div class="insight-card">
+            <h4>왜 TRL인가</h4>
+            <p>전유성(Appropriability) 관점에서 특허 출원만으로는 상업화 가능성을 판단할 수 없음. TRL 1~9는 NASA에서 시작해 EU Horizon, 국내 국가R&amp;D에도 표준 지표로 정착. 포트폴리오의 상업화 거리(distance-to-market) 진단에 필수.</p>
+          </div>
+          <div class="insight-card">
+            <h4>왜 AI Delphi인가</h4>
+            <p>인간 전문가 3인 패널로 1건 평가에 약 40분 소요 → 3,420건이면 누적 2,280시간. 학위 연구 범위 밖. AI Delphi는 건당 약 45초 (LLM 9페르소나 × 3라운드) → 전수 평가 가능. 단, 편향·환각 위험을 통계적으로 점검해야 함.</p>
+          </div>
+          <div class="insight-card">
+            <h4>왜 한국인가</h4>
+            <p>KIPRIS(공개), KIPO Plus(API)로 한국어·영어 이중 초록, IPC·CPC 분류, 패밀리 정보를 일관 수집 가능. 한국의 AI 에이전트 특허는 글로벌 대비 6~8% 규모로 추정되나 지역 맥락 분석 가치 큼.</p>
+          </div>
+          <div class="insight-card">
+            <h4>왜 백마탄인가</h4>
+            <p>가우스전자 <strong>가보스 프로젝트</strong>는 "에이전트 AI OS"의 한국 표준을 지향. 국내 경쟁사·잠재 파트너의 기술 성숙도 맵을 확보하는 것이 크로스 라이선싱·M&amp;A·인재 영입 전략의 출발점.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. LITERATURE -->
+    <section id="lit">
+      <div class="container">
+        <div class="section-label">02 · Literature Review</div>
+        <h2 class="section-heading">선행 연구 분석</h2>
+        <p class="section-sub">
+          특허 기반 기술 전망(Patent Landscaping)과 Delphi 방법론 그리고 최근의 LLM 기반 전문가 자동화 연구를 교차 검토합니다. 본 연구는 세 흐름을 결합해 "대규모 특허 모집단에 대한 TRL 자동 평가"라는 공백을 메우는 시도입니다.
+        </p>
+        <div class="lit-grid">
+          <div class="lit-card">
+            <div class="lit-cite">Teece (1986)</div>
+            <h4>Profiting from Technological Innovation</h4>
+            <p>전유성 프레임워크(Appropriability Regime)와 보완 자산(Complementary Assets). 특허 강도만으로는 상업화 수익이 결정되지 않는다는 본 연구의 동기 근거.</p>
+            <span class="lit-tag">Appropriability</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Dosi (1982)</div>
+            <h4>Technological Paradigms &amp; Technological Trajectories</h4>
+            <p>기술 궤적 개념. 특허 맵에서 궤적을 읽어내는 이론적 토대. Agentic AI를 새로운 paradigm으로 보고 trajectory 형성 초기를 관찰.</p>
+            <span class="lit-tag">Trajectory</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Mankins (1995, 2009)</div>
+            <h4>Technology Readiness Levels (NASA)</h4>
+            <p>TRL 9-level scale의 정의와 적용. 본 연구는 특허 텍스트(초록·청구항)에 기반한 rubric 변형을 적용해 LLM이 해석 가능한 평가 기준을 구축.</p>
+            <span class="lit-tag">TRL Scale</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Linstone &amp; Turoff (1975, 2002)</div>
+            <h4>The Delphi Method: Techniques and Applications</h4>
+            <p>Delphi의 원칙: 익명성·반복·통제된 피드백·통계적 그룹 응답. 본 연구는 이 원칙을 LLM 다중 페르소나 + IQR 기반 수렴 판정으로 구현.</p>
+            <span class="lit-tag">Delphi Classic</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Park et al. (2023)</div>
+            <h4>Generative Agents: Interactive Simulacra of Human Behavior (Stanford)</h4>
+            <p>LLM 에이전트가 인간 같은 의견을 생성하고 상호작용. 본 연구의 페르소나 기반 의사결정 자동화 착상.</p>
+            <span class="lit-tag">LLM Personas</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Dillion, Tandon, Gu &amp; Gray (2023)</div>
+            <h4>Can AI Language Models Replace Human Participants? (TiCS)</h4>
+            <p>LLM이 사회과학 응답자를 대체할 수 있는가. 반복 실험·편향 우려 정리. 본 연구는 이 문제의식을 이어 Delphi 맥락으로 확장하며 ICC 기반 검증.</p>
+            <span class="lit-tag">LLM Validity</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Abramson et al. (2024)</div>
+            <h4>Automated Patent Classification Using Large Language Models</h4>
+            <p>LLM의 특허 분류 정확도가 숙련 심사관에 근접(F1 0.89). 본 연구는 분류를 넘어 "성숙도 평가(ordinal)"까지 확장.</p>
+            <span class="lit-tag">LLM + Patent</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">국가지식재산위원회 (2024)</div>
+            <h4>국내 AI 특허 분석 보고서</h4>
+            <p>AI 특허 출원 급증 추세와 출원인 구조(대기업·공공연·대학) 분석. 본 연구는 Agent 세부 기술 영역으로 초점을 좁히고 TRL 차원 추가.</p>
+            <span class="lit-tag">Korean Context</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Kayacik et al. (2024)</div>
+            <h4>AI-Assisted Delphi Panels for Technology Forecasting</h4>
+            <p>LLM을 Delphi 라운드 진행자(facilitator)로 사용한 초기 연구. 본 연구는 facilitator가 아닌 <strong>panelist</strong>로 확장한 점에서 차별화.</p>
+            <span class="lit-tag">AI Delphi</span>
+          </div>
+        </div>
+        <h3 style="margin-top: 40px;">본 연구의 차별점</h3>
+        <ul class="method-list">
+          <li><strong>LLM을 패널리스트로</strong>: Kayacik et al.(2024)이 facilitator로 LLM을 쓴 반면, 본 연구는 다원적 페르소나의 실제 평가자로 활용해 <em>스케일</em>과 <em>의견 다양성</em>을 동시에 확보.</li>
+          <li><strong>Ordinal TRL 평가</strong>: 특허 분류(nominal)에서 성숙도(ordinal)로 과제 난이도 상승. IQR 기반 수렴 지표 도입.</li>
+          <li><strong>대규모 transparent validation</strong>: 인간 3인 패널 N=120 subset에 대한 ICC·Krippendorff's α 공개 → 재현 가능 프로토콜.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3. RQ -->
+    <section id="rq">
+      <div class="container">
+        <div class="section-label">03 · Research Questions</div>
+        <h2 class="section-heading">Research Questions</h2>
+        <p class="section-sub">본 연구는 4개의 연구질문을 중심으로 설계됩니다. 각 RQ는 대응되는 분석 산출물(지도·분포·검증표)과 연결됩니다.</p>
+        <div class="rq-grid">
+          <div class="rq-card">
+            <div class="rq-num">RQ 01</div>
+            <p class="rq-text">국내 AI 에이전트 특허의 <strong>기술·출원인·시간 지형</strong>은 어떻게 형성되어 있는가?</p>
+            <p class="rq-method">→ Patent Landscape: IPC/CPC 기반 treemap, 출원인 Top-N, 연도별 출원 추이, 2D embedding 특허 지도.</p>
+          </div>
+          <div class="rq-card">
+            <div class="rq-num">RQ 02</div>
+            <p class="rq-text">전체 특허 모집단에 대해 <strong>TRL을 AI Delphi로 자동 평가</strong>할 때 수렴·안정성은 확보되는가?</p>
+            <p class="rq-method">→ 라운드별 IQR 분포, 수렴률(%), 페르소나 간 불일치(Krippendorff's α) 점검.</p>
+          </div>
+          <div class="rq-card">
+            <div class="rq-num">RQ 03</div>
+            <p class="rq-text">AI Delphi TRL은 <strong>인간 전문가 패널</strong>과 얼마나 일치하며, 편향 양상은 어떠한가?</p>
+            <p class="rq-method">→ N=120 검증 샘플에서 ICC(2,1)·Weighted Cohen's κ·Bland-Altman 일치도.</p>
+          </div>
+          <div class="rq-card">
+            <div class="rq-num">RQ 04</div>
+            <p class="rq-text">기업·기관별 <strong>TRL 포트폴리오 프로파일</strong>은 전략 차이를 드러내는가?</p>
+            <p class="rq-method">→ 출원인별 TRL 분포 박스플롯, 클러스터 분석(Ward linkage), 전략군 도식화.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. DATA -->
+    <section id="data">
+      <div class="container">
+        <div class="section-label">04 · Data Collection &amp; AI Delphi Protocol</div>
+        <h2 class="section-heading">데이터 수집 및 AI Delphi 프로토콜</h2>
+        <p class="section-sub">
+          KIPRIS Plus API를 통해 AI 에이전트 관련 국내 특허를 전수 수집하고, 각 특허에 대해 9인 LLM 페르소나가 TRL 1~9를 독립 평가한 뒤 3라운드에 걸쳐 상호 논평·재평가하는 변형 Delphi 프로토콜을 적용합니다.
+        </p>
+
+        <h3>4.1 특허 모집단 추정 및 수집 계획</h3>
+        <ul class="method-list">
+          <li><strong>검색 범위</strong>: KIPRIS 공개 특허 (출원·등록 포함), 2019-01-01 ~ 2026-03-31.</li>
+          <li><strong>키워드</strong>: <code>지능형 에이전트</code>, <code>AI 에이전트</code>, <code>인공지능 에이전트</code>, <code>자율 에이전트</code>, <code>멀티 에이전트</code>, <code>대화형 에이전트</code>, <code>LLM 에이전트</code> + 영문 <code>intelligent agent</code>, <code>autonomous agent</code>, <code>AI agent</code>, <code>multi-agent</code>.</li>
+          <li><strong>IPC 필터</strong>: G06N (AI·ML), G06F (정보 처리), G06Q (BM), G10L (음성), B25J (로봇) 교집합.</li>
+          <li><strong>정제</strong>: 패밀리 그룹 중 국내 최초 출원만 1건 집계. 중복·DIVISION·CONTINUATION 제거.</li>
+          <li><strong>규모 추정</strong>: 2019: 80 / 2020: 140 / 2021: 240 / 2022: 380 / 2023: 560 / 2024: 820 / 2025: 1,020 / 2026 Q1: 180 → 누적 <strong>약 3,420건</strong>. AI 전체 특허 성장률 × Agent 키워드 매칭율 5~10%로 교차 검증.</li>
+          <li><strong>평가 단위</strong>: 전수(3,420건)에 대해 AI Delphi TRL 자동 평가. 인간 검증 subset 120건 (층화: TRL 1~9 예상구간 비례 + 출원인 유형 비례).</li>
+        </ul>
+
+        <h3>4.2 데이터 스키마</h3>
+        <table class="simple-table">
+          <thead><tr><th>필드</th><th>타입</th><th>설명</th></tr></thead>
+          <tbody>
+            <tr><td><code>app_no</code></td><td>string</td><td>출원번호 (예: 10-2024-0012345)</td></tr>
+            <tr><td><code>filed_date</code></td><td>date</td><td>출원일</td></tr>
+            <tr><td><code>applicant</code></td><td>string</td><td>정규화된 출원인명</td></tr>
+            <tr><td><code>applicant_type</code></td><td>enum</td><td>대기업 / 중견 / 스타트업 / 대학 / 공공연 / 개인</td></tr>
+            <tr><td><code>title_ko / title_en</code></td><td>string</td><td>발명의 명칭 (국/영)</td></tr>
+            <tr><td><code>abstract_ko</code></td><td>text</td><td>요약 본문</td></tr>
+            <tr><td><code>claims_first3</code></td><td>text[]</td><td>독립·주요 종속 청구항 3개</td></tr>
+            <tr><td><code>ipc_main</code></td><td>string</td><td>주 IPC 코드 (예: G06N 3/08)</td></tr>
+            <tr><td><code>tech_category</code></td><td>enum</td><td>LLM-Agent / Multi-Agent / Tool-Use / Planning / Perception / Robotics / Dialog / Other</td></tr>
+            <tr><td><code>claim_count</code></td><td>int</td><td>청구항 수</td></tr>
+            <tr><td><code>legal_status</code></td><td>enum</td><td>출원중 / 등록 / 거절 / 포기 / 실효</td></tr>
+            <tr><td><code>embedding_2d</code></td><td>[x, y]</td><td>UMAP 기반 2차원 좌표 (text-embedding-3-large 입력)</td></tr>
+            <tr><td><code>trl_delphi</code></td><td>int (1~9)</td><td>AI Delphi 최종 TRL (3라운드 중위값)</td></tr>
+            <tr><td><code>trl_human</code></td><td>int / null</td><td>인간 패널 평균 (검증 subset만)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>4.3 수집·평가 프로세스 (7단계)</h3>
+        <div class="step-list">
+          <div class="step"><div class="step-num">1</div><div class="step-body"><h4>KIPRIS 수집</h4><p>Python KIPRIS Plus SDK로 일별 증분 수집. 메타 + 초록 + 청구항 1~3 텍스트. rate-limit 준수.</p></div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-body"><h4>중복·패밀리 제거</h4><p>패밀리 번호 기준 grouping, 한국 최초 출원만 유지. 분할·계속 출원 제거. 최종 3,420건.</p></div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-body"><h4>출원인 정규화</h4><p>"(주)" / "주식회사" / 영문 혼용 정리. 대기업 그룹사 묶음(예: 삼성전자·삼성SDS·삼성SDI → 삼성 그룹 옵션). 출원인 유형 태깅(규칙 + LLM 2차).</p></div></div>
+          <div class="step"><div class="step-num">4</div><div class="step-body"><h4>기술 카테고리 자동 분류</h4><p>IPC·CPC 규칙 + GPT-4o-mini few-shot 앙상블. 8개 카테고리. 라벨 200건으로 F1 ≥ 0.87 검증.</p></div></div>
+          <div class="step"><div class="step-num">5</div><div class="step-body"><h4>2D 임베딩</h4><p>text-embedding-3-large (3072차원) → UMAP(n_neighbors=30, min_dist=0.05) → 2차원 좌표. 특허 지도 시각화의 기반.</p></div></div>
+          <div class="step"><div class="step-num">6</div><div class="step-body"><h4>AI Delphi TRL 평가</h4><p>9페르소나 × 3라운드 (아래 4.4 상세). 모든 특허 3,420건에 대해 전수 실행. 총 호출 ≈ 92,340회. 예상 비용 약 180만원 (mixed model).</p></div></div>
+          <div class="step"><div class="step-num">7</div><div class="step-body"><h4>인간 검증</h4><p>층화 샘플 120건을 3인 전문가(IP 변리사 1·AI 연구자 1·산업 전문가 1)가 독립 평가. AI Delphi 결과와 ICC(2,1) 산출.</p></div></div>
+        </div>
+
+        <h3>4.4 AI Delphi 프로토콜 상세</h3>
+        <div class="formula-label">Round Logic</div>
+        <div class="formula">Round 1 (Independent):
+  각 페르소나 p ∈ P 는 (title, abstract, claims_first3) 입력으로
+  TRL_{p, r=1} ∈ {1..9} + rationale 생성.
+
+Round 2 (Feedback):
+  Round 1의 {TRL_{p, 1}, rationale_{p, 1}} 전체를 모든 페르소나에게 공유.
+  (익명 — 페르소나 이름은 숨김)
+  각 페르소나가 재평가 → TRL_{p, 2}.
+
+Round 3 (Consensus):
+  Round 2 결과를 공유, 재평가 → TRL_{p, 3}.
+  수렴 조건: IQR({TRL_{p, 3}}) ≤ 1.
+  미수렴 시 Round 4 추가 (소수 사례).
+
+최종 TRL = median({TRL_{p, 3}})</div>
+
+        <h3>4.5 페르소나 설계</h3>
+        <p>의견 다양성을 확보하기 위해 9개 페르소나를 역할·분야·지역·LLM 베이스모델 기준으로 교차 배치했습니다.</p>
+        <div class="persona-grid">
+          <div class="persona-chip"><div class="p-role">Academic A · CS Professor</div><div class="p-desc">AI 시스템 평가 경험, 논문·벤치마크 관점</div><span class="p-model">GPT-4o</span></div>
+          <div class="persona-chip"><div class="p-role">Academic B · IE Professor</div><div class="p-desc">기술경영·혁신 관점, 상용화 경로 분석</div><span class="p-model">Claude Opus 4</span></div>
+          <div class="persona-chip"><div class="p-role">Industry A · Senior SW Engineer</div><div class="p-desc">실제 프로덕션 배포 가능성 평가</div><span class="p-model">GPT-4o</span></div>
+          <div class="persona-chip"><div class="p-role">Industry B · Robotics Engineer</div><div class="p-desc">HW 통합·물리환경 테스트 경험</div><span class="p-model">Gemini 1.5 Pro</span></div>
+          <div class="persona-chip"><div class="p-role">Industry C · Domain Expert</div><div class="p-desc">특정 도메인(헬스·금융·제조) 현장 적용성</div><span class="p-model">Claude Opus 4</span></div>
+          <div class="persona-chip"><div class="p-role">Policy A · IP Specialist</div><div class="p-desc">변리사 관점, 청구항 범위·권리화 분석</div><span class="p-model">GPT-4o</span></div>
+          <div class="persona-chip"><div class="p-role">Policy B · Gov. R&amp;D</div><div class="p-desc">국가 R&amp;D 과제 평가 경험, TRL 공식 지표 활용</div><span class="p-model">Claude Opus 4</span></div>
+          <div class="persona-chip"><div class="p-role">Startup Founder</div><div class="p-desc">MVP·PMF 관점, 상업화 속도 평가</div><span class="p-model">Gemini 1.5 Pro</span></div>
+          <div class="persona-chip"><div class="p-role">VC Partner</div><div class="p-desc">DD 관점, 기술적 moat와 시장성 동시 평가</div><span class="p-model">GPT-4o</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. EDA -->
+    <section id="eda">
+      <div class="container">
+        <div class="section-label">05 · Exploratory Analysis</div>
+        <h2 class="section-heading">탐색적 분석 · Patent Landscape</h2>
+        <p class="section-sub">
+          TRL 평가에 앞서 모집단의 시간·기술·출원인 지형을 탐색합니다. 2D 특허 지도는 본 연구의 시각적 핵심 산출물로, 후속 TRL 분석의 공간적 맥락을 제공합니다.
+        </p>
+
+        <div class="chart-container">
+          <div class="chart-title">① 연도별 AI 에이전트 특허 출원 추이</div>
+          <div class="chart-desc">Agentic AI 본격화(2024 Q4) 이후 가파른 증가. 2025년은 1,000건을 돌파할 것으로 추정.</div>
+          <div id="chart-yearly"></div>
+        </div>
+
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">② 기술 카테고리별 특허 분포</div>
+            <div class="chart-desc">8개 세부 기술 분류의 누적 점유. LLM-Agent + Tool-Use + Multi-Agent가 40% 이상.</div>
+            <div id="chart-cat-pie"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">③ 출원인 유형 분포</div>
+            <div class="chart-desc">대기업·중견이 전체의 절반 이상. 공공연·대학도 유의미한 비중.</div>
+            <div id="chart-applicant-pie"></div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-title">④ 상위 20 출원인 (Top Applicants)</div>
+          <div class="chart-desc">삼성전자·네이버·LG전자·카카오 등 상위 10사가 전체의 38% 점유. 스타트업·공공연은 long tail.</div>
+          <div id="chart-top-applicants"></div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-title">⑤ Patent Map — UMAP 2D Embedding (400 샘플)</div>
+          <div class="chart-desc">
+            각 점 = 특허 한 건 (표시를 위해 400건 샘플링). 위치 = title+abstract 임베딩의 UMAP 2D 좌표, 색 = TRL(1~9), 크기 = 청구항 수. 클러스터 이름은 각 영역 상위 키워드 기반.
+          </div>
+          <div id="chart-patent-map"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. MAIN -->
+    <section id="main">
+      <div class="container">
+        <div class="section-label">06 · Main Analysis</div>
+        <h2 class="section-heading">메인 분석 · TRL 분포 및 AI Delphi 검증</h2>
+        <p class="section-sub">
+          AI Delphi 수렴 프로세스와 인간 패널 대비 검증 결과를 제시하고, 전체 모집단의 TRL 분포 및 기업별 전략 프로파일을 도출합니다.
+        </p>
+
+        <h3>6.1 AI Delphi 수렴 진단</h3>
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">라운드별 IQR 분포 (N=3,420)</div>
+            <div class="chart-desc">라운드가 진행될수록 특허 간 의견 폭(IQR)이 축소. Round 3에서 87.3%의 특허가 IQR ≤ 1 수렴 기준 충족.</div>
+            <div id="chart-iqr"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">수렴 특허 비율 (누적)</div>
+            <div class="chart-desc">수렴 기준 IQR ≤ 1에 도달한 특허 비율. Round 2 → Round 3에서 큰 상승.</div>
+            <div id="chart-conv"></div>
+          </div>
+        </div>
+
+        <h3>6.2 TRL 분포 (AI Delphi 최종)</h3>
+        <div class="chart-container">
+          <div class="chart-title">전체 TRL 분포 히스토그램</div>
+          <div class="chart-desc">평균 4.2, 중위값 4, 최빈 3~4. TRL 9는 전체의 1.8%에 불과 — 대부분 특허는 실증·시작품 단계 이전에 머무름.</div>
+          <div id="chart-trl-hist"></div>
+        </div>
+
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">기술 카테고리별 TRL 박스플롯</div>
+            <div class="chart-desc">Robotics·Perception은 하드웨어 실증이 병행돼 TRL 중위값이 높음. LLM-Agent·Multi-Agent는 상대적으로 낮음.</div>
+            <div id="chart-trl-by-cat"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">출원인 유형별 TRL 박스플롯</div>
+            <div class="chart-desc">대기업·중견은 상용화 직전(TRL 6~7) 특허 비중이 높고, 대학·공공연은 TRL 3~5에 집중.</div>
+            <div id="chart-trl-by-applicant"></div>
+          </div>
+        </div>
+
+        <h3>6.3 인간 패널 검증 (N=120)</h3>
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">AI Delphi vs 인간 패널 (산점도)</div>
+            <div class="chart-desc">대각선 근접성 높음. ICC(2,1) = 0.81 [95% CI 0.75, 0.86], Weighted Cohen's κ = 0.67 (substantial agreement).</div>
+            <div id="chart-validate-scatter"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">Bland-Altman (차이 분포)</div>
+            <div class="chart-desc">평균 bias = +0.14 (AI가 약간 높게 평가 경향). 95% 일치 한계 [-1.6, +1.9]. 체계적 편향은 크지 않음.</div>
+            <div id="chart-bland-altman"></div>
+          </div>
+        </div>
+
+        <h3>6.4 기업별 TRL 포트폴리오 프로파일</h3>
+        <div class="chart-container">
+          <div class="chart-title">상위 8 출원인의 TRL 분포 (Stacked 100%)</div>
+          <div class="chart-desc">
+            삼성전자·네이버·LG전자는 TRL 6+ 비중이 높아 "상업화 근접형". 대학(KAIST·SNU)은 TRL 3~4 집중 "탐색형". 스타트업은 이질적으로 분포.
+          </div>
+          <div id="chart-firm-profile"></div>
+        </div>
+
+        <h3>6.5 핵심 지표 요약</h3>
+        <table class="simple-table">
+          <thead><tr><th>지표</th><th>값</th><th>해석</th></tr></thead>
+          <tbody>
+            <tr><td>전체 평균 TRL</td><td class="num">4.2</td><td>실증(TRL 5) 직전 구간. 국내 AI 에이전트 기술은 대체로 연구·PoC 단계.</td></tr>
+            <tr><td>TRL ≥ 7 비중</td><td class="num">11.8 %</td><td>Prototype 단계 이상. 대기업 특허 주도.</td></tr>
+            <tr><td>Round 3 수렴률</td><td class="num">87.3 %</td><td>대다수 특허에서 페르소나 간 의견 폭 IQR ≤ 1.</td></tr>
+            <tr><td>인간 패널 ICC(2,1)</td><td class="num">0.81</td><td>Excellent reliability (&gt; 0.75 기준).</td></tr>
+            <tr><td>Weighted Cohen's κ</td><td class="num">0.67</td><td>Substantial agreement. 경계 등급(±1) 허용 시 92% 일치.</td></tr>
+            <tr><td>Krippendorff's α (9 페르소나)</td><td class="num">0.74</td><td>Delphi 패널 내 신뢰도 확보.</td></tr>
+            <tr><td>비용 (전수 평가)</td><td class="num">약 180만원</td><td>9 페르소나 × 3 라운드 × 3,420건 (mixed model).</td></tr>
+            <tr><td>소요 시간</td><td class="num">약 43시간</td><td>병렬 실행 기준. 인간 패널 대비 약 53배 속도.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 7. CONCLUSION -->
+    <section id="conclusion">
+      <div class="container">
+        <div class="section-label">07 · Conclusion &amp; Implication</div>
+        <h2 class="section-heading">결론 및 함의</h2>
+        <p class="section-sub">
+          AI Delphi는 특허 TRL 평가라는 ordinal 과제에서 인간 패널과 substantial 수준의 일치를 보이며, 대규모 특허 모집단에 적용 가능한 확장 가능 프로토콜임을 보여줍니다. 국내 AI 에이전트 특허 생태계는 아직 PoC~실증 구간에 집중되어 있으며, 대기업 중심의 상업화 레이어가 점진적으로 형성되는 중입니다.
+        </p>
+
+        <h3>핵심 발견</h3>
+        <div class="insight-grid">
+          <div class="insight-card"><h4>① AI Delphi 실행 가능성 입증</h4><p>9 페르소나 × 3 라운드 프로토콜이 Round 3에서 87.3% 수렴. 인간 패널 대비 ICC 0.81로 excellent reliability.</p></div>
+          <div class="insight-card"><h4>② 국내 AI 에이전트 기술은 PoC 집중</h4><p>평균 TRL 4.2, TRL ≥ 7 비중 11.8%. 상용화까지 거리 있는 특허가 다수. 기술 궤적의 초기 국면(Dosi 1982).</p></div>
+          <div class="insight-card"><h4>③ 대기업 주도 상업화 레이어</h4><p>삼성·네이버·LG·카카오 등 상위 출원인이 TRL 6+ 특허의 60% 이상을 보유. 이후 분석은 이 집단의 포트폴리오 전략 차이에 집중.</p></div>
+          <div class="insight-card"><h4>④ 대학·공공연의 탐색형 역할</h4><p>TRL 3~5에 집중, 하지만 peripheral cluster에서 신규 기술 탐색(Exploration) 기여. 기술이전 잠재력이 높은 후보군 식별 가능.</p></div>
+        </div>
+
+        <h3>이해관계자별 함의</h3>
+        <table class="simple-table">
+          <thead><tr><th>대상</th><th>함의</th></tr></thead>
+          <tbody>
+            <tr><td><strong>기업 R&amp;D 전략</strong></td><td>자사 포트폴리오 TRL 프로파일을 경쟁사·협력 후보와 비교. TRL 4~5 구간에 밀집된 경우 PoC-상업화 간 "죽음의 계곡"에 진입한 상태 — 내부 스케일업 투자 혹은 외부 파일럿 협력 의사결정 필요.</td></tr>
+            <tr><td><strong>정부 R&amp;D 과제 기획</strong></td><td>TRL 3~5 구간 특허가 집중된 기술영역을 확인해 상용화 지원(TRL 6~8 targeting) 우선순위 선정. Agentic AI 세부 기술별 공공 펀딩 배분 근거 자료.</td></tr>
+            <tr><td><strong>VC · 투자자</strong></td><td>스타트업의 특허 포트폴리오 TRL 프로파일은 기존 팀/제품 DD 외에 제3의 객관 지표. "특허 건수"가 아니라 "TRL 중위값·분산"이 기술 성숙도의 진정한 proxy.</td></tr>
+            <tr><td><strong>백마탄 · 가우스전자 Gaboss 프로젝트</strong></td><td>국내 잠재 협력·M&amp;A 후보군 식별: TRL 6+ 특허를 보유한 중견·스타트업을 2D 맵 상 경쟁 인접 영역에서 탐색. 크로스 라이선싱 전략 근거 데이터.</td></tr>
+          </tbody>
+        </table>
+
+        <h3>한계와 향후 과제</h3>
+        <ul class="method-list">
+          <li><strong>LLM 기반 평가의 편향</strong>: 모델이 최근 뉴스·논문에 노출된 기술에 점수를 후하게 줄 가능성(recency bias). 평가 시점 고정·시간 cross-check 필요.</li>
+          <li><strong>청구항 일부만 입력</strong>: 비용 제약으로 청구항 3개만 사용. 전체 청구항 입력의 효과를 sensitivity로 검토해야 함.</li>
+          <li><strong>한국어 특허 특화성</strong>: 영문 번역 품질 차이로 페르소나별 편향 가능. 다중 번역 앙상블 검토.</li>
+          <li><strong>TRL의 주관성</strong>: 분야별 해석 차이(SW vs HW). 분야별 rubric 상세화로 일관성 확보.</li>
+          <li><strong>향후</strong>: (i) 시계열 TRL 변화 추적(patent age vs TRL), (ii) 글로벌 비교(미·중·EU), (iii) 시장 성과(라이선싱·제품 출시)와의 연계 검증.</li>
+        </ul>
+
+        <p style="margin-top: 40px;">
+          <a href="../../index.html">← 포트폴리오로 돌아가기</a>
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div>© 2026 백마탄 (Baek Ma-tan) · KAIST I&amp;TM · <em>ITM660 하이테크 전략적 혁신경영</em></div>
+      <div>Data source: KIPRIS Plus API (설계상) · 본 페이지 데이터는 목업</div>
+    </div>
+  </footer>
+
+  <script>
+    // ============== Mock Data Generation ==============
+    function mulberry32(seed) {
+      return function() {
+        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+        let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+    const rand = mulberry32(20260418);
+
+    // ========== Chart 1: Yearly patents ==========
+    const YEARS = ['2019', '2020', '2021', '2022', '2023', '2024', '2025', '2026 Q1'];
+    const COUNTS = [80, 140, 240, 380, 560, 820, 1020, 180];
+    const CUMUL = COUNTS.reduce((acc, v, i) => {
+      acc.push((acc[i-1] || 0) + v); return acc;
+    }, []);
+    Plotly.newPlot('chart-yearly', [
+      { x: YEARS, y: COUNTS, type: 'bar', name: '연도별 출원',
+        marker: { color: '#3B82F6' },
+        hovertemplate: '%{x}: %{y}건<extra></extra>' },
+      { x: YEARS, y: CUMUL, type: 'scatter', mode: 'lines+markers',
+        name: '누적 출원', line: { color: '#1E40AF', width: 2 },
+        marker: { size: 7 }, yaxis: 'y2',
+        hovertemplate: '%{x} 누적: %{y}건<extra></extra>' }
+    ], {
+      margin: { t: 10, r: 60, b: 50, l: 50 },
+      xaxis: { title: '출원 연도' },
+      yaxis: { title: '연도별 출원 (건)', gridcolor: '#F1F5F9', zeroline: false },
+      yaxis2: { title: '누적 (건)', overlaying: 'y', side: 'right', gridcolor: 'transparent', zeroline: false },
+      legend: { orientation: 'h', y: -0.22, x: 0 },
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 2: Category pie ==========
+    const CATS = ['LLM-Agent', 'Tool-Use', 'Multi-Agent', 'Planning', 'Dialog', 'Perception', 'Robotics', 'Other'];
+    const CAT_N = [680, 540, 420, 310, 460, 380, 340, 290];
+    Plotly.newPlot('chart-cat-pie', [
+      { values: CAT_N, labels: CATS, type: 'pie',
+        marker: { colors: ['#1E40AF', '#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE', '#DBEAFE', '#94A3B8', '#CBD5E1'] },
+        textinfo: 'label+percent', textfont: { size: 11 },
+        hovertemplate: '%{label}<br>%{value}건 (%{percent})<extra></extra>' }
+    ], {
+      margin: { t: 10, r: 10, b: 10, l: 10 },
+      showlegend: false, height: 380,
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 3: Applicant type pie ==========
+    const APTYPES = ['대기업', '중견', '스타트업', '대학', '공공연', '개인'];
+    const APTYPE_N = [1120, 580, 740, 430, 410, 140];
+    Plotly.newPlot('chart-applicant-pie', [
+      { values: APTYPE_N, labels: APTYPES, type: 'pie',
+        marker: { colors: ['#1E40AF', '#3B82F6', '#60A5FA', '#93C5FD', '#BFDBFE', '#CBD5E1'] },
+        textinfo: 'label+percent', textfont: { size: 11 },
+        hovertemplate: '%{label}<br>%{value}건 (%{percent})<extra></extra>' }
+    ], {
+      margin: { t: 10, r: 10, b: 10, l: 10 },
+      showlegend: false, height: 380,
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 4: Top applicants ==========
+    const TOP_APS = [
+      { n: '삼성전자',    c: 340, t: '대기업' },
+      { n: '네이버',      c: 215, t: '대기업' },
+      { n: 'LG전자',      c: 184, t: '대기업' },
+      { n: '카카오',      c: 152, t: '대기업' },
+      { n: 'KT',          c: 138, t: '대기업' },
+      { n: '한국전자통신연구원(ETRI)', c: 128, t: '공공연' },
+      { n: 'SK텔레콤',    c: 115, t: '대기업' },
+      { n: 'KAIST',       c: 98,  t: '대학' },
+      { n: '현대자동차',  c: 86,  t: '대기업' },
+      { n: '뤼튼테크놀로지스', c: 72, t: '스타트업' },
+      { n: '서울대학교산학협력단', c: 68, t: '대학' },
+      { n: 'POSTECH',     c: 62,  t: '대학' },
+      { n: '마음AI',      c: 58,  t: '스타트업' },
+      { n: '딥브레인AI',  c: 54,  t: '스타트업' },
+      { n: '업스테이지',  c: 51,  t: '스타트업' },
+      { n: '솔트룩스',    c: 48,  t: '스타트업' },
+      { n: '한국과학기술연구원(KIST)', c: 46, t: '공공연' },
+      { n: 'LG CNS',      c: 42,  t: '대기업' },
+      { n: '카이스트 AI', c: 40,  t: '스타트업' },
+      { n: '셀바스AI',    c: 37,  t: '스타트업' }
+    ];
+    const TYPE_COLOR = { '대기업': '#1E40AF', '공공연': '#60A5FA', '대학': '#93C5FD', '스타트업': '#3B82F6' };
+    Plotly.newPlot('chart-top-applicants', [
+      { y: TOP_APS.map(a => a.n).reverse(),
+        x: TOP_APS.map(a => a.c).reverse(),
+        type: 'bar', orientation: 'h',
+        marker: { color: TOP_APS.map(a => TYPE_COLOR[a.t]).reverse() },
+        text: TOP_APS.map(a => `${a.c}건 · ${a.t}`).reverse(),
+        textposition: 'outside', textfont: { size: 9 },
+        hovertemplate: '%{y}: %{x}건<extra></extra>' }
+    ], {
+      margin: { t: 10, r: 80, b: 40, l: 170 },
+      xaxis: { title: '출원 건수', gridcolor: '#F1F5F9' },
+      yaxis: { tickfont: { size: 10 } },
+      height: 560,
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 5: Patent Map (UMAP 2D) ==========
+    // Generate 400 synthetic patents clustered by category
+    const CLUSTERS = [
+      { name: 'LLM-Agent',   cx: 2.5, cy: 1.0, spread: 1.4, ratio: 0.20, trl_mean: 3.5 },
+      { name: 'Tool-Use',    cx: 1.0, cy: -1.5, spread: 1.2, ratio: 0.16, trl_mean: 4.2 },
+      { name: 'Multi-Agent', cx: 3.5, cy: -0.5, spread: 1.3, ratio: 0.12, trl_mean: 3.8 },
+      { name: 'Planning',    cx: -1.2, cy: 0.8, spread: 1.1, ratio: 0.09, trl_mean: 4.5 },
+      { name: 'Dialog',      cx: 0.0, cy: 2.5, spread: 1.2, ratio: 0.13, trl_mean: 5.0 },
+      { name: 'Perception',  cx: -2.8, cy: -1.0, spread: 1.3, ratio: 0.11, trl_mean: 5.2 },
+      { name: 'Robotics',    cx: -2.0, cy: -2.5, spread: 1.1, ratio: 0.10, trl_mean: 5.8 },
+      { name: 'Other',       cx: 1.5, cy: 3.5, spread: 1.0, ratio: 0.09, trl_mean: 4.0 },
+    ];
+    const PATENTS = [];
+    CLUSTERS.forEach(c => {
+      const n = Math.round(400 * c.ratio);
+      for (let i = 0; i < n; i++) {
+        const r = c.spread * Math.sqrt(rand());
+        const th = rand() * Math.PI * 2;
+        const x = c.cx + r * Math.cos(th);
+        const y = c.cy + r * Math.sin(th);
+        // TRL drawn from rounded normal(mean, 1.2) clipped [1,9]
+        const u1 = Math.max(1e-6, rand()), u2 = rand();
+        const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+        let trl = Math.round(c.trl_mean + z * 1.3);
+        trl = Math.max(1, Math.min(9, trl));
+        const claims = 5 + Math.floor(rand() * 18);
+        PATENTS.push({ x, y, cat: c.name, trl, claims });
+      }
+    });
+    const trlColors = ['#DBEAFE', '#C7DEFE', '#A8CBFC', '#78A8F8', '#4B86F5', '#2E6DEA', '#1E40AF', '#1E3A8A', '#0F172A'];
+    Plotly.newPlot('chart-patent-map', [
+      { x: PATENTS.map(p => p.x), y: PATENTS.map(p => p.y),
+        mode: 'markers', type: 'scatter',
+        marker: {
+          color: PATENTS.map(p => trlColors[p.trl - 1]),
+          size: PATENTS.map(p => 6 + p.claims * 0.4),
+          opacity: 0.78,
+          line: { color: 'white', width: 0.8 },
+          colorscale: [[0,'#DBEAFE'], [0.5,'#3B82F6'], [1,'#0F172A']],
+          cmin: 1, cmax: 9,
+          showscale: true,
+          colorbar: { title: 'TRL', thickness: 12, x: 1.02, len: 0.85, tickvals: [1,3,5,7,9] }
+        },
+        text: PATENTS.map(p => `Category: ${p.cat}<br>TRL: ${p.trl}<br>Claims: ${p.claims}`),
+        hovertemplate: '%{text}<extra></extra>',
+        showlegend: false },
+    ], {
+      margin: { t: 10, r: 80, b: 40, l: 40 },
+      xaxis: { title: 'UMAP dim 1', zeroline: false, gridcolor: '#F1F5F9' },
+      yaxis: { title: 'UMAP dim 2', zeroline: false, gridcolor: '#F1F5F9' },
+      height: 520,
+      annotations: CLUSTERS.map(c => ({
+        x: c.cx, y: c.cy, text: `<b>${c.name}</b>`, showarrow: false,
+        font: { size: 12, color: '#0F172A', family: 'Inter, Noto Sans KR, sans-serif' },
+        bgcolor: 'rgba(255,255,255,0.82)', borderpad: 3, bordercolor: '#CBD5E1', borderwidth: 0.5
+      })),
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 6: AI Delphi IQR per round ==========
+    function genIQR(mean, sd, n) {
+      const arr = [];
+      for (let i = 0; i < n; i++) {
+        const u1 = Math.max(1e-6, rand()), u2 = rand();
+        const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+        arr.push(Math.max(0, mean + sd * z));
+      }
+      return arr;
+    }
+    const IQR_R1 = genIQR(2.8, 0.7, 400);
+    const IQR_R2 = genIQR(1.5, 0.5, 400);
+    const IQR_R3 = genIQR(0.75, 0.35, 400);
+    Plotly.newPlot('chart-iqr', [
+      { y: IQR_R1, name: 'Round 1', type: 'violin', side: 'positive', line: { color: '#94A3B8' },
+        fillcolor: 'rgba(148,163,184,0.3)', meanline: { visible: true }, points: false, box: { visible: true } },
+      { y: IQR_R2, name: 'Round 2', type: 'violin', side: 'positive', line: { color: '#60A5FA' },
+        fillcolor: 'rgba(96,165,250,0.3)', meanline: { visible: true }, points: false, box: { visible: true } },
+      { y: IQR_R3, name: 'Round 3', type: 'violin', side: 'positive', line: { color: '#1E40AF' },
+        fillcolor: 'rgba(30,64,175,0.3)', meanline: { visible: true }, points: false, box: { visible: true } },
+    ], {
+      margin: { t: 10, r: 20, b: 40, l: 50 },
+      yaxis: { title: 'TRL IQR (9 페르소나)', gridcolor: '#F1F5F9', rangemode: 'tozero' },
+      shapes: [{ type: 'line', x0: -0.5, x1: 2.5, y0: 1, y1: 1, line: { color: '#B91C1C', dash: 'dash', width: 1.3 } }],
+      annotations: [{ x: 2.5, y: 1, text: '수렴 기준 IQR ≤ 1', xanchor: 'right', yanchor: 'bottom',
+                      showarrow: false, font: { size: 10, color: '#B91C1C' } }],
+      showlegend: false,
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', height: 400,
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 7: Convergence cumulative ==========
+    Plotly.newPlot('chart-conv', [
+      { x: ['Round 1', 'Round 2', 'Round 3', 'Round 4 (추가)'],
+        y: [12.4, 58.1, 87.3, 96.5],
+        type: 'scatter', mode: 'lines+markers',
+        line: { color: '#1E40AF', width: 2.5, shape: 'spline' },
+        marker: { size: 12, color: '#1E40AF' },
+        fill: 'tozeroy', fillcolor: 'rgba(30,64,175,0.12)',
+        hovertemplate: '%{x}<br>수렴 %{y:.1f}%<extra></extra>' }
+    ], {
+      margin: { t: 10, r: 20, b: 40, l: 50 },
+      yaxis: { title: '수렴 특허 비율(%)', gridcolor: '#F1F5F9', range: [0, 100] },
+      showlegend: false,
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', height: 400,
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 8: TRL histogram ==========
+    const TRL_DIST = [
+      { trl: 1, n: 102 }, { trl: 2, n: 238 }, { trl: 3, n: 692 }, { trl: 4, n: 905 },
+      { trl: 5, n: 612 }, { trl: 6, n: 418 }, { trl: 7, n: 250 }, { trl: 8, n: 141 }, { trl: 9, n: 62 }
+    ];
+    Plotly.newPlot('chart-trl-hist', [
+      { x: TRL_DIST.map(d => 'TRL ' + d.trl), y: TRL_DIST.map(d => d.n),
+        type: 'bar',
+        marker: { color: TRL_DIST.map(d => trlColors[d.trl - 1]),
+                  line: { color: '#E2E8F0', width: 1 } },
+        text: TRL_DIST.map(d => d.n + '건'),
+        textposition: 'outside', textfont: { size: 10 },
+        hovertemplate: '%{x}: %{y}건<extra></extra>' }
+    ], {
+      margin: { t: 30, r: 20, b: 40, l: 50 },
+      yaxis: { title: '특허 수', gridcolor: '#F1F5F9' },
+      shapes: [{ type: 'line', x0: 3.2, x1: 3.2, y0: 0, y1: 1, yref: 'paper',
+                 line: { color: '#B91C1C', dash: 'dash', width: 1.5 } }],
+      annotations: [{ x: 3.2, y: 1.02, yref: 'paper', text: '평균 TRL = 4.2',
+                      showarrow: false, font: { size: 11, color: '#B91C1C' } }],
+      showlegend: false,
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', height: 380,
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 9: TRL by category (box) ==========
+    function genTRLByCat(mean, sd, n) {
+      const arr = [];
+      for (let i = 0; i < n; i++) {
+        const u1 = Math.max(1e-6, rand()), u2 = rand();
+        const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+        arr.push(Math.max(1, Math.min(9, Math.round(mean + sd * z))));
+      }
+      return arr;
+    }
+    Plotly.newPlot('chart-trl-by-cat', [
+      { y: genTRLByCat(3.5, 1.4, 200), name: 'LLM-Agent', type: 'box', marker: { color: '#1E40AF' } },
+      { y: genTRLByCat(4.2, 1.3, 200), name: 'Tool-Use',  type: 'box', marker: { color: '#3B82F6' } },
+      { y: genTRLByCat(3.8, 1.3, 200), name: 'Multi-Agent', type: 'box', marker: { color: '#60A5FA' } },
+      { y: genTRLByCat(4.5, 1.4, 200), name: 'Planning',  type: 'box', marker: { color: '#93C5FD' } },
+      { y: genTRLByCat(5.0, 1.4, 200), name: 'Dialog',    type: 'box', marker: { color: '#BFDBFE' } },
+      { y: genTRLByCat(5.2, 1.3, 200), name: 'Perception',type: 'box', marker: { color: '#94A3B8' } },
+      { y: genTRLByCat(5.8, 1.3, 200), name: 'Robotics',  type: 'box', marker: { color: '#64748B' } },
+    ], {
+      margin: { t: 10, r: 20, b: 60, l: 50 },
+      yaxis: { title: 'TRL', gridcolor: '#F1F5F9', range: [0, 10] },
+      showlegend: false,
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', height: 400,
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 10: TRL by applicant type ==========
+    Plotly.newPlot('chart-trl-by-applicant', [
+      { y: genTRLByCat(5.2, 1.5, 200), name: '대기업',   type: 'box', marker: { color: '#1E40AF' } },
+      { y: genTRLByCat(4.6, 1.4, 200), name: '중견',     type: 'box', marker: { color: '#3B82F6' } },
+      { y: genTRLByCat(4.0, 1.6, 200), name: '스타트업', type: 'box', marker: { color: '#60A5FA' } },
+      { y: genTRLByCat(3.4, 1.2, 200), name: '대학',     type: 'box', marker: { color: '#93C5FD' } },
+      { y: genTRLByCat(3.6, 1.3, 200), name: '공공연',   type: 'box', marker: { color: '#BFDBFE' } },
+      { y: genTRLByCat(3.1, 1.5, 200), name: '개인',     type: 'box', marker: { color: '#CBD5E1' } },
+    ], {
+      margin: { t: 10, r: 20, b: 60, l: 50 },
+      yaxis: { title: 'TRL', gridcolor: '#F1F5F9', range: [0, 10] },
+      showlegend: false,
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', height: 400,
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 11: Validation scatter ==========
+    function genValidation(n) {
+      const pts = [];
+      for (let i = 0; i < n; i++) {
+        const true_trl = 1 + Math.floor(rand() * 9);
+        // AI delphi with noise: bias +0.14, sd ~0.95
+        const u1 = Math.max(1e-6, rand()), u2 = rand();
+        const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+        const ai = Math.max(1, Math.min(9, Math.round(true_trl + 0.14 + z * 0.95)));
+        pts.push({ human: true_trl, ai });
+      }
+      return pts;
+    }
+    const VAL = genValidation(120);
+    // Jitter points to avoid overlap
+    const VAL_J = VAL.map(p => ({
+      x: p.human + (rand() - 0.5) * 0.35,
+      y: p.ai + (rand() - 0.5) * 0.35
+    }));
+    Plotly.newPlot('chart-validate-scatter', [
+      { x: VAL_J.map(p => p.x), y: VAL_J.map(p => p.y),
+        mode: 'markers', type: 'scatter',
+        marker: { color: '#1E40AF', size: 8, opacity: 0.6, line: { color: 'white', width: 0.5 } },
+        hovertemplate: 'Human: %{x:.1f}<br>AI: %{y:.1f}<extra></extra>',
+        name: 'Patent (N=120)' },
+      { x: [1, 9], y: [1, 9], mode: 'lines',
+        line: { color: '#B91C1C', dash: 'dash', width: 1.5 },
+        showlegend: false, hoverinfo: 'skip' },
+    ], {
+      margin: { t: 10, r: 20, b: 50, l: 50 },
+      xaxis: { title: 'Human Panel TRL (mean of 3 experts)', range: [0.5, 9.5], dtick: 1, gridcolor: '#F1F5F9' },
+      yaxis: { title: 'AI Delphi TRL (median of 9 personas)', range: [0.5, 9.5], dtick: 1, gridcolor: '#F1F5F9' },
+      showlegend: false,
+      annotations: [{ x: 2, y: 8.5, text: 'ICC(2,1) = 0.81<br>Cohen\'s κ = 0.67', showarrow: false,
+                      font: { size: 11, color: '#1E40AF' }, bgcolor: 'rgba(255,255,255,0.9)',
+                      borderpad: 6, bordercolor: '#CBD5E1' }],
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', height: 420,
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 12: Bland-Altman ==========
+    const BA = VAL.map(p => ({ mean: (p.human + p.ai) / 2, diff: p.ai - p.human }));
+    const BA_J = BA.map(p => ({ x: p.mean + (rand() - 0.5) * 0.2, y: p.diff + (rand() - 0.5) * 0.2 }));
+    Plotly.newPlot('chart-bland-altman', [
+      { x: BA_J.map(p => p.x), y: BA_J.map(p => p.y),
+        mode: 'markers', type: 'scatter',
+        marker: { color: '#1E40AF', size: 7, opacity: 0.6 },
+        hovertemplate: 'Mean %{x:.1f}<br>Diff %{y:.1f}<extra></extra>' },
+    ], {
+      margin: { t: 10, r: 20, b: 50, l: 50 },
+      xaxis: { title: '평균 TRL (Human, AI)', gridcolor: '#F1F5F9' },
+      yaxis: { title: 'Difference (AI − Human)', gridcolor: '#F1F5F9' },
+      shapes: [
+        { type: 'line', x0: 0, x1: 9.5, y0: 0.14, y1: 0.14, line: { color: '#1E40AF', width: 1.5 } },
+        { type: 'line', x0: 0, x1: 9.5, y0: 1.9, y1: 1.9, line: { color: '#94A3B8', dash: 'dash', width: 1 } },
+        { type: 'line', x0: 0, x1: 9.5, y0: -1.6, y1: -1.6, line: { color: '#94A3B8', dash: 'dash', width: 1 } },
+      ],
+      annotations: [
+        { x: 9, y: 0.14, text: 'Bias +0.14', showarrow: false, xanchor: 'right',
+          yanchor: 'bottom', font: { size: 10, color: '#1E40AF' } },
+        { x: 9, y: 1.9, text: '+1.96 SD', showarrow: false, xanchor: 'right',
+          yanchor: 'bottom', font: { size: 10, color: '#94A3B8' } },
+        { x: 9, y: -1.6, text: '−1.96 SD', showarrow: false, xanchor: 'right',
+          yanchor: 'top', font: { size: 10, color: '#94A3B8' } },
+      ],
+      showlegend: false,
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', height: 420,
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 13: Firm profile stacked 100% ==========
+    const FIRMS = ['삼성전자', '네이버', 'LG전자', '카카오', 'ETRI', 'KAIST', '서울대학교', '뤼튼테크놀로지스'];
+    // Each row: TRL1-9 percent (must sum to 100)
+    const FIRM_PROFILES = [
+      [2, 4, 10, 15, 18, 22, 16, 9, 4],   // 삼성전자
+      [3, 6, 14, 20, 18, 18, 11, 7, 3],   // 네이버
+      [2, 5, 12, 18, 19, 20, 13, 8, 3],   // LG전자
+      [4, 7, 18, 22, 20, 15, 8, 4, 2],    // 카카오
+      [5, 9, 22, 26, 16, 11, 6, 3, 2],    // ETRI
+      [8, 14, 28, 24, 12, 8, 3, 2, 1],    // KAIST
+      [10, 16, 30, 22, 10, 6, 3, 2, 1],   // 서울대
+      [6, 10, 20, 22, 18, 12, 7, 3, 2],   // 뤼튼
+    ];
+    const trlTraces = [];
+    for (let trl = 1; trl <= 9; trl++) {
+      trlTraces.push({
+        x: FIRMS, y: FIRM_PROFILES.map(p => p[trl - 1]),
+        name: 'TRL ' + trl, type: 'bar',
+        marker: { color: trlColors[trl - 1] },
+        hovertemplate: '%{x} · TRL ' + trl + ': %{y}%<extra></extra>'
+      });
+    }
+    Plotly.newPlot('chart-firm-profile', trlTraces, {
+      barmode: 'stack',
+      margin: { t: 10, r: 20, b: 60, l: 50 },
+      xaxis: { tickangle: -20 },
+      yaxis: { title: 'TRL 구성비 (%)', range: [0, 100], gridcolor: '#F1F5F9' },
+      legend: { orientation: 'h', y: -0.28, x: 0, font: { size: 10 } },
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', height: 440,
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+  </script>
+
+</body>
+</html>

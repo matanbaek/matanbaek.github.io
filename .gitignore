@@ -1,0 +1,40 @@
+# ===========================================================
+# matanbaek.github.io — .gitignore
+# ===========================================================
+
+# OS / filesystem
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
+
+# OneDrive sync artifacts
+*.tmp
+*.~*
+~$*
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build / tooling (미리 대비)
+node_modules/
+dist/
+.cache/
+.env
+.env.local
+
+# Log files
+*.log
+
+# Python (skill scripts 등 작업용)
+__pycache__/
+*.pyc
+.venv/
+
+# Large unused originals (원본 사진 백업은 로컬에만)
+# 필요 시 주석 해제하여 특정 파일 제외
+# /*원본*.png

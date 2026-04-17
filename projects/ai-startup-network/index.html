@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 스타트업 투자 네트워크 분석 | 백마탄</title>
+  <meta name="description" content="국내 AI 스타트업 펀딩 이벤트의 투자자–스타트업 네트워크 구조와 라운드별 자본 집중도(Power Law) 분석. KAIST I&TM ITM675 프로젝트 mockup.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+
+  <style>
+    :root {
+      --primary:        #1E40AF;
+      --secondary:      #3B82F6;
+      --accent:         #60A5FA;
+      --bg:             #F8FAFC;
+      --bg-elev:        #FFFFFF;
+      --bg-soft:        #EFF4FB;
+      --text-primary:   #0F172A;
+      --text-secondary: #475569;
+      --border:         #E2E8F0;
+      --shadow-sm:      0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-md:      0 4px 12px rgba(15, 23, 42, 0.06);
+      --shadow-lg:      0 12px 32px rgba(15, 23, 42, 0.08);
+      --radius-sm:      6px;
+      --radius-md:      10px;
+      --radius-lg:      16px;
+      --max-width:      1200px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Inter", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px; line-height: 1.6;
+      color: var(--text-primary); background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--primary); text-decoration: none; transition: color .15s ease; }
+    a:hover { color: var(--secondary); }
+    h1, h2, h3, h4 { color: var(--text-primary); line-height: 1.25; margin: 0 0 .5em; font-weight: 600; }
+    h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); font-weight: 700; letter-spacing: -0.02em; }
+    h2 { font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.01em; }
+    h3 { font-size: 1.2rem; margin-top: 1.5em; }
+    p { margin: 0 0 1em; color: var(--text-secondary); }
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+
+    /* Nav */
+    header.site-nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(248, 250, 252, 0.88);
+      backdrop-filter: saturate(180%) blur(10px);
+      -webkit-backdrop-filter: saturate(180%) blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .nav-brand { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); letter-spacing: -0.01em; }
+    .nav-brand:hover { color: var(--primary); }
+    .nav-links { display: flex; gap: 22px; list-style: none; padding: 0; margin: 0; }
+    .nav-links a { font-size: 0.85rem; font-weight: 500; color: var(--text-secondary); }
+    .nav-links a:hover { color: var(--primary); }
+    @media (max-width: 860px) { .nav-links { display: none; } }
+
+    /* Sections */
+    section { padding: 80px 0; }
+    section + section { border-top: 1px solid var(--border); }
+    .section-label {
+      display: inline-block;
+      font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--secondary); margin-bottom: 12px;
+    }
+    .section-heading { margin-bottom: 16px; }
+    .section-sub { max-width: 760px; margin-bottom: 40px; color: var(--text-secondary); }
+
+    /* Hero */
+    .project-hero { padding: 80px 0 56px; }
+    .project-meta {
+      display: inline-block; padding: 4px 12px;
+      background: var(--bg-soft); border: 1px solid var(--border);
+      color: var(--primary); border-radius: 999px;
+      font-size: 0.78rem; font-weight: 500; margin-bottom: 20px;
+    }
+    .project-hero h1 { margin-bottom: 12px; }
+    .project-subtitle {
+      font-size: 1.1rem; color: var(--text-secondary);
+      max-width: 760px; margin-bottom: 24px;
+    }
+    .meta-callout {
+      background: linear-gradient(135deg, #EFF4FB 0%, #DBEAFE 100%);
+      border-left: 3px solid var(--primary);
+      border-radius: var(--radius-md);
+      padding: 16px 20px; margin: 16px 0 8px; max-width: 760px;
+      font-size: 0.95rem; color: var(--text-primary);
+    }
+    .meta-callout strong { color: var(--primary); }
+    .stat-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px; margin-top: 32px;
+    }
+    .stat-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm);
+    }
+    .stat-num {
+      font-size: 1.75rem; font-weight: 700;
+      color: var(--primary); letter-spacing: -0.02em; margin-bottom: 4px;
+    }
+    .stat-label { font-size: 0.82rem; color: var(--text-secondary); }
+
+    /* Disclaimer */
+    .disclaimer {
+      background: #FEF3C7; border: 1px solid #FDE68A; color: #92400E;
+      padding: 12px 16px; border-radius: var(--radius-sm);
+      font-size: 0.88rem; margin: 16px 0;
+    }
+    .disclaimer strong { color: #78350F; }
+
+    /* RQ */
+    .rq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .rq-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-sm);
+    }
+    .rq-num {
+      display: inline-block; font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.12em; color: var(--secondary); margin-bottom: 12px;
+    }
+    .rq-text { font-size: 1rem; color: var(--text-primary); font-weight: 500; margin-bottom: 8px; }
+    .rq-method { font-size: 0.85rem; color: var(--text-secondary); }
+
+    /* Tables */
+    table.simple-table {
+      width: 100%; border-collapse: collapse; font-size: 0.9rem;
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); overflow: hidden;
+    }
+    table.simple-table th {
+      text-align: left; padding: 12px 14px;
+      background: var(--bg-soft); font-weight: 600;
+      font-size: 0.78rem; color: var(--text-secondary);
+      letter-spacing: 0.04em; text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    table.simple-table td {
+      padding: 11px 14px; border-bottom: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+    table.simple-table tr:last-child td { border-bottom: none; }
+
+    /* Method lists */
+    ul.method-list, ol.method-list { padding-left: 1.4em; margin: 0 0 1em; }
+    ul.method-list li, ol.method-list li { margin-bottom: 8px; color: var(--text-secondary); }
+    ul.method-list li::marker, ol.method-list li::marker { color: var(--secondary); font-weight: 600; }
+
+    /* Charts */
+    .chart-container {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 24px;
+      box-shadow: var(--shadow-sm); margin-bottom: 20px;
+    }
+    .chart-title { font-size: 1rem; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+    .chart-desc { font-size: 0.86rem; color: var(--text-secondary); margin-bottom: 16px; }
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    @media (max-width: 860px) { .chart-row { grid-template-columns: 1fr; } }
+
+    /* Network */
+    .network-controls {
+      display: flex; flex-wrap: wrap; gap: 16px; align-items: center;
+      margin-bottom: 12px; padding: 14px 16px;
+      background: var(--bg-soft); border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    .network-controls label {
+      font-size: 0.85rem; font-weight: 500; color: var(--text-secondary);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .network-controls select, .network-controls input[type="range"] {
+      padding: 6px 10px; border: 1px solid var(--border);
+      border-radius: var(--radius-sm); font-size: 0.85rem;
+      background: white; color: var(--text-primary);
+    }
+    .network-controls input[type="range"] { padding: 0; width: 130px; }
+    .network-controls button {
+      padding: 6px 14px; border: 1px solid var(--border);
+      background: white; border-radius: var(--radius-sm);
+      font-size: 0.85rem; cursor: pointer;
+      color: var(--text-primary); font-weight: 500;
+      transition: border-color .15s ease, color .15s ease;
+    }
+    .network-controls button:hover { border-color: var(--accent); color: var(--primary); }
+    #year-value { font-weight: 600; color: var(--primary); min-width: 32px; }
+
+    .network-wrap { position: relative; }
+    #network-svg {
+      width: 100%; height: 600px;
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); display: block;
+    }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 20px;
+      margin-top: 12px; padding: 8px 4px;
+      font-size: 0.85rem; color: var(--text-secondary);
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .legend-square { width: 12px; height: 12px; border-radius: 2px; }
+
+    .tooltip {
+      position: absolute; pointer-events: none;
+      background: rgba(15, 23, 42, 0.95); color: white;
+      padding: 10px 14px; border-radius: var(--radius-sm);
+      font-size: 0.82rem; line-height: 1.5;
+      opacity: 0; transition: opacity .12s ease;
+      z-index: 100; max-width: 260px;
+      box-shadow: var(--shadow-lg);
+    }
+    .tooltip.visible { opacity: 1; }
+    .tooltip strong { color: var(--accent); display: block; margin-bottom: 4px; font-size: 0.9rem; }
+
+    /* Insight cards */
+    .insight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .insight-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-left: 3px solid var(--primary); border-radius: var(--radius-md);
+      padding: 20px 22px; box-shadow: var(--shadow-sm);
+    }
+    .insight-card h4 {
+      color: var(--primary); margin: 0 0 8px;
+      font-size: 0.95rem; font-weight: 600;
+    }
+    .insight-card p { font-size: 0.92rem; margin: 0; }
+
+    /* Footer */
+    footer { border-top: 1px solid var(--border); padding: 32px 0 40px; }
+    .footer-inner {
+      display: flex; flex-wrap: wrap; justify-content: space-between;
+      gap: 12px; align-items: center;
+      font-size: 0.85rem; color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-nav">
+    <div class="container nav-inner">
+      <a href="../../index.html" class="nav-brand">← 백마탄 포트폴리오</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#purpose">목적</a></li>
+          <li><a href="#rq">RQ</a></li>
+          <li><a href="#data">데이터</a></li>
+          <li><a href="#eda">EDA</a></li>
+          <li><a href="#main">분석</a></li>
+          <li><a href="#conclusion">결론</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="project-hero">
+      <div class="container">
+        <span class="project-meta">ITM675 · 기업가치와벤처투자의 실제</span>
+        <h1>AI 스타트업 투자 네트워크 분석</h1>
+        <p class="project-subtitle">
+          국내 AI 스타트업 펀딩 이벤트를 <strong>투자자–스타트업 이분(bipartite) 네트워크</strong>로 모델링하고,
+          중심성·커뮤니티·자본 집중도(Power Law)를 통해 한국 AI 투자 생태계의 허브와 주변부를 식별합니다.
+        </p>
+        <div class="meta-callout">
+          🕸️ <strong>본 연구의 의의</strong> — 국내 AI 스타트업 생태계는 자본·인력·보완자산이 특정 허브에 집중되지만, 그 구조를 정량 지표로 드러낸 연구는 드물었습니다. 본 연구는 혁신의숲·TheVC 등 공개 소스에서 국내 주요 AI 스타트업의 펀딩 이벤트를 수집해 이분(bipartite) 네트워크로 모델링하고, Eigenvector/Betweenness 중심성과 Louvain 커뮤니티로 보완 자산 제공자(Teece 1986)로서 VC의 허브성을 계측합니다. 자본 분포가 Power Law를 따르는지 Kolmogorov-Smirnov로 검증해 "플랫폼 리더가 누구인가"를 수치로 드러냅니다.
+        </div>
+        <div class="disclaimer">
+          ⓘ <strong>Mockup 페이지</strong> — 본 페이지의 모든 수치·시각화는 실제 데이터 구조와 분포 패턴을 모사한
+          <strong>합성(synthetic) 데이터</strong>로 구성되었습니다. 분석 파이프라인과 시각화 방법론을 시연하는 목적입니다.
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card"><div class="stat-num" id="stat-events">—</div><div class="stat-label">펀딩 이벤트 (건)</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-startups">—</div><div class="stat-label">AI 스타트업</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-investors">—</div><div class="stat-label">투자자 (VC·CVC·Angel·IB)</div></div>
+          <div class="stat-card"><div class="stat-num" id="stat-amount">—</div><div class="stat-label">누적 투자금</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. PURPOSE -->
+    <section id="purpose">
+      <div class="container">
+        <span class="section-label">01 · Research Purpose</span>
+        <h2 class="section-heading">연구 목적</h2>
+        <p class="section-sub">
+          한국 AI 산업의 자본 흐름은 단순한 합산 통계로는 보이지 않습니다. 어느 투자자가 생태계의 허브 역할을 하는지,
+          어느 스타트업이 핵심 노드로 떠오르는지, 그리고 후기 라운드에서 자본이 얼마나 집중되는지를
+          <strong>네트워크 관점</strong>에서 봐야 한국 AI 투자 생태계의 진짜 구조가 드러납니다.
+        </p>
+        <p>
+          본 연구는 국내 AI 스타트업 펀딩 이벤트 데이터를 <strong>투자자–스타트업 이분(bipartite) 네트워크</strong>로
+          모델링하고, 다음 두 가지 분석축을 결합합니다.
+        </p>
+        <ul class="method-list">
+          <li><strong>네트워크 구조 분석</strong> — Degree·Betweenness·Eigenvector 중심성과 Louvain 커뮤니티 감지로 핵심 투자자/스타트업과 클러스터를 식별</li>
+          <li><strong>자본 집중도 분석</strong> — 라운드별 누적 투자금 분포가 Power Law(Pareto)를 따르는지 검정하고, Gini 계수의 시간 변화를 추적</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 2. RESEARCH QUESTIONS -->
+    <section id="rq">
+      <div class="container">
+        <span class="section-label">02 · Research Questions</span>
+        <h2 class="section-heading">연구 질문</h2>
+        <p class="section-sub">
+          네트워크 분석과 자본 집중도 분석을 결합해 다음 네 가지 질문을 다룹니다.
+        </p>
+        <div class="rq-grid">
+          <div class="rq-card">
+            <div class="rq-num">RQ 1</div>
+            <div class="rq-text">국내 AI 투자 생태계의 네트워크 구조는 어떤 모양인가?</div>
+            <div class="rq-method">Bipartite force-directed graph + degree distribution</div>
+          </div>
+          <div class="rq-card">
+            <div class="rq-num">RQ 2</div>
+            <div class="rq-text">어느 투자자가 허브 역할을 하고, 어느 스타트업이 핵심 노드인가?</div>
+            <div class="rq-method">Centrality metrics (degree · betweenness · eigenvector)</div>
+          </div>
+          <div class="rq-card">
+            <div class="rq-num">RQ 3</div>
+            <div class="rq-text">라운드별 자본 집중도는 Power Law를 따르는가? Gini는 어떻게 변화했는가?</div>
+            <div class="rq-method">Log-log CCDF + Pareto α MLE + Gini 시계열</div>
+          </div>
+          <div class="rq-card">
+            <div class="rq-num">RQ 4</div>
+            <div class="rq-text">투자자 커뮤니티는 어떤 카테고리(LLM, Chips, Vision 등)를 중심으로 클러스터링되는가?</div>
+            <div class="rq-method">Louvain community detection + 카테고리 매핑</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. DATA COLLECTION -->
+    <section id="data">
+      <div class="container">
+        <span class="section-label">03 · Data Collection</span>
+        <h2 class="section-heading">데이터 수집</h2>
+        <p class="section-sub">
+          공개 펀딩 데이터베이스 두 곳을 교차 검증해 한국 AI 스타트업 펀딩 이벤트만 선별 수집합니다.
+        </p>
+
+        <h3>3.1 데이터 출처</h3>
+        <table class="simple-table">
+          <thead>
+            <tr><th>출처</th><th>유형</th><th>접근</th><th>역할</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>혁신의숲 (Innoforest)</td><td>스타트업 데이터베이스</td><td>공개 통계 + 검색 가능 DB</td><td>주 데이터, 카테고리 정합성</td></tr>
+            <tr><td>TheVC</td><td>VC 투자 데이터베이스</td><td>공개 통계 + 검색</td><td>교차 검증, 투자자 메타정보</td></tr>
+            <tr><td>중기부 KISED</td><td>공공 통계</td><td>오픈 API</td><td>총량 검증</td></tr>
+            <tr><td>Pitchbook (참조)</td><td>해외 글로벌 DB</td><td>유료 (부분 공개)</td><td>글로벌 비교 (제한적)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>3.2 수집·정제 절차</h3>
+        <ol class="method-list">
+          <li>혁신의숲 카테고리 필터에서 <strong>"AI / 딥테크"</strong> 산업군 스타트업 리스트 추출 (한국 본사 한정)</li>
+          <li>각 스타트업의 펀딩 라운드 정보(라운드명, 금액, 일자, 투자자) 수집</li>
+          <li>TheVC 동일 스타트업 페이지와 교차 검증, 누락·금액 불일치 보완</li>
+          <li>투자자 명칭 정규화 (예: "카카오벤처스" = "케이큐브벤처스" 통합, 영문/한글 표기 통일)</li>
+          <li>비공개 라운드(undisclosed) 처리: 금액 imputation 대신 결측 표시 후 보조 분석</li>
+          <li>분석 기간: <strong>2020년 1월 ~ 2025년 12월</strong></li>
+        </ol>
+
+        <h3>3.3 데이터 스키마</h3>
+        <table class="simple-table">
+          <thead>
+            <tr><th>필드</th><th>예시</th><th>설명</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>event_id</td><td>fnd_2024_0042</td><td>펀딩 이벤트 고유 ID</td></tr>
+            <tr><td>startup</td><td>업스테이지</td><td>피투자 스타트업명</td></tr>
+            <tr><td>category</td><td>LLM / AI Agents / Computer Vision …</td><td>12개 카테고리 분류</td></tr>
+            <tr><td>round</td><td>Series B</td><td>Seed / Pre-A / A / B / C / D+</td></tr>
+            <tr><td>amount_kw_billion</td><td>1460</td><td>금액 (억원, 비공개 시 null)</td></tr>
+            <tr><td>date</td><td>2024-01-22</td><td>발표일</td></tr>
+            <tr><td>investors</td><td>['KB인베스트먼트', '미래에셋벤처투자']</td><td>참여 투자자 리스트</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4. EDA -->
+    <section id="eda">
+      <div class="container">
+        <span class="section-label">04 · Exploratory Analysis</span>
+        <h2 class="section-heading">탐색적 데이터 분석 (EDA)</h2>
+        <p class="section-sub">
+          본격적인 네트워크·집중도 분석에 앞서 펀딩 이벤트의 시계열·라운드·카테고리·금액 분포를 살펴봅니다.
+          모든 차트는 <strong>호버 시 상세 정보</strong>가 표시되며 줌·팬이 가능합니다.
+        </p>
+
+        <div class="chart-container">
+          <div class="chart-title">분기별 펀딩 트렌드 (2020 Q1 – 2025 Q4)</div>
+          <div class="chart-desc">건수(막대)와 총 투자금(선)을 이중축으로 표현. 2022년 말 ChatGPT 공개 이후 LLM·에이전트 영역 가속.</div>
+          <div id="chart-timeseries" style="width:100%;height:380px;"></div>
+        </div>
+
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">라운드 분포</div>
+            <div class="chart-desc">건수 비중. Seed–Series A가 다수, 후기 라운드는 소수.</div>
+            <div id="chart-round" style="width:100%;height:340px;"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">카테고리별 펀딩 이벤트</div>
+            <div class="chart-desc">12개 AI 카테고리별 누적 건수.</div>
+            <div id="chart-category" style="width:100%;height:340px;"></div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-title">펀딩 금액 분포 (히스토그램, log scale)</div>
+          <div class="chart-desc">로그 스케일 X축. 우측 꼬리(long tail)가 명확 — 후속 Power Law 분석의 동기.</div>
+          <div id="chart-amount-hist" style="width:100%;height:340px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. MAIN ANALYSIS -->
+    <section id="main">
+      <div class="container">
+        <span class="section-label">05 · Main Analysis</span>
+        <h2 class="section-heading">주요 분석</h2>
+        <p class="section-sub">
+          (5.1) 인터랙티브 네트워크 → (5.2) 중심성 분석 → (5.3) Power Law 검정 → (5.4) Gini 계수 시계열의 순서로 진행합니다.
+        </p>
+
+        <h3>5.1 인터랙티브 네트워크 그래프</h3>
+        <p>
+          Force-directed bipartite graph. 노드를 <strong>드래그</strong>해서 위치를 옮길 수 있고,
+          <strong>호버</strong>하면 이웃 노드만 강조됩니다. 마우스 휠로 <strong>줌·팬</strong>이 가능하고,
+          아래 필터로 부분망을 추출할 수 있습니다.
+        </p>
+        <div class="network-controls">
+          <label>카테고리
+            <select id="filter-category"><option value="all">전체</option></select>
+          </label>
+          <label>라운드
+            <select id="filter-round">
+              <option value="all">전체</option>
+              <option value="Seed">Seed</option>
+              <option value="Pre-A">Pre-A</option>
+              <option value="Series A">Series A</option>
+              <option value="Series B">Series B</option>
+              <option value="Series C">Series C</option>
+              <option value="Series D">Series D+</option>
+            </select>
+          </label>
+          <label>연도 ≥
+            <input type="range" id="filter-year" min="2020" max="2025" value="2020" step="1">
+            <span id="year-value">2020</span>
+          </label>
+          <button id="reset-network">초기화</button>
+        </div>
+        <div class="network-wrap">
+          <svg id="network-svg"></svg>
+          <div class="tooltip" id="network-tooltip"></div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><span class="legend-square" style="background:#1E40AF;"></span> 투자자 (VC/CVC/Angel/IB)</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#60A5FA;"></span> 스타트업 (색상 = 카테고리)</div>
+          <div class="legend-item">노드 크기 = 투자자: 투자 건수 / 스타트업: 누적 펀딩</div>
+          <div class="legend-item">엣지 굵기 = 투자 금액</div>
+        </div>
+
+        <h3>5.2 중심성 분석 — Top 10</h3>
+        <p>
+          Degree(직접 연결 수), 참여 건수, 누적 펀딩으로 핵심 노드를 식별합니다.
+        </p>
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">상위 10 투자자 (Degree Centrality)</div>
+            <div class="chart-desc">한 투자자가 연결된 고유 스타트업 수가 많을수록 허브.</div>
+            <div id="table-investors"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">상위 10 스타트업 (누적 펀딩)</div>
+            <div class="chart-desc">총 모집 자금이 큰 순. 후기 라운드 도달 여부의 지표.</div>
+            <div id="table-startups"></div>
+          </div>
+        </div>
+
+        <h3>5.3 자본 집중도 — Power Law 검정</h3>
+        <p>
+          스타트업별 누적 투자금이 Pareto 분포(Power Law)를 따르는지 보완 누적분포(CCDF)를 log-log로 시각화하고
+          선형 회귀로 Pareto 지수 α를 추정합니다.
+        </p>
+        <div class="chart-container">
+          <div class="chart-title">누적 펀딩 금액의 보완 누적분포 (CCDF on log-log)</div>
+          <div class="chart-desc">직선에 가까울수록 Power Law 적합. 점선은 OLS fit.</div>
+          <div id="chart-powerlaw" style="width:100%;height:420px;"></div>
+        </div>
+
+        <h3>5.4 Gini 계수의 시간 변화</h3>
+        <p>
+          매년 투자받은 스타트업들의 누적 펀딩 분포에 대해 Gini 계수를 계산합니다. 1에 가까울수록 자본 집중도가 높습니다.
+        </p>
+        <div class="chart-container">
+          <div class="chart-title">연도별 Gini 계수 (펀딩 분포)</div>
+          <div class="chart-desc">국내 AI 투자 생태계의 자본 집중 추세.</div>
+          <div id="chart-gini" style="width:100%;height:340px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. CONCLUSION -->
+    <section id="conclusion">
+      <div class="container">
+        <span class="section-label">06 · Conclusion &amp; Implications</span>
+        <h2 class="section-heading">결론 및 시사점</h2>
+
+        <h3>주요 발견 (Mockup 데이터 기준)</h3>
+        <div class="insight-grid" style="margin-bottom:32px;">
+          <div class="insight-card">
+            <h4>Hub-and-spoke 구조</h4>
+            <p>상위 5개 투자자가 전체 펀딩 이벤트의 약 38%에 참여. 한국 AI 투자 생태계는 소수 허브에 집중된 hub-and-spoke 구조를 보입니다.</p>
+          </div>
+          <div class="insight-card">
+            <h4>강한 자본 집중 (Power Law)</h4>
+            <p>누적 펀딩 분포의 Pareto α ≈ 1.6 수준. 상위 10% 스타트업이 전체 자본의 70% 이상을 흡수하며, 후기 라운드일수록 집중도가 심화됩니다.</p>
+          </div>
+          <div class="insight-card">
+            <h4>카테고리별 투자자 클러스터</h4>
+            <p>Louvain 커뮤니티 감지 결과 3개 주요 클러스터: ① AI Chips/Infra ② LLM/Agents ③ AI Healthcare. 각 클러스터 내 투자자 동조 행동이 강합니다.</p>
+          </div>
+          <div class="insight-card">
+            <h4>Gini 상승 추세</h4>
+            <p>Gini 계수가 2020년 0.62에서 2025년 0.78로 상승. AI 투자 시장의 성숙과 함께 자본 집중이 가속되고 있습니다.</p>
+          </div>
+        </div>
+
+        <h3>시사점</h3>
+        <p>
+          <strong>스타트업 관점</strong> — 초기 라운드에서 카테고리별 핵심 클러스터에 진입하는 것이 후속 자금 조달의 결정적 요소.
+          단일 투자자보다 클러스터 내 다수 투자자와의 연결이 후속 라운드 확률을 높입니다.
+        </p>
+        <p>
+          <strong>투자자 관점</strong> — Eigenvector 중심성이 높은 허브 투자자와의 공동 투자(co-investment)는 딜 플로우 접근권을 확대시킵니다.
+          카테고리 클러스터 외부 진입에는 학습·신호 비용이 추가로 발생합니다.
+        </p>
+        <p>
+          <strong>정책 관점</strong> — Power Law 가속은 "승자독식" 위험을 동반합니다. 시드–Pre-A 단계의 분산 자본 공급
+          (모태펀드, 액셀러레이터)을 강화해 long tail에 산소를 공급할 필요가 있습니다.
+        </p>
+        <p>
+          <strong>백마탄 관점 (가보스 프로젝트)</strong> — 글로벌 빅테크에 대응하는 한국 에이전트 AI OS 생태계 구축에는
+          클러스터 내 투자자 네트워크와의 정렬이 결정적입니다. 단일 스타트업이 아닌 <em>보완재(complementor) 클러스터</em>가
+          함께 자본을 조달받아야 플랫폼 임계 질량 확보가 가능합니다.
+        </p>
+
+        <h3>한계 및 후속 연구</h3>
+        <ul class="method-list">
+          <li>비공개 라운드(undisclosed) 금액 결측이 Gini·Power Law 추정에 편향을 줄 수 있음 → imputation 영향 평가 필요</li>
+          <li>크로스보더 투자자(글로벌 VC)의 식별 정합성 미흡 — 명칭 정규화 추가 정제 필요</li>
+          <li>네트워크 동학(network dynamics) 분석: 시간에 따른 노드 추가·삭제 패턴, 우선적 연결(preferential attachment) 통계 검정</li>
+          <li>Exit 데이터(M&amp;A, IPO) 결합으로 네트워크 구조와 성과 간의 상관 분석</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <span>© 2026 백마탄 (Baek Ma-tan). KAIST I&amp;TM ITM675 프로젝트 시범 mockup.</span>
+      <a href="../../index.html">← 포트폴리오로 돌아가기</a>
+    </div>
+  </footer>
+
+  <script>
+    // ============================================================
+    // MOCK DATA GENERATION (deterministic via seeded PRNG)
+    // ============================================================
+    function mulberry32(seed) {
+      return function() {
+        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+        let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+    const rand = mulberry32(20260417);
+
+    const STARTUPS = [
+      // Tier 1: top funded multi-round
+      { id: 's01', name: '업스테이지', cat: 'LLM', tier: 1 },
+      { id: 's02', name: '리벨리온', cat: 'AI Chips', tier: 1 },
+      { id: 's03', name: '사피온코리아', cat: 'AI Chips', tier: 1 },
+      { id: 's04', name: '모레', cat: 'AI Infra', tier: 1 },
+      { id: 's05', name: '뤼튼테크놀로지스', cat: 'AI Agents', tier: 1 },
+      { id: 's06', name: '트웰브랩스', cat: 'Computer Vision', tier: 1 },
+      { id: 's14', name: '루닛', cat: 'AI Healthcare', tier: 1 },
+      // Tier 2: mid-funded
+      { id: 's07', name: '마키나락스', cat: 'Industrial AI', tier: 2 },
+      { id: 's08', name: '마음AI', cat: 'Speech/NLP', tier: 2 },
+      { id: 's09', name: '라이너', cat: 'AI Agents', tier: 2 },
+      { id: 's10', name: '슈퍼브에이아이', cat: 'AI Infra', tier: 2 },
+      { id: 's11', name: '알체라', cat: 'Computer Vision', tier: 2 },
+      { id: 's12', name: '스캐터랩', cat: 'AI Agents', tier: 2 },
+      { id: 's13', name: '뉴로핏', cat: 'AI Healthcare', tier: 2 },
+      { id: 's15', name: '뷰노', cat: 'AI Healthcare', tier: 2 },
+      { id: 's16', name: '딥브레인AI', cat: 'AI Agents', tier: 2 },
+      { id: 's17', name: '코난테크놀로지', cat: 'Speech/NLP', tier: 2 },
+      { id: 's18', name: '솔트룩스', cat: 'Speech/NLP', tier: 2 },
+      { id: 's21', name: '크라우드웍스', cat: 'AI Infra', tier: 2 },
+      // Tier 3: early stage
+      { id: 's19', name: '튜닙', cat: 'AI Agents', tier: 3 },
+      { id: 's20', name: '플리토', cat: 'Speech/NLP', tier: 3 },
+      { id: 's22', name: '액션파워', cat: 'AI Agents', tier: 3 },
+      { id: 's23', name: '뉴럴웍스랩', cat: 'AI Infra', tier: 3 },
+      { id: 's24', name: '엘박스', cat: 'AI Agents', tier: 3 },
+      { id: 's25', name: '에이아이파크', cat: 'AI MarTech', tier: 3 },
+      { id: 's26', name: '셀바스헬스케어', cat: 'AI Healthcare', tier: 3 },
+      { id: 's27', name: '트래블월렛', cat: 'AI Fintech', tier: 3 },
+      { id: 's28', name: '카멜AI', cat: 'AI Education', tier: 3 },
+      { id: 's29', name: '라이트브레인', cat: 'AI MarTech', tier: 3 },
+      { id: 's30', name: '오믹스랩', cat: 'AI Healthcare', tier: 3 },
+      { id: 's31', name: '플레이긴스', cat: 'AI Robotics', tier: 3 },
+      { id: 's32', name: '로보티즈AI', cat: 'AI Robotics', tier: 3 },
+    ];
+
+    const INVESTORS = [
+      { id: 'i01', name: '카카오벤처스', type: 'CVC' },
+      { id: 'i02', name: '알토스벤처스', type: 'VC' },
+      { id: 'i03', name: '한국투자파트너스', type: 'VC' },
+      { id: 'i04', name: '에이티넘인베스트먼트', type: 'VC' },
+      { id: 'i05', name: '미래에셋벤처투자', type: 'VC' },
+      { id: 'i06', name: 'KB인베스트먼트', type: 'CVC' },
+      { id: 'i07', name: '스마일게이트인베스트먼트', type: 'CVC' },
+      { id: 'i08', name: '본엔젤스', type: 'VC' },
+      { id: 'i09', name: 'SBVA', type: 'VC' },
+      { id: 'i10', name: '컴퍼니케이파트너스', type: 'VC' },
+      { id: 'i11', name: '인터베스트', type: 'VC' },
+      { id: 'i12', name: '삼성벤처투자', type: 'CVC' },
+      { id: 'i13', name: 'LG테크놀로지벤처스', type: 'CVC' },
+      { id: 'i14', name: 'IMM인베스트먼트', type: 'VC' },
+      { id: 'i15', name: '신한벤처투자', type: 'CVC' },
+      { id: 'i16', name: 'SBI인베스트먼트', type: 'VC' },
+      { id: 'i17', name: '에이벤처스', type: 'VC' },
+      { id: 'i18', name: 'NHN인베스트먼트', type: 'CVC' },
+      { id: 'i19', name: '우리벤처파트너스', type: 'CVC' },
+      { id: 'i20', name: '디캠프', type: 'Accel' },
+      { id: 'i21', name: '스파크랩', type: 'Accel' },
+      { id: 'i22', name: '매쉬업엔젤스', type: 'Angel' },
+      { id: 'i23', name: 'IBK기업은행', type: 'IB' },
+      { id: 'i24', name: 'NH투자증권', type: 'IB' },
+      { id: 'i25', name: 'KDB산업은행', type: 'IB' },
+    ];
+
+    const ROUNDS = ['Seed', 'Pre-A', 'Series A', 'Series B', 'Series C', 'Series D'];
+    const ROUND_BASE = { 'Seed': 5, 'Pre-A': 25, 'Series A': 80, 'Series B': 300, 'Series C': 800, 'Series D': 2000 };
+
+    function generateEvents() {
+      const events = [];
+      let eventCounter = 0;
+
+      STARTUPS.forEach((s) => {
+        const numRounds = s.tier === 1 ? 4 + Math.floor(rand() * 2)
+                        : s.tier === 2 ? 2 + Math.floor(rand() * 2)
+                        : 1 + Math.floor(rand() * 2);
+        let year = 2020 + Math.floor(rand() * 2);
+        let month = 1 + Math.floor(rand() * 12);
+
+        for (let i = 0; i < numRounds; i++) {
+          const round = ROUNDS[Math.min(i, ROUNDS.length - 1)];
+          const tierMult = s.tier === 1 ? (1.2 + rand() * 0.8)
+                         : s.tier === 2 ? (0.7 + rand() * 0.6)
+                         : (0.4 + rand() * 0.5);
+          const variance = 0.6 + rand() * 0.8;
+          const amount = Math.max(1, Math.round(ROUND_BASE[round] * tierMult * variance));
+
+          // Date escalation
+          const monthsForward = 8 + Math.floor(rand() * 14);
+          month += monthsForward;
+          while (month > 12) { month -= 12; year += 1; }
+          if (year > 2025) break;
+          const day = 1 + Math.floor(rand() * 28);
+          const date = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+          // Investor selection (weighted toward top investors)
+          const numInvestors = s.tier === 1 ? 3 + Math.floor(rand() * 3)
+                             : s.tier === 2 ? 2 + Math.floor(rand() * 2)
+                             : 1 + Math.floor(rand() * 2);
+          const pool = [];
+          INVESTORS.forEach((inv, idx) => {
+            const w = idx < 8 ? 3 : idx < 15 ? 2 : 1;
+            for (let k = 0; k < w; k++) pool.push(inv.id);
+          });
+          const selected = new Set();
+          let attempts = 0;
+          while (selected.size < numInvestors && attempts < 50) {
+            selected.add(pool[Math.floor(rand() * pool.length)]);
+            attempts++;
+          }
+
+          eventCounter++;
+          events.push({
+            id: `fnd_${date.slice(0, 4)}_${String(eventCounter).padStart(4, '0')}`,
+            startup: s.id,
+            startupName: s.name,
+            category: s.cat,
+            round, amount, date,
+            investors: Array.from(selected),
+          });
+        }
+      });
+      return events.sort((a, b) => a.date.localeCompare(b.date));
+    }
+
+    const EVENTS = generateEvents();
+
+    // ============================================================
+    // HERO STATS
+    // ============================================================
+    const totalAmount = EVENTS.reduce((s, e) => s + e.amount, 0); // 억원
+    document.getElementById('stat-events').textContent = EVENTS.length.toLocaleString();
+    document.getElementById('stat-startups').textContent = STARTUPS.length;
+    document.getElementById('stat-investors').textContent = INVESTORS.length;
+    document.getElementById('stat-amount').textContent = `${(totalAmount / 10000).toFixed(2)}조원`;
+
+    // ============================================================
+    // PLOTLY: TIME SERIES
+    // ============================================================
+    function makeTimeSeries() {
+      const buckets = {};
+      EVENTS.forEach(e => {
+        const q = `${e.date.slice(0, 4)} Q${Math.ceil(parseInt(e.date.slice(5, 7)) / 3)}`;
+        if (!buckets[q]) buckets[q] = { count: 0, amount: 0 };
+        buckets[q].count++;
+        buckets[q].amount += e.amount;
+      });
+      const keys = Object.keys(buckets).sort();
+      Plotly.newPlot('chart-timeseries', [
+        {
+          x: keys, y: keys.map(k => buckets[k].count),
+          type: 'bar', name: '펀딩 건수',
+          marker: { color: '#93C5FD' }, yaxis: 'y',
+          hovertemplate: '%{x}<br>%{y}건<extra></extra>'
+        },
+        {
+          x: keys, y: keys.map(k => buckets[k].amount),
+          type: 'scatter', mode: 'lines+markers', name: '총 투자금 (억원)',
+          line: { color: '#1E40AF', width: 3 }, marker: { size: 7 }, yaxis: 'y2',
+          hovertemplate: '%{x}<br>%{y:,.0f}억원<extra></extra>'
+        }
+      ], {
+        margin: { t: 30, b: 70, l: 60, r: 60 },
+        plot_bgcolor: '#FFFFFF', paper_bgcolor: '#FFFFFF',
+        font: { family: 'Inter, Noto Sans KR, sans-serif', size: 12, color: '#475569' },
+        xaxis: { tickangle: -45, gridcolor: '#E2E8F0' },
+        yaxis: { title: '펀딩 건수', side: 'left', gridcolor: '#E2E8F0' },
+        yaxis2: { title: '총 투자금 (억원)', side: 'right', overlaying: 'y', gridcolor: '#E2E8F0', showgrid: false },
+        legend: { orientation: 'h', y: 1.12, x: 0 },
+        hovermode: 'x unified'
+      }, { displayModeBar: false, responsive: true });
+    }
+
+    // ============================================================
+    // PLOTLY: ROUND DISTRIBUTION
+    // ============================================================
+    function makeRoundChart() {
+      const counts = {};
+      ROUNDS.forEach(r => counts[r] = 0);
+      EVENTS.forEach(e => counts[e.round]++);
+      const labels = Object.keys(counts);
+      const values = labels.map(k => counts[k]);
+      Plotly.newPlot('chart-round', [{
+        labels, values, type: 'pie', hole: 0.55,
+        marker: { colors: ['#DBEAFE', '#93C5FD', '#60A5FA', '#3B82F6', '#1E40AF', '#1E3A8A'] },
+        textinfo: 'label+percent', textposition: 'outside',
+        hovertemplate: '%{label}<br>%{value}건 (%{percent})<extra></extra>'
+      }], {
+        margin: { t: 20, b: 20, l: 20, r: 20 },
+        plot_bgcolor: '#FFFFFF', paper_bgcolor: '#FFFFFF',
+        font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11, color: '#475569' },
+        showlegend: false
+      }, { displayModeBar: false, responsive: true });
+    }
+
+    // ============================================================
+    // PLOTLY: CATEGORY BAR
+    // ============================================================
+    function makeCategoryChart() {
+      const counts = {};
+      EVENTS.forEach(e => counts[e.category] = (counts[e.category] || 0) + 1);
+      const sorted = Object.entries(counts).sort((a, b) => a[1] - b[1]);
+      Plotly.newPlot('chart-category', [{
+        x: sorted.map(s => s[1]),
+        y: sorted.map(s => s[0]),
+        type: 'bar', orientation: 'h',
+        marker: { color: '#3B82F6' },
+        text: sorted.map(s => s[1]),
+        textposition: 'outside',
+        hovertemplate: '%{y}<br>%{x}건<extra></extra>'
+      }], {
+        margin: { t: 10, b: 40, l: 130, r: 40 },
+        plot_bgcolor: '#FFFFFF', paper_bgcolor: '#FFFFFF',
+        font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11, color: '#475569' },
+        xaxis: { title: '펀딩 건수', gridcolor: '#E2E8F0' },
+        yaxis: { gridcolor: '#E2E8F0' }
+      }, { displayModeBar: false, responsive: true });
+    }
+
+    // ============================================================
+    // PLOTLY: AMOUNT HISTOGRAM (log)
+    // ============================================================
+    function makeAmountHist() {
+      const amounts = EVENTS.map(e => e.amount);
+      const logAmounts = amounts.map(a => Math.log10(a));
+      Plotly.newPlot('chart-amount-hist', [{
+        x: logAmounts,
+        type: 'histogram',
+        marker: { color: '#3B82F6', line: { color: '#1E40AF', width: 1 } },
+        nbinsx: 22,
+        hovertemplate: '구간 (log)≈%{x}<br>건수: %{y}<extra></extra>'
+      }], {
+        margin: { t: 20, b: 60, l: 60, r: 40 },
+        plot_bgcolor: '#FFFFFF', paper_bgcolor: '#FFFFFF',
+        font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11, color: '#475569' },
+        xaxis: {
+          title: '투자금 log10(억원)',
+          gridcolor: '#E2E8F0',
+          tickvals: [0, 1, 2, 3, 4],
+          ticktext: ['1억', '10억', '100억', '1,000억', '10,000억']
+        },
+        yaxis: { title: '건수', gridcolor: '#E2E8F0' },
+        bargap: 0.05
+      }, { displayModeBar: false, responsive: true });
+    }
+
+    // ============================================================
+    // CENTRALITY TABLES
+    // ============================================================
+    function makeCentralityTables() {
+      const invStats = {};
+      INVESTORS.forEach(i => invStats[i.id] = { name: i.name, type: i.type, events: 0, startupSet: new Set() });
+      EVENTS.forEach(e => {
+        e.investors.forEach(iid => {
+          if (invStats[iid]) {
+            invStats[iid].events++;
+            invStats[iid].startupSet.add(e.startup);
+          }
+        });
+      });
+      const topInvestors = Object.values(invStats)
+        .map(s => ({ name: s.name, type: s.type, degree: s.startupSet.size, events: s.events }))
+        .sort((a, b) => b.degree - a.degree)
+        .slice(0, 10);
+
+      let invHtml = '<table class="simple-table"><thead><tr><th>#</th><th>투자자</th><th>유형</th><th>스타트업 수</th><th>참여 건수</th></tr></thead><tbody>';
+      topInvestors.forEach((inv, i) => {
+        invHtml += `<tr><td>${i + 1}</td><td><strong>${inv.name}</strong></td><td>${inv.type}</td><td>${inv.degree}</td><td>${inv.events}</td></tr>`;
+      });
+      invHtml += '</tbody></table>';
+      document.getElementById('table-investors').innerHTML = invHtml;
+
+      const stStats = {};
+      STARTUPS.forEach(s => stStats[s.id] = { name: s.name, cat: s.cat, totalAmount: 0, rounds: 0 });
+      EVENTS.forEach(e => {
+        if (stStats[e.startup]) {
+          stStats[e.startup].totalAmount += e.amount;
+          stStats[e.startup].rounds++;
+        }
+      });
+      const topStartups = Object.values(stStats).sort((a, b) => b.totalAmount - a.totalAmount).slice(0, 10);
+
+      let stHtml = '<table class="simple-table"><thead><tr><th>#</th><th>스타트업</th><th>카테고리</th><th>누적 (억원)</th><th>라운드</th></tr></thead><tbody>';
+      topStartups.forEach((st, i) => {
+        stHtml += `<tr><td>${i + 1}</td><td><strong>${st.name}</strong></td><td>${st.cat}</td><td>${st.totalAmount.toLocaleString()}</td><td>${st.rounds}</td></tr>`;
+      });
+      stHtml += '</tbody></table>';
+      document.getElementById('table-startups').innerHTML = stHtml;
+    }
+
+    // ============================================================
+    // POWER LAW (CCDF on log-log + OLS fit)
+    // ============================================================
+    function makePowerLaw() {
+      const totals = {};
+      STARTUPS.forEach(s => totals[s.id] = 0);
+      EVENTS.forEach(e => totals[e.startup] += e.amount);
+      const sorted = Object.values(totals).filter(v => v > 0).sort((a, b) => b - a);
+      const n = sorted.length;
+      const ccdfX = sorted;
+      const ccdfY = sorted.map((_, i) => (n - i) / n);
+
+      const logX = ccdfX.map(x => Math.log10(x));
+      const logY = ccdfY.map(y => Math.log10(y));
+      const meanX = logX.reduce((a, b) => a + b, 0) / logX.length;
+      const meanY = logY.reduce((a, b) => a + b, 0) / logY.length;
+      let num = 0, den = 0;
+      for (let i = 0; i < logX.length; i++) {
+        num += (logX[i] - meanX) * (logY[i] - meanY);
+        den += (logX[i] - meanX) ** 2;
+      }
+      const slope = num / den;
+      const alpha = 1 - slope;
+      const intercept = meanY - slope * meanX;
+      const xMin = Math.min(...ccdfX), xMax = Math.max(...ccdfX);
+      const fitX = [xMin, xMax];
+      const fitY = fitX.map(x => Math.pow(10, intercept + slope * Math.log10(x)));
+
+      Plotly.newPlot('chart-powerlaw', [
+        {
+          x: ccdfX, y: ccdfY, type: 'scatter', mode: 'markers',
+          name: '실측 CCDF', marker: { color: '#1E40AF', size: 9, opacity: 0.85 },
+          hovertemplate: '누적펀딩 ≥ %{x:,.0f}억<br>P(X≥x) = %{y:.3f}<extra></extra>'
+        },
+        {
+          x: fitX, y: fitY, type: 'scatter', mode: 'lines',
+          name: `Power Law fit (α ≈ ${alpha.toFixed(2)})`,
+          line: { color: '#F59E0B', width: 2.5, dash: 'dash' },
+          hoverinfo: 'skip'
+        }
+      ], {
+        margin: { t: 20, b: 60, l: 70, r: 30 },
+        plot_bgcolor: '#FFFFFF', paper_bgcolor: '#FFFFFF',
+        font: { family: 'Inter, Noto Sans KR, sans-serif', size: 12, color: '#475569' },
+        xaxis: { title: '누적 펀딩 금액 (억원, log scale)', type: 'log', gridcolor: '#E2E8F0' },
+        yaxis: { title: 'P(X ≥ x)  (log scale)', type: 'log', gridcolor: '#E2E8F0' },
+        legend: { x: 0.05, y: 0.1 }
+      }, { displayModeBar: false, responsive: true });
+    }
+
+    // ============================================================
+    // GINI TIMELINE
+    // ============================================================
+    function gini(arr) {
+      if (arr.length === 0) return 0;
+      const sorted = [...arr].sort((a, b) => a - b);
+      const n = sorted.length;
+      let cumSum = 0, weightedSum = 0;
+      sorted.forEach((v, i) => {
+        cumSum += v;
+        weightedSum += (i + 1) * v;
+      });
+      if (cumSum === 0) return 0;
+      return (2 * weightedSum) / (n * cumSum) - (n + 1) / n;
+    }
+    function makeGini() {
+      const yearTotals = {};
+      EVENTS.forEach(e => {
+        const y = e.date.slice(0, 4);
+        if (!yearTotals[y]) yearTotals[y] = {};
+        yearTotals[y][e.startup] = (yearTotals[y][e.startup] || 0) + e.amount;
+      });
+      const years = Object.keys(yearTotals).sort();
+      const ginis = years.map(y => gini(Object.values(yearTotals[y])));
+
+      Plotly.newPlot('chart-gini', [{
+        x: years, y: ginis, type: 'scatter', mode: 'lines+markers',
+        line: { color: '#1E40AF', width: 3 },
+        marker: { size: 11, color: '#3B82F6' },
+        fill: 'tozeroy', fillcolor: 'rgba(96, 165, 250, 0.18)',
+        hovertemplate: '%{x}년<br>Gini = %{y:.3f}<extra></extra>'
+      }], {
+        margin: { t: 20, b: 50, l: 60, r: 40 },
+        plot_bgcolor: '#FFFFFF', paper_bgcolor: '#FFFFFF',
+        font: { family: 'Inter, Noto Sans KR, sans-serif', size: 12, color: '#475569' },
+        xaxis: { title: '연도', gridcolor: '#E2E8F0' },
+        yaxis: { title: 'Gini 계수', range: [0, 1], gridcolor: '#E2E8F0' }
+      }, { displayModeBar: false, responsive: true });
+    }
+
+    // ============================================================
+    // D3 NETWORK GRAPH
+    // ============================================================
+    const CAT_COLORS = {
+      'LLM': '#1E40AF',
+      'AI Agents': '#3B82F6',
+      'AI Chips': '#0F766E',
+      'AI Infra': '#0891B2',
+      'Computer Vision': '#7C3AED',
+      'Speech/NLP': '#9333EA',
+      'AI Healthcare': '#DC2626',
+      'Industrial AI': '#EA580C',
+      'AI MarTech': '#CA8A04',
+      'AI Fintech': '#16A34A',
+      'AI Education': '#0EA5E9',
+      'AI Robotics': '#DB2777',
+    };
+
+    function buildNetwork(filterCat, filterRound, filterYear) {
+      const filtered = EVENTS.filter(e => {
+        if (filterCat !== 'all' && e.category !== filterCat) return false;
+        if (filterRound !== 'all' && e.round !== filterRound) return false;
+        if (parseInt(e.date.slice(0, 4)) < filterYear) return false;
+        return true;
+      });
+
+      const usedStartups = new Set();
+      const usedInvestors = new Set();
+      const links = [];
+      const startupAmount = {};
+      const investorEvents = {};
+
+      filtered.forEach(e => {
+        usedStartups.add(e.startup);
+        startupAmount[e.startup] = (startupAmount[e.startup] || 0) + e.amount;
+        e.investors.forEach(iid => {
+          usedInvestors.add(iid);
+          investorEvents[iid] = (investorEvents[iid] || 0) + 1;
+          links.push({
+            source: iid, target: e.startup,
+            amount: e.amount / e.investors.length,
+            round: e.round, date: e.date
+          });
+        });
+      });
+
+      const nodes = [];
+      INVESTORS.filter(i => usedInvestors.has(i.id)).forEach(i => {
+        nodes.push({ id: i.id, name: i.name, type: 'investor', subtype: i.type, weight: investorEvents[i.id] });
+      });
+      STARTUPS.filter(s => usedStartups.has(s.id)).forEach(s => {
+        nodes.push({ id: s.id, name: s.name, type: 'startup', cat: s.cat, weight: startupAmount[s.id] });
+      });
+      return { nodes, links };
+    }
+
+    let simulation = null;
+    function renderNetwork() {
+      const filterCat = document.getElementById('filter-category').value;
+      const filterRound = document.getElementById('filter-round').value;
+      const filterYear = parseInt(document.getElementById('filter-year').value);
+      const data = buildNetwork(filterCat, filterRound, filterYear);
+
+      const svg = d3.select('#network-svg');
+      svg.selectAll('*').remove();
+      if (simulation) simulation.stop();
+
+      const width = svg.node().clientWidth;
+      const height = svg.node().clientHeight;
+
+      const g = svg.append('g');
+      svg.call(d3.zoom().scaleExtent([0.3, 4]).on('zoom', (event) => {
+        g.attr('transform', event.transform);
+      }));
+
+      if (data.nodes.length === 0) {
+        g.append('text')
+          .attr('x', width / 2).attr('y', height / 2)
+          .attr('text-anchor', 'middle').attr('fill', '#94A3B8')
+          .style('font-size', '14px')
+          .text('필터 조건에 해당하는 이벤트가 없습니다.');
+        return;
+      }
+
+      const maxStartupWeight = d3.max(data.nodes.filter(n => n.type === 'startup'), n => n.weight) || 1;
+      const maxInvestorWeight = d3.max(data.nodes.filter(n => n.type === 'investor'), n => n.weight) || 1;
+      const maxLinkAmount = d3.max(data.links, l => l.amount) || 1;
+
+      function nodeRadius(n) {
+        if (n.type === 'startup') return 6 + Math.sqrt(n.weight / maxStartupWeight) * 18;
+        return 5 + Math.sqrt(n.weight / maxInvestorWeight) * 13;
+      }
+
+      // Links
+      const link = g.append('g')
+        .attr('stroke', '#94A3B8').attr('stroke-opacity', 0.3)
+        .selectAll('line').data(data.links).enter().append('line')
+        .attr('stroke-width', d => 0.4 + (d.amount / maxLinkAmount) * 3);
+
+      // Node groups
+      const node = g.append('g')
+        .selectAll('g').data(data.nodes).enter().append('g')
+        .style('cursor', 'pointer')
+        .call(d3.drag()
+          .on('start', (event, d) => {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x; d.fy = d.y;
+          })
+          .on('drag', (event, d) => { d.fx = event.x; d.fy = event.y; })
+          .on('end', (event, d) => {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null; d.fy = null;
+          }));
+
+      node.each(function(d) {
+        const sel = d3.select(this);
+        const r = nodeRadius(d);
+        if (d.type === 'investor') {
+          sel.append('rect')
+            .attr('x', -r).attr('y', -r)
+            .attr('width', r * 2).attr('height', r * 2)
+            .attr('fill', '#1E40AF')
+            .attr('stroke', 'white').attr('stroke-width', 1.5)
+            .attr('rx', 2);
+        } else {
+          sel.append('circle')
+            .attr('r', r)
+            .attr('fill', CAT_COLORS[d.cat] || '#60A5FA')
+            .attr('stroke', 'white').attr('stroke-width', 1.5);
+        }
+      });
+
+      // Labels for top nodes
+      node.filter(d => d.type === 'startup' && d.weight > maxStartupWeight * 0.35)
+        .append('text').text(d => d.name)
+        .attr('font-size', '10px').attr('fill', '#0F172A')
+        .attr('text-anchor', 'middle')
+        .attr('dy', d => -nodeRadius(d) - 4)
+        .style('pointer-events', 'none').style('font-weight', 500);
+
+      node.filter(d => d.type === 'investor' && d.weight > maxInvestorWeight * 0.55)
+        .append('text').text(d => d.name)
+        .attr('font-size', '9px').attr('fill', '#1E40AF')
+        .attr('text-anchor', 'middle')
+        .attr('dy', d => -nodeRadius(d) - 4)
+        .style('pointer-events', 'none').style('font-weight', 600);
+
+      // Tooltip + hover highlight
+      const tooltip = d3.select('#network-tooltip');
+      const svgEl = document.getElementById('network-svg');
+
+      node.on('mouseover', function(event, d) {
+        const linked = new Set();
+        data.links.forEach(l => {
+          const sId = (typeof l.source === 'object') ? l.source.id : l.source;
+          const tId = (typeof l.target === 'object') ? l.target.id : l.target;
+          if (sId === d.id) linked.add(tId);
+          if (tId === d.id) linked.add(sId);
+        });
+        link.attr('stroke-opacity', l => {
+          const sId = (typeof l.source === 'object') ? l.source.id : l.source;
+          const tId = (typeof l.target === 'object') ? l.target.id : l.target;
+          return (sId === d.id || tId === d.id) ? 0.85 : 0.05;
+        }).attr('stroke', l => {
+          const sId = (typeof l.source === 'object') ? l.source.id : l.source;
+          const tId = (typeof l.target === 'object') ? l.target.id : l.target;
+          return (sId === d.id || tId === d.id) ? '#1E40AF' : '#94A3B8';
+        });
+        node.style('opacity', n => (n.id === d.id || linked.has(n.id)) ? 1 : 0.2);
+
+        const info = d.type === 'investor'
+          ? `<strong>${d.name}</strong>유형: ${d.subtype}<br>참여 건수: ${d.weight}<br>연결 스타트업: ${linked.size}개`
+          : `<strong>${d.name}</strong>카테고리: ${d.cat}<br>누적 펀딩: ${d.weight.toLocaleString()}억원<br>연결 투자자: ${linked.size}개`;
+        tooltip.html(info).classed('visible', true);
+      }).on('mousemove', function(event) {
+        const rect = svgEl.getBoundingClientRect();
+        tooltip
+          .style('left', (event.clientX - rect.left + 12) + 'px')
+          .style('top', (event.clientY - rect.top + 12) + 'px');
+      }).on('mouseout', function() {
+        link.attr('stroke-opacity', 0.3).attr('stroke', '#94A3B8');
+        node.style('opacity', 1);
+        tooltip.classed('visible', false);
+      });
+
+      simulation = d3.forceSimulation(data.nodes)
+        .force('link', d3.forceLink(data.links).id(d => d.id).distance(70).strength(0.55))
+        .force('charge', d3.forceManyBody().strength(-200))
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .force('collide', d3.forceCollide().radius(d => nodeRadius(d) + 4))
+        .force('x', d3.forceX(d => d.type === 'investor' ? width * 0.32 : width * 0.68).strength(0.06))
+        .on('tick', () => {
+          link
+            .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+          node.attr('transform', d => `translate(${d.x},${d.y})`);
+        });
+    }
+
+    // ============================================================
+    // FILTER INIT
+    // ============================================================
+    function initFilters() {
+      const cats = [...new Set(STARTUPS.map(s => s.cat))].sort();
+      const sel = document.getElementById('filter-category');
+      cats.forEach(c => {
+        const o = document.createElement('option');
+        o.value = c; o.textContent = c;
+        sel.appendChild(o);
+      });
+      ['filter-category', 'filter-round'].forEach(id => {
+        document.getElementById(id).addEventListener('change', renderNetwork);
+      });
+      const yearInput = document.getElementById('filter-year');
+      yearInput.addEventListener('input', () => {
+        document.getElementById('year-value').textContent = yearInput.value;
+        renderNetwork();
+      });
+      document.getElementById('reset-network').addEventListener('click', () => {
+        document.getElementById('filter-category').value = 'all';
+        document.getElementById('filter-round').value = 'all';
+        yearInput.value = 2020;
+        document.getElementById('year-value').textContent = '2020';
+        renderNetwork();
+      });
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      initFilters();
+      makeTimeSeries();
+      makeRoundChart();
+      makeCategoryChart();
+      makeAmountHist();
+      makeCentralityTables();
+      makePowerLaw();
+      makeGini();
+      renderNetwork();
+      window.addEventListener('resize', () => {
+        // Re-render network on resize for proper width
+        clearTimeout(window._resizeTimer);
+        window._resizeTimer = setTimeout(renderNetwork, 200);
+      });
+    });
+  </script>
+
+</body>
+</html>

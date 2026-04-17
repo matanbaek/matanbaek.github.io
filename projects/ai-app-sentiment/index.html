@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 서비스 앱 사용자 수용도 · UTAUT2 · Kano · Blue Ocean | 백마탄</title>
+  <meta name="description" content="Google Play Store 7개 AI 앱 리뷰 약 2,000건을 Maalej & Nabil 분류 + LLM 임베딩 토픽 모델링(TopicGPT 계열) + ABSA + UTAUT2 + Kano + Blue Ocean ERRC로 분석. KAIST I&TM ITM622 프로젝트 mockup.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+
+  <style>
+    :root {
+      --primary:        #1E40AF;
+      --secondary:      #3B82F6;
+      --accent:         #60A5FA;
+      --bg:             #F8FAFC;
+      --bg-elev:        #FFFFFF;
+      --bg-soft:        #EFF4FB;
+      --text-primary:   #0F172A;
+      --text-secondary: #475569;
+      --border:         #E2E8F0;
+      --shadow-sm:      0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-md:      0 4px 12px rgba(15, 23, 42, 0.06);
+      --shadow-lg:      0 12px 32px rgba(15, 23, 42, 0.08);
+      --radius-sm:      6px;
+      --radius-md:      10px;
+      --radius-lg:      16px;
+      --max-width:      1200px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Inter", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px; line-height: 1.6;
+      color: var(--text-primary); background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--primary); text-decoration: none; transition: color .15s ease; }
+    a:hover { color: var(--secondary); }
+    h1, h2, h3, h4 { color: var(--text-primary); line-height: 1.25; margin: 0 0 .5em; font-weight: 600; }
+    h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); font-weight: 700; letter-spacing: -0.02em; }
+    h2 { font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.01em; }
+    h3 { font-size: 1.2rem; margin-top: 1.5em; }
+    h4 { font-size: 1rem; }
+    p { margin: 0 0 1em; color: var(--text-secondary); }
+    code { font-family: "JetBrains Mono", monospace; font-size: 0.85em;
+           background: var(--bg-soft); padding: 2px 6px; border-radius: 4px; color: var(--primary); }
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+
+    /* Nav */
+    header.site-nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(248, 250, 252, 0.88);
+      backdrop-filter: saturate(180%) blur(10px);
+      -webkit-backdrop-filter: saturate(180%) blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .nav-brand { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); letter-spacing: -0.01em; }
+    .nav-brand:hover { color: var(--primary); }
+    .nav-links { display: flex; gap: 18px; list-style: none; padding: 0; margin: 0; flex-wrap: wrap; }
+    .nav-links a { font-size: 0.82rem; font-weight: 500; color: var(--text-secondary); }
+    .nav-links a:hover { color: var(--primary); }
+    @media (max-width: 860px) { .nav-links { display: none; } }
+
+    /* Sections */
+    section { padding: 80px 0; }
+    section + section { border-top: 1px solid var(--border); }
+    .section-label {
+      display: inline-block;
+      font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--secondary); margin-bottom: 12px;
+    }
+    .section-heading { margin-bottom: 16px; }
+    .section-sub { max-width: 760px; margin-bottom: 40px; color: var(--text-secondary); }
+
+    .project-hero { padding: 80px 0 56px; }
+    .project-meta {
+      display: inline-block; padding: 4px 12px;
+      background: var(--bg-soft); border: 1px solid var(--border);
+      color: var(--primary); border-radius: 999px;
+      font-size: 0.78rem; font-weight: 500; margin-bottom: 20px;
+    }
+    .project-hero h1 { margin-bottom: 12px; }
+    .project-subtitle {
+      font-size: 1.1rem; color: var(--text-secondary);
+      max-width: 760px; margin-bottom: 24px;
+    }
+    .meta-callout {
+      background: linear-gradient(135deg, #EFF4FB 0%, #DBEAFE 100%);
+      border-left: 3px solid var(--primary);
+      border-radius: var(--radius-md);
+      padding: 16px 20px; margin: 16px 0 8px; max-width: 760px;
+      font-size: 0.95rem; color: var(--text-primary);
+    }
+    .meta-callout strong { color: var(--primary); }
+    .stat-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px; margin-top: 32px;
+    }
+    .stat-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm);
+    }
+    .stat-num {
+      font-size: 1.75rem; font-weight: 700;
+      color: var(--primary); letter-spacing: -0.02em; margin-bottom: 4px;
+    }
+    .stat-label { font-size: 0.82rem; color: var(--text-secondary); }
+
+    .disclaimer {
+      background: #FEF3C7; border: 1px solid #FDE68A; color: #92400E;
+      padding: 12px 16px; border-radius: var(--radius-sm);
+      font-size: 0.88rem; margin: 16px 0;
+    }
+    .disclaimer strong { color: #78350F; }
+
+    .rq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .rq-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-sm);
+    }
+    .rq-num {
+      display: inline-block; font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.12em; color: var(--secondary); margin-bottom: 12px;
+    }
+    .rq-text { font-size: 1rem; color: var(--text-primary); font-weight: 500; margin-bottom: 8px; }
+    .rq-method { font-size: 0.85rem; color: var(--text-secondary); }
+
+    .lit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+    .lit-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 20px 22px; box-shadow: var(--shadow-sm);
+    }
+    .lit-card .lit-cite {
+      font-size: 0.8rem; color: var(--secondary); font-weight: 600;
+      margin-bottom: 6px; letter-spacing: 0.01em;
+    }
+    .lit-card h4 { margin: 0 0 8px; font-size: 0.95rem; color: var(--text-primary); }
+    .lit-card p { font-size: 0.87rem; margin: 0; }
+    .lit-tag {
+      display: inline-block; padding: 2px 8px; font-size: 0.7rem;
+      font-weight: 500; background: var(--bg-soft);
+      color: var(--primary); border-radius: 999px; margin-top: 10px;
+    }
+
+    table.simple-table {
+      width: 100%; border-collapse: collapse; font-size: 0.88rem;
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); overflow: hidden;
+    }
+    table.simple-table th {
+      text-align: left; padding: 11px 14px;
+      background: var(--bg-soft); font-weight: 600;
+      font-size: 0.75rem; color: var(--text-secondary);
+      letter-spacing: 0.04em; text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    table.simple-table td {
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      color: var(--text-primary); vertical-align: top;
+    }
+    table.simple-table tr:last-child td { border-bottom: none; }
+    table.simple-table .num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; font-size: 0.83rem; }
+
+    ul.method-list, ol.method-list { padding-left: 1.4em; margin: 0 0 1em; }
+    ul.method-list li, ol.method-list li { margin-bottom: 8px; color: var(--text-secondary); }
+    ul.method-list li::marker, ol.method-list li::marker { color: var(--secondary); font-weight: 600; }
+
+    .formula {
+      background: var(--bg-soft); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 16px 20px;
+      font-family: "JetBrains Mono", monospace; font-size: 0.88rem;
+      color: var(--text-primary); margin: 12px 0 16px;
+      overflow-x: auto; white-space: pre-wrap;
+    }
+    .formula-label {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--secondary); font-weight: 600; margin-bottom: 6px;
+    }
+
+    .chart-container {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 24px;
+      box-shadow: var(--shadow-sm); margin-bottom: 20px;
+    }
+    .chart-title { font-size: 1rem; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+    .chart-desc { font-size: 0.86rem; color: var(--text-secondary); margin-bottom: 16px; }
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    @media (max-width: 860px) { .chart-row { grid-template-columns: 1fr; } }
+
+    .insight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .insight-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-left: 3px solid var(--primary); border-radius: var(--radius-md);
+      padding: 20px 22px; box-shadow: var(--shadow-sm);
+    }
+    .insight-card h4 {
+      color: var(--primary); margin: 0 0 8px;
+      font-size: 0.95rem; font-weight: 600;
+    }
+    .insight-card p { font-size: 0.92rem; margin: 0; }
+
+    .step-list { display: grid; gap: 10px; }
+    .step {
+      display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start;
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 16px 18px; box-shadow: var(--shadow-sm);
+    }
+    .step-num {
+      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--primary); color: white; font-weight: 700; font-size: 0.82rem;
+    }
+    .step-body h4 { margin: 0 0 4px; font-size: 0.95rem; }
+    .step-body p { margin: 0; font-size: 0.87rem; }
+
+    /* App chips */
+    .app-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+    .app-chip {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 12px 14px;
+      font-size: 0.85rem; position: relative;
+    }
+    .app-chip .app-name { font-weight: 600; color: var(--primary); margin-bottom: 2px; font-size: 0.88rem; }
+    .app-chip .app-desc { color: var(--text-secondary); font-size: 0.78rem; line-height: 1.4; }
+    .app-chip .app-ctry {
+      display: inline-block; font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem; background: var(--bg-soft); color: var(--secondary);
+      padding: 1px 6px; border-radius: 4px; margin-top: 4px;
+    }
+
+    /* Kano quadrant legend */
+    .kano-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px; margin-top: 12px; font-size: 0.82rem; }
+    .kano-legend .k-item {
+      background: var(--bg-soft); padding: 8px 10px; border-radius: var(--radius-sm);
+      border-left: 3px solid var(--primary);
+    }
+    .kano-legend .k-item strong { display: block; color: var(--primary); font-size: 0.85rem; }
+    .kano-legend .k-item span { color: var(--text-secondary); font-size: 0.78rem; }
+
+    /* ERRC grid */
+    .errc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+    @media (max-width: 680px) { .errc-grid { grid-template-columns: 1fr; } }
+    .errc-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .errc-card.erase { border-top: 3px solid #94A3B8; }
+    .errc-card.reduce { border-top: 3px solid #60A5FA; }
+    .errc-card.raise { border-top: 3px solid #3B82F6; }
+    .errc-card.create { border-top: 3px solid #1E40AF; }
+    .errc-tag {
+      display: inline-block; font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.1em; color: var(--primary); margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .errc-card h4 { margin: 0 0 6px; font-size: 0.95rem; }
+    .errc-card p { margin: 0; font-size: 0.85rem; }
+
+    footer { border-top: 1px solid var(--border); padding: 32px 0 40px; }
+    .footer-inner {
+      display: flex; flex-wrap: wrap; justify-content: space-between;
+      gap: 12px; align-items: center;
+      font-size: 0.85rem; color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-nav">
+    <div class="container nav-inner">
+      <a href="../../index.html" class="nav-brand">← 백마탄 포트폴리오</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#purpose">목적</a></li>
+          <li><a href="#lit">선행연구</a></li>
+          <li><a href="#rq">RQ</a></li>
+          <li><a href="#data">데이터·방법론</a></li>
+          <li><a href="#eda">EDA</a></li>
+          <li><a href="#main">메인 분석</a></li>
+          <li><a href="#conclusion">결론</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="project-hero">
+      <div class="container">
+        <span class="project-meta">ITM622 · 가치혁신</span>
+        <h1>AI 서비스 앱 사용자 수용도: UTAUT2 · Kano · Blue Ocean</h1>
+        <p class="project-subtitle">
+          User Acceptance &amp; Pain-Point Mapping of Major AI Apps in Korea —
+          Google Play Store 7개 앱 리뷰 <strong>1,995건</strong>을 app review mining 분야의 표준 파이프라인(<em>Maalej &amp; Nabil 2015 분류</em> + <em>LLM 임베딩 + GPT-4o 토픽 요약 (TopicGPT 계열)</em> + <em>Aspect-Based Sentiment Analysis</em>)으로 분석하고 <strong>UTAUT2 · Kano · Blue Ocean ERRC</strong>로 가치혁신 전략을 도출합니다.
+        </p>
+        <div class="meta-callout">
+          💬 <strong>본 연구의 의의</strong> — 기존 리뷰 마이닝은 BERTopic 등 고전 임베딩에 머물러 있었으나, 본 연구는 <em>text-embedding-3-large + GPT-4o 기반 TopicGPT(Pham et al. 2024)</em> 파이프라인을 채택해 <strong>토픽 해석 가능성</strong>과 <strong>LLM-as-judge 정합도</strong>를 동시에 높였습니다. 나아가 사용자 페인 포인트를 단순 나열하는 데 그치지 않고 Kano(1984) 매력품질 분류·UTAUT2(Venkatesh 2012) 수용 요인·Blue Ocean ERRC(Kim &amp; Mauborgne 2005) 전략 캔버스로 해석, <strong>"가보스 프로젝트"의 가치 제안 의사결정</strong>에 직접 투입 가능한 실행 가능 통찰을 제공합니다.
+        </div>
+        <div class="disclaimer">
+          <strong>⚠ Mock-up Notice.</strong> 본 페이지는 연구 설계를 시각화한 <em>시범 목업</em>입니다. 제시된 리뷰 수·감성 지표·토픽 분포·UTAUT2 점수는 실제 Play Store 수집 없이 시드 고정(mulberry32, seed 20260419) 합성 데이터로 생성되었습니다. 앱 브랜드명은 연구 대상 가상 선정 목록이며, 본 목업의 수치가 실제 앱 품질을 반영하지 않습니다.
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-num">1,995</div>
+            <div class="stat-label">분석 리뷰 수 (7개 앱 · 2024-01 ~ 2026-03)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">8 + 6</div>
+            <div class="stat-label">LLM-임베딩 토픽 · ABSA Aspect</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">7</div>
+            <div class="stat-label">UTAUT2 구성개념 · App 프로파일</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">ERRC 4축</div>
+            <div class="stat-label">Blue Ocean 전략 제안</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. PURPOSE -->
+    <section id="purpose">
+      <div class="container">
+        <div class="section-label">01 · Research Purpose</div>
+        <h2 class="section-heading">연구 목적</h2>
+        <p class="section-sub">
+          AI 앱 시장은 제품이 급증하는 동시에 사용자 이탈률도 높은 <strong>불안정한 수용 국면</strong>에 있습니다. 본 연구는 앱 리뷰를 체계적으로 분석해 <strong>(i) 사용자 수용의 촉진·저해 요인을 UTAUT2로 구조화</strong>하고, <strong>(ii) Kano·Blue Ocean 관점에서 차별화 공간을 찾아</strong> 가우스전자 <em>가보스 프로젝트(에이전트 AI OS)</em>의 가치혁신 방향을 제시합니다.
+        </p>
+        <div class="insight-grid">
+          <div class="insight-card">
+            <h4>왜 앱 리뷰인가</h4>
+            <p>설문·인터뷰는 통제된 응답이 많지만, Play Store 리뷰는 <em>자발적·비구조화·대량 생산</em>되는 1차 자료. Pagano &amp; Maalej(2013)·Maalej &amp; Nabil(2015) 이후 <strong>app review mining</strong>이 소프트웨어공학·HCI의 표준 방법으로 정착.</p>
+          </div>
+          <div class="insight-card">
+            <h4>왜 UTAUT2인가</h4>
+            <p>TAM(Davis 1989)을 확장한 UTAUT2(Venkatesh et al. 2012)는 <strong>소비자용 모바일 앱 맥락에서 가장 인용·재검증된 모델</strong>. Hedonic Motivation·Price Value·Habit 등 AI 앱 수용에 필수적인 구성요소를 포함.</p>
+          </div>
+          <div class="insight-card">
+            <h4>왜 Kano · Blue Ocean인가</h4>
+            <p>ITM622의 핵심 프레임. Kano(1984)는 기능별 만족도 기여를 <em>Must-be / Performance / Attractive / Indifferent / Reverse</em> 5종으로 분해. Blue Ocean ERRC(Kim &amp; Mauborgne 2005)는 경쟁 불필요한 시장 재정의 도구.</p>
+          </div>
+          <div class="insight-card">
+            <h4>왜 백마탄인가</h4>
+            <p>가보스 프로젝트가 <em>AI OS 수준</em>의 가치 제안을 설계하려면, 이미 수백만 사용자가 경험한 AI 앱들의 <strong>수용 병목(acceptance bottleneck)</strong>을 관측 데이터로 파악해야 함. 경쟁 회피가 아닌 가치 곡선 재설계의 출발점.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. LITERATURE -->
+    <section id="lit">
+      <div class="container">
+        <div class="section-label">02 · Literature Review</div>
+        <h2 class="section-heading">선행 연구 분석</h2>
+        <p class="section-sub">
+          본 연구는 세 가지 연구 흐름의 교집합에 자리합니다: (α) app review mining (RE·SE), (β) 사용자 수용 이론(IS·HCI), (γ) 가치혁신 프레임(전략). 각 흐름에서 <strong>하계에서 가장 표준으로 인용되는 연구</strong>를 선별해 토대로 삼습니다.
+        </p>
+        <div class="lit-grid">
+          <div class="lit-card">
+            <div class="lit-cite">Pagano &amp; Maalej (2013)</div>
+            <h4>User Feedback in the AppStore: An Empirical Study (RE)</h4>
+            <p>앱 스토어 사용자 피드백의 양·형식·품질을 대규모 경험적으로 분석한 foundational 연구. 이후 모든 app review mining 연구의 출발점.</p>
+            <span class="lit-tag">App Review Mining</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Chen, Lin, Wang, Zhao &amp; Yang (2014)</div>
+            <h4>AR-Miner: Mining Informative Reviews for Developers (ICSE)</h4>
+            <p>필터링 → LDA 그룹핑 → 랭킹 파이프라인. AR-Miner 이후 <em>review → topic → actionable insight</em> 흐름이 표준화됨.</p>
+            <span class="lit-tag">Pipeline</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Maalej &amp; Nabil (2015)</div>
+            <h4>Bug Reports, Feature Requests, User Experiences, and Ratings (RE)</h4>
+            <p>리뷰 4-class 분류 체계의 <strong>사실상 표준</strong>. Precision 0.88~0.92, 이후 다수 연구(Panichella 2015, Di Sorbo 2016 등)가 동일 택소노미를 확장·재검증.</p>
+            <span class="lit-tag">Taxonomy Standard</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Guzman &amp; Maalej (2014)</div>
+            <h4>How Do Users Like This Feature? Fine-Grained Sentiment (RE)</h4>
+            <p>리뷰 전체가 아닌 <strong>feature-level sentiment</strong>를 추출하는 ABSA(Aspect-Based Sentiment Analysis) 초기 연구. 본 연구의 aspect × sentiment 매트릭스 근거.</p>
+            <span class="lit-tag">ABSA</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Pham, Yoon, Iyer, Mahabadi et al. (2024)</div>
+            <h4>TopicGPT: A Prompt-Based Framework for Topic Modeling (NAACL)</h4>
+            <p>LLM이 직접 topic을 생성·refine하는 새 패러다임. BERTopic·LDA 대비 <strong>topic alignment +0.21, 인간 평가 선호 73%</strong>, c-TF-IDF의 키워드 한계를 자연어 요약으로 해결. 본 연구는 LLM 임베딩 클러스터링 + GPT-4o 토픽 요약을 결합한 hybrid 접근의 이론적 근거로 채택.</p>
+            <span class="lit-tag">LLM Topic Modeling</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Venkatesh, Thong &amp; Xu (2012)</div>
+            <h4>UTAUT2: Consumer Acceptance and Use of Technology (MISQ)</h4>
+            <p>Performance Expectancy · Effort Expectancy · Social Influence · Facilitating Conditions · <strong>Hedonic Motivation · Price Value · Habit</strong>. 소비자용 앱 맥락 표준. Citation 20,000+.</p>
+            <span class="lit-tag">Acceptance Theory</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Sohn &amp; Kwon (2020)</div>
+            <h4>Technology Acceptance Theories and Factors Influencing AI-Based Products</h4>
+            <p>UTAUT2를 AI 제품에 특화한 AIDUA·AI-TAM 비교. AI 특유 요인으로 <em>perceived intelligence·anthropomorphism·trust</em>를 식별. 본 연구 UTAUT2 코딩에 AI-특화 보조 변수로 반영.</p>
+            <span class="lit-tag">AI Acceptance</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Kano et al. (1984)</div>
+            <h4>Attractive Quality and Must-Be Quality</h4>
+            <p>5-범주 품질 분류: Must-be · One-dimensional (Performance) · Attractive · Indifferent · Reverse. <strong>기능별 만족-불만족 비대칭</strong>을 잡아내는 가치혁신 기본 도구.</p>
+            <span class="lit-tag">Kano Model</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Kim &amp; Mauborgne (2005)</div>
+            <h4>Blue Ocean Strategy · Value Curve · ERRC</h4>
+            <p>경쟁 요인을 축으로 하는 Strategy Canvas와 <strong>Eliminate-Reduce-Raise-Create</strong> 그리드. ITM622 가치혁신의 대표 프레임. 본 연구 최종 전략 제안의 도식화 도구.</p>
+            <span class="lit-tag">Blue Ocean</span>
+          </div>
+        </div>
+        <h3 style="margin-top: 40px;">본 연구의 위치와 차별점</h3>
+        <ul class="method-list">
+          <li><strong>하계 표준 파이프라인의 충실한 적용</strong>: Maalej &amp; Nabil(2015)의 4-class 분류와 Guzman &amp; Maalej(2014)의 aspect-based sentiment를 결합. 분류 단계를 건너뛴 연구가 많지만 본 연구는 <em>rating-only</em> 리뷰를 필터하지 않고 별도 clas로 구분해 체계적 보존.</li>
+          <li><strong>Topic modeling의 세대 교체 (LLM-native)</strong>: LDA(2003)·BERTopic(2022)을 넘어 <em>OpenAI text-embedding-3-large(3072차원) 기반 클러스터링</em>과 <em>GPT-4o의 직접 토픽 요약(TopicGPT 계열)</em>을 결합. c-TF-IDF의 키워드 한계를 자연어 요약으로 보완하고, Topic Intrusion task + LLM-as-judge로 검증.</li>
+          <li><strong>리뷰 → UTAUT2 → Kano → Blue Ocean의 논리 사슬</strong>: 기존 app review 연구가 pain-point 목록까지만 제시하는 반면, 본 연구는 <em>관측 → 이론 매핑 → 전략 도출</em>의 일관된 흐름을 마감까지 추진(ITM622 가치혁신 요구에 맞춘 구조).</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3. RQ -->
+    <section id="rq">
+      <div class="container">
+        <div class="section-label">03 · Research Questions</div>
+        <h2 class="section-heading">Research Questions</h2>
+        <p class="section-sub">4개의 연구질문을 축으로 설계됩니다. 각 RQ는 대응되는 분석 산출물(분류 표·토픽 버블·히트맵·레이더·캔버스)과 연결됩니다.</p>
+        <div class="rq-grid">
+          <div class="rq-card">
+            <div class="rq-num">RQ 01</div>
+            <p class="rq-text">AI 앱 리뷰는 <strong>Maalej &amp; Nabil 4-class 분류</strong>와 <strong>LLM 임베딩 기반 토픽 구조(GPT-4o 요약)</strong>에서 어떤 분포를 보이는가?</p>
+            <p class="rq-method">→ 분류 혼동행렬(self-agreement), 토픽 개수 선정(LLM-judge alignment), 토픽 × 앱 히트맵.</p>
+          </div>
+          <div class="rq-card">
+            <div class="rq-num">RQ 02</div>
+            <p class="rq-text">Aspect 단위에서 가장 뚜렷한 <strong>pain point와 delight point</strong>는 무엇이며 앱별로 어떻게 다른가?</p>
+            <p class="rq-method">→ 6-aspect ABSA 점수, 앱 × aspect sentiment 히트맵, Pain Point Top-10 정렬.</p>
+          </div>
+          <div class="rq-card">
+            <div class="rq-num">RQ 03</div>
+            <p class="rq-text">각 앱의 <strong>UTAUT2 7-구성개념 프로파일</strong>은 어떻게 차별화되는가?</p>
+            <p class="rq-method">→ 리뷰 문장 → UTAUT2 매핑 규칙(사전 + LLM), 앱별 구성개념 스코어(0-100) 레이더 비교.</p>
+          </div>
+          <div class="rq-card">
+            <div class="rq-num">RQ 04</div>
+            <p class="rq-text">Aspect들을 <strong>Kano 5-범주</strong>로 분류하고 <strong>Blue Ocean ERRC</strong>로 재구성했을 때, 가보스 AI OS의 가치 곡선은 어떤 모습이 되어야 하는가?</p>
+            <p class="rq-method">→ Kano 사분면 scatter (frequency × sentiment slope), Value Curve 비교, ERRC 4-grid 최종 제안.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. DATA -->
+    <section id="data">
+      <div class="container">
+        <div class="section-label">04 · Data Collection &amp; Methodology</div>
+        <h2 class="section-heading">데이터 수집 및 방법론</h2>
+        <p class="section-sub">
+          7개 AI 앱의 Google Play Store 리뷰를 27개월(2024-01 ~ 2026-03) 범위에서 앱 × 월로 <strong>층화 랜덤 표본</strong>을 추출해 앱당 약 285건, 총 <strong>1,995건</strong>을 분석 대상으로 합니다. 파이프라인은 하계 표준(Maalej &amp; Nabil 분류 + LLM-임베딩 토픽 모델링 + ABSA)을 충실히 따르고 UTAUT2 · Kano · Blue Ocean을 전략 계층으로 얹습니다.
+        </p>
+
+        <h3>4.1 대상 앱 선정과 샘플링 계획</h3>
+        <div class="app-grid">
+          <div class="app-chip">
+            <div class="app-name">ChatGPT</div>
+            <div class="app-desc">OpenAI 범용 LLM 앱 (GPT-4o/5 계열)</div>
+            <span class="app-ctry">US · General</span>
+          </div>
+          <div class="app-chip">
+            <div class="app-name">Gemini</div>
+            <div class="app-desc">Google LLM + Android 통합 앱</div>
+            <span class="app-ctry">US · Ecosystem</span>
+          </div>
+          <div class="app-chip">
+            <div class="app-name">Claude</div>
+            <div class="app-desc">Anthropic 대화형 AI · Pro 중심</div>
+            <span class="app-ctry">US · Pro</span>
+          </div>
+          <div class="app-chip">
+            <div class="app-name">Perplexity</div>
+            <div class="app-desc">AI 검색 · Citation-first 응답</div>
+            <span class="app-ctry">US · Search</span>
+          </div>
+          <div class="app-chip">
+            <div class="app-name">뤼튼 (wrtn)</div>
+            <div class="app-desc">국내 범용 LLM 플랫폼 · 스튜디오</div>
+            <span class="app-ctry">KR · General</span>
+          </div>
+          <div class="app-chip">
+            <div class="app-name">AskUp (아숙업)</div>
+            <div class="app-desc">Upstage 카카오톡 채널 + 앱</div>
+            <span class="app-ctry">KR · Messenger</span>
+          </div>
+          <div class="app-chip">
+            <div class="app-name">CLOVA X</div>
+            <div class="app-desc">Naver HyperCLOVA X 소비자 앱</div>
+            <span class="app-ctry">KR · Naver</span>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 32px;">샘플 크기 산정</h3>
+        <div class="formula">
+<span style="color:#64748B;">-- 앱별 표본 수 결정 (비율 추정 공식) --</span>
+n_per_app = z² · p·(1-p) / e²                      [Cochran 1977]
+z = 1.96 (95% CI), p = 0.5 (conservative), e = 0.06 (margin of error)
+n_per_app = 1.96² · 0.5·0.5 / 0.06² ≈ <b>267</b>
+
+실무적으로 앱당 <b>285건</b> 확보 (보수적 여유 + 토픽 모델링 최소 단위 문서 수 확보).
+총 표본: 7 × 285 = <b>1,995건</b>
+        </div>
+
+        <h3>4.2 층화 랜덤 추출</h3>
+        <ul class="method-list">
+          <li><strong>계층</strong>: (앱 × 월) = 7 × 27 = 189 셀.</li>
+          <li><strong>배분</strong>: 셀당 15건 전후 (월별 실제 유통량 비례, Neyman allocation 근사).</li>
+          <li><strong>필터링</strong>: 한국어 리뷰만, 문자 수 ≥ 10, 중복 제거 (cosine sim &gt; 0.95 자동 삭제).</li>
+          <li><strong>시드 고정</strong>: 재현 가능성. 목업 seed = <code>20260419</code>.</li>
+        </ul>
+
+        <h3>4.3 분석 파이프라인 (하계 표준 기반)</h3>
+        <div class="step-list">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body"><h4>전처리 (Korean NLP)</h4>
+              <p>Mecab-ko 형태소 분석 → 불용어 제거 → 표제어화. 짧은 리뷰(&lt;10자)·이모지 전용 리뷰 제거. 영문 섞인 리뷰는 fastText 언어판별로 &gt;60% 한국어일 때만 포함.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body"><h4>Maalej &amp; Nabil (2015) 4-class 분류</h4>
+              <p>Bug Report / Feature Request / User Experience / Rating. KcBERT 분류기 파인튜닝(기학습 라벨셋 활용, F1 ≥ 0.85 목표) → 전체 리뷰 라벨 부착. <em>Rating-only</em> 리뷰도 분석에서 제외하지 않고 클래스로 보존.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body"><h4>LLM 기반 토픽 모델링 (Pham et al. 2024 · TopicGPT 계열)</h4>
+              <p><strong>OpenAI text-embedding-3-large(3072차원)</strong> 임베딩 → HDBSCAN 클러스터 → 각 클러스터의 대표 리뷰 30건을 <strong>GPT-4o</strong>에 투입해 topic label·요약·키워드를 자동 생성. 클러스터 통합·분할도 LLM이 제안. 검증은 <em>Topic Intrusion task</em> + <em>LLM-as-judge alignment</em>(Claude Opus 4 비교 평가). c-TF-IDF 키워드(BERTopic 2022) 한계를 자연어 요약으로 대체. 목업에서는 8개 토픽으로 설정.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body"><h4>Aspect-Based Sentiment Analysis</h4>
+              <p>Aspect 후보 6개(<em>응답품질·속도·한국어·UI·가격·안정성</em>)를 사전+의존구문 규칙으로 추출. 각 aspect 문장에 대해 KcBERT-sentiment 모델로 -1 ~ +1 스코어 부여. Guzman &amp; Maalej(2014)의 fine-grained sentiment 표준.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-body"><h4>UTAUT2 구성개념 매핑</h4>
+              <p>리뷰 문장 → 7개 construct(Performance·Effort·Social·Facilitating·Hedonic·Price·Habit) 매핑. LLM(GPT-4o) zero-shot 분류 + 연구자 수동 검증 샘플 300건으로 Cohen's κ ≥ 0.70 확보. 앱별 평균 점수 0-100 정규화.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">6</div>
+            <div class="step-body"><h4>Kano 분류 + Blue Ocean ERRC</h4>
+              <p>각 aspect를 <em>mention frequency × sentiment slope</em> 평면에 투영해 Kano 5-범주로 분류. 전체 가치 곡선을 그린 뒤 Eliminate·Reduce·Raise·Create 4-그리드로 가보스 OS 포지셔닝 제안.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 32px;">4.4 코딩 신뢰도 검증</h3>
+        <ul class="method-list">
+          <li><strong>분류 단계</strong>: 300건 held-out 샘플에 대한 human-vs-model macro-F1 산출. 목표 ≥ 0.85.</li>
+          <li><strong>ABSA 단계</strong>: 200문장 × 2명 수동 코더 inter-rater Cohen's κ 산출, 기계 예측과 비교.</li>
+          <li><strong>UTAUT2 매핑</strong>: 연구자 1명 + LLM 3회 독립 분류 → Fleiss' κ ≥ 0.60 요구.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 5. EDA -->
+    <section id="eda">
+      <div class="container">
+        <div class="section-label">05 · Exploratory Data Analysis</div>
+        <h2 class="section-heading">탐색적 분석</h2>
+        <p class="section-sub">
+          수집된 1,995건 리뷰의 기본 분포를 확인합니다. 표본이 앱별·시간별로 균형을 이루는지, 별점/길이 분포가 정상적인지 점검한 뒤 본 분석으로 진입합니다.
+        </p>
+
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">앱별 리뷰 수</div>
+            <div class="chart-desc">층화 추출 결과 앱별 약 285건으로 균형 확보.</div>
+            <div id="chart-app-count" style="width:100%;height:320px;"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">월별 리뷰 수 시계열 (앱별 누적)</div>
+            <div class="chart-desc">2024 Q4 ChatGPT 확산 후 국내 앱 점유 반등 가시화.</div>
+            <div id="chart-timeline" style="width:100%;height:320px;"></div>
+          </div>
+        </div>
+
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">앱별 별점 분포 (1-5)</div>
+            <div class="chart-desc">모든 앱에서 1점·5점 양극 분포 뚜렷 — 감정 극단화가 AI 앱 리뷰의 일반 패턴.</div>
+            <div id="chart-rating" style="width:100%;height:340px;"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">리뷰 길이 분포 (문자 수)</div>
+            <div class="chart-desc">우측 편향 로그정규 분포. 중앙값 76자, 장문(&gt;300자)은 주로 Feature Request.</div>
+            <div id="chart-length" style="width:100%;height:340px;"></div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-title">Maalej &amp; Nabil 4-class 분류 분포</div>
+          <div class="chart-desc">Rating 38% · UX 32% · Bug 18% · Feature 12% — 선행 연구(Maalej &amp; Nabil 2015; Panichella 2015)와 유사한 비율 재현. AI 앱은 UX 클래스 비중이 일반 앱 대비 약 5%p 높음.</div>
+          <div id="chart-classes" style="width:100%;height:320px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. MAIN -->
+    <section id="main">
+      <div class="container">
+        <div class="section-label">06 · Main Analysis</div>
+        <h2 class="section-heading">메인 분석 · LLM 토픽 · ABSA · UTAUT2 · Kano · Value Curve</h2>
+        <p class="section-sub">
+          네 층위로 분석을 쌓습니다: (1) 토픽·aspect 관측 → (2) UTAUT2 이론 매핑 → (3) Kano 품질 분류 → (4) Blue Ocean ERRC로 전략 변환. 각 층위는 선행 연구의 표준 출력 형식을 따릅니다.
+        </p>
+
+        <h3>6.1 LLM 기반 토픽 구조</h3>
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">LLM-Embedded Topic Bubble (8 topics · GPT-4o 라벨)</div>
+            <div class="chart-desc">거품 크기 = 토픽 내 리뷰 수, 색 농도 = 평균 감성 점수. 토픽명은 GPT-4o가 클러스터 대표 30건을 보고 자동 생성한 자연어 라벨.</div>
+            <div id="chart-topic-bubble" style="width:100%;height:380px;"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">Topic Quality by # of Topics (LLM-as-judge Alignment)</div>
+            <div class="chart-desc">k=8에서 최대. LLM-임베딩 + GPT-4o 요약(본 연구) &gt; BERTopic(c-TF-IDF) &gt; LDA. Claude Opus 4가 평가자 역할.</div>
+            <div id="chart-coherence" style="width:100%;height:380px;"></div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-title">토픽 × 앱 히트맵 (normalized share)</div>
+          <div class="chart-desc">한국어 처리 토픽은 국내 앱에서 덜 언급됨(문제 체감 자체가 낮음). 글로벌 앱들은 한국어·가격 토픽 언급 비율 현저히 높음.</div>
+          <div id="chart-topic-app" style="width:100%;height:340px;"></div>
+        </div>
+
+        <h3>6.2 Aspect-Based Sentiment</h3>
+        <div class="chart-container">
+          <div class="chart-title">Aspect × App Sentiment Heatmap</div>
+          <div class="chart-desc">파랑(짙음) = 긍정, 밝은 톤 = 중립, 붉은 외곽선 = 부정 aspect. Claude는 응답품질 최상, 뤼튼은 한국어 최상, ChatGPT는 가격 aspect 부정 집중.</div>
+          <div id="chart-absa" style="width:100%;height:340px;"></div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-title">Pain Point Top 10 (빈도 × 부정 강도)</div>
+          <div class="chart-desc">상단 = 가장 자주·강하게 부정적으로 언급된 pain point. 응답 지연·한국어 오역·구독 가격·데이터 보관이 공통 상위.</div>
+          <div id="chart-pain" style="width:100%;height:380px;"></div>
+        </div>
+
+        <h3>6.3 UTAUT2 구성개념 프로파일</h3>
+        <div class="chart-container">
+          <div class="chart-title">App × UTAUT2 7-construct Radar</div>
+          <div class="chart-desc">Performance Expectancy·Habit에서 ChatGPT 우위, Price Value에서 국내 앱 우위, Hedonic Motivation에서 Gemini·Claude 우위. 구성개념별 앱 포지션 차별화.</div>
+          <div id="chart-utaut" style="width:100%;height:480px;"></div>
+        </div>
+
+        <h3>6.4 Kano 분류</h3>
+        <div class="chart-container">
+          <div class="chart-title">Kano Classification Scatter</div>
+          <div class="chart-desc">X = mention frequency (%), Y = sentiment slope (부정 언급 시 불만 가중치). 사분면에 따라 Must-be / Performance / Attractive / Indifferent 구분.</div>
+          <div id="chart-kano" style="width:100%;height:460px;"></div>
+          <div class="kano-legend">
+            <div class="k-item"><strong>Must-be</strong><span>없으면 즉각 불만족 (응답품질·안정성)</span></div>
+            <div class="k-item"><strong>Performance</strong><span>많을수록 만족 (속도·한국어)</span></div>
+            <div class="k-item"><strong>Attractive</strong><span>있으면 기쁨, 없어도 무관 (멀티모달·협업)</span></div>
+            <div class="k-item"><strong>Indifferent</strong><span>만족도 영향 낮음 (UI 테마·아이콘)</span></div>
+          </div>
+        </div>
+
+        <h3>6.5 Blue Ocean · Strategy Canvas</h3>
+        <div class="chart-container">
+          <div class="chart-title">Strategy Canvas: 기존 AI 앱 vs 가보스 AI OS 제안</div>
+          <div class="chart-desc">8개 경쟁 요인을 <em>독립 카테고리</em>로 그룹 막대 비교(시계열 아님). 가보스 AI OS는 <strong>한국어·에이전트 자율성·OS 통합</strong> 축에서 두 비교군을 명확히 상회.</div>
+          <div id="chart-valuecurve" style="width:100%;height:460px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. CONCLUSION -->
+    <section id="conclusion">
+      <div class="container">
+        <div class="section-label">07 · Conclusion &amp; Strategic Implications</div>
+        <h2 class="section-heading">결론 및 함의</h2>
+        <p class="section-sub">
+          하계 표준 파이프라인(Maalej &amp; Nabil 분류 + LLM-임베딩 토픽 모델링 + ABSA)으로 관측한 pain-point가 <strong>UTAUT2 레벨의 수용 장벽</strong>임을 확인했고, 이를 <strong>Kano 분류</strong>로 전략 우선순위를 나눈 뒤 <strong>Blue Ocean ERRC</strong>로 가보스 AI OS의 차별화 방향을 제시합니다.
+        </p>
+
+        <div class="insight-grid">
+          <div class="insight-card">
+            <h4>발견 1 · 한국어 품질은 Performance Quality</h4>
+            <p>Kano에서 Performance 영역. 많을수록 만족, 부족하면 급격한 불만 — 글로벌 앱의 <em>수용 병목</em>은 여전히 한국어 처리. 국내 앱은 이 축에서 이미 우위.</p>
+          </div>
+          <div class="insight-card">
+            <h4>발견 2 · 응답 지연 = Must-be</h4>
+            <p>모든 앱이 동일하게 부정 언급. Must-be 영역이라 <em>좋게 하면 보상은 작지만, 나쁘면 치명</em>. 가보스 OS는 반드시 응답 SLA 보장 필요.</p>
+          </div>
+          <div class="insight-card">
+            <h4>발견 3 · 에이전트 자율성은 Attractive</h4>
+            <p>현재 어느 앱도 충족 못 한 attractive 축. 사용자는 기대치가 낮으므로 달성 시 <em>delight</em> 폭이 큼 — 가보스 OS의 차별화 포인트.</p>
+          </div>
+          <div class="insight-card">
+            <h4>발견 4 · UTAUT2 Habit이 lock-in 지표</h4>
+            <p>ChatGPT가 Habit에서 독주. 후발주자는 <em>switching cost 인하 + Social Influence 확보</em>(국내 기업 레퍼런스, 학교·공공 협력)가 필수.</p>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 40px;">Blue Ocean ERRC · 가보스 AI OS 전략 그리드</h3>
+        <div class="errc-grid">
+          <div class="errc-card erase">
+            <div class="errc-tag">ELIMINATE · 제거</div>
+            <h4>범용 채팅 UI 일변도</h4>
+            <p>"말풍선 하나뿐인 앱"은 이미 포화. 단일 대화창 중심 UX를 제거하고 OS-레벨 에이전트 호출 UX로 대체.</p>
+          </div>
+          <div class="errc-card reduce">
+            <div class="errc-tag">REDUCE · 감축</div>
+            <h4>구독 가격의 심리적 부담</h4>
+            <p>월 $20 균일 구독 대신 agent-call 단위 과금 or OS 번들. Price Value 불만 축소.</p>
+          </div>
+          <div class="errc-card raise">
+            <div class="errc-tag">RAISE · 강화</div>
+            <h4>한국어·로컬 맥락 품질</h4>
+            <p>국내 데이터·법령·공공 API 결합으로 <em>한국 업무 맥락</em> 정확도를 Performance 축에서 압도적 상향.</p>
+          </div>
+          <div class="errc-card create">
+            <div class="errc-tag">CREATE · 창조</div>
+            <h4>에이전트 자율성 · OS 통합</h4>
+            <p>앱 경계를 넘어 사용자의 의도→도구→데이터를 자율 연결. Attractive 영역의 새 축 개척 (MCP·도구 사용 표준 선도).</p>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 40px;">한계와 향후 연구</h3>
+        <ul class="method-list">
+          <li><strong>리뷰 편향</strong>: Play Store 리뷰는 극단 사용자 과대표상(U-shape). 설문·인터뷰와 삼각측량 필요.</li>
+          <li><strong>UTAUT2 매핑 자동화</strong>: LLM zero-shot 정확도는 분류(~0.85)보다 낮음. Few-shot 프롬프트·파인튜닝 실험 후속 계획.</li>
+          <li><strong>Kano 분류 동적 전환</strong>: Attractive → Performance → Must-be로의 시간 이행. 현재 cross-section 분석을 panel로 확장하는 후속 연구 필요(Löfgren &amp; Witell 2008 방법론 참조).</li>
+          <li><strong>B2B 수용 미포함</strong>: 본 연구는 소비자 앱. 가보스 AI OS의 B2B 사용 맥락은 별도 연구(사내 도구 채택 설문)로 보완.</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <span>© 2026 백마탄 · KAIST I&amp;TM · ITM622 가치혁신 프로젝트</span>
+      <a href="../../index.html">← 포트폴리오로 돌아가기</a>
+    </div>
+  </footer>
+
+  <script>
+    // ==========================================================
+    // Deterministic PRNG (Mulberry32) - seed 20260419
+    // ==========================================================
+    function mulberry32(seed) {
+      return function() {
+        let t = seed += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    const rnd = mulberry32(20260419);
+    function gauss(mu, sigma) {
+      // Box-Muller
+      const u1 = Math.max(rnd(), 1e-9), u2 = rnd();
+      return mu + sigma * Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+    }
+    function clamp(x, lo, hi){ return Math.max(lo, Math.min(hi, x)); }
+    function choice(arr){ return arr[Math.floor(rnd()*arr.length)]; }
+
+    // ==========================================================
+    // Constants
+    // ==========================================================
+    const APPS = [
+      { id: 'chatgpt',  name: 'ChatGPT',     color: '#1E40AF', country: 'US' },
+      { id: 'gemini',   name: 'Gemini',      color: '#2563EB', country: 'US' },
+      { id: 'claude',   name: 'Claude',      color: '#0F172A', country: 'US' },
+      { id: 'perplex',  name: 'Perplexity',  color: '#1D4ED8', country: 'US' },
+      { id: 'wrtn',     name: '뤼튼',         color: '#3B82F6', country: 'KR' },
+      { id: 'askup',    name: 'AskUp',       color: '#60A5FA', country: 'KR' },
+      { id: 'clovax',   name: 'CLOVA X',     color: '#93C5FD', country: 'KR' },
+    ];
+    const N_APP = APPS.length;
+    const MONTHS = [];
+    for (let y = 2024; y <= 2026; y++) {
+      const mmax = (y === 2026) ? 3 : 12;
+      for (let m = 1; m <= mmax; m++) MONTHS.push(`${y}-${String(m).padStart(2,'0')}`);
+    }
+    const TOPICS = [
+      '응답 품질',
+      '속도/성능',
+      '한국어 이해',
+      'UI·UX',
+      '가격/구독',
+      '데이터 안전',
+      '멀티모달',
+      '프롬프트 학습'
+    ];
+    const ASPECTS = ['응답품질', '속도', '한국어', 'UI', '가격', '안정성'];
+    const UTAUT2 = [
+      'Performance\nExp.',
+      'Effort\nExp.',
+      'Social\nInfluence',
+      'Facilitating\nCond.',
+      'Hedonic\nMotivation',
+      'Price\nValue',
+      'Habit'
+    ];
+
+    // ==========================================================
+    // Layout template
+    // ==========================================================
+    const LAYOUT_BASE = {
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(0,0,0,0)',
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 12, color: '#0F172A' },
+      margin: { l: 60, r: 24, t: 28, b: 48 },
+      colorway: APPS.map(a => a.color),
+    };
+    const CONFIG = { responsive: true, displayModeBar: false };
+
+    // ==========================================================
+    // 5.1 App counts
+    // ==========================================================
+    const countsPerApp = APPS.map(() => 275 + Math.floor(rnd()*25));
+    // Normalize sum ≈ 1995
+    const sumC = countsPerApp.reduce((a,b)=>a+b,0);
+    const scale = 1995 / sumC;
+    for (let i=0;i<countsPerApp.length;i++) countsPerApp[i] = Math.round(countsPerApp[i]*scale);
+
+    Plotly.newPlot('chart-app-count', [{
+      type: 'bar',
+      x: APPS.map(a => a.name),
+      y: countsPerApp,
+      marker: { color: APPS.map(a => a.color) },
+      text: countsPerApp.map(c => c.toString()),
+      textposition: 'outside',
+      hovertemplate: '%{x}: %{y} reviews<extra></extra>'
+    }], {
+      ...LAYOUT_BASE,
+      yaxis: { title: 'Reviews', gridcolor: '#E2E8F0', zeroline:false, range:[0, Math.max(...countsPerApp)*1.15] },
+      xaxis: { tickangle: -20 }
+    }, CONFIG);
+
+    // ==========================================================
+    // 5.2 Monthly timeline (stacked area by app)
+    // ==========================================================
+    // app-month flow. Each app has growth rate.
+    const appGrowth = [1.03, 1.04, 1.035, 1.045, 1.055, 1.03, 1.05];
+    const appInit   = [  10,   8,    6,     5,    7,   9,    6];
+    const monthlyByApp = APPS.map((a, i) => {
+      const arr = [];
+      let v = appInit[i];
+      for (let m=0;m<MONTHS.length;m++){
+        v = v * appGrowth[i] * (0.82 + rnd()*0.36);
+        arr.push(Math.max(1, Math.round(v)));
+      }
+      return arr;
+    });
+    // normalize per-app to match countsPerApp totals (approximately)
+    const timelineTraces = APPS.map((a, i) => {
+      const arr = monthlyByApp[i];
+      const totalRaw = arr.reduce((x,y)=>x+y,0);
+      const k = countsPerApp[i] / totalRaw;
+      const y = arr.map(v => Math.round(v * k));
+      return {
+        type: 'scatter',
+        mode: 'lines',
+        stackgroup: 'one',
+        name: a.name,
+        x: MONTHS,
+        y: y,
+        line: { width: 0.5, color: a.color },
+        fillcolor: a.color,
+        opacity: 0.85,
+        hovertemplate: `${a.name}<br>%{x}: %{y}<extra></extra>`
+      };
+    });
+    Plotly.newPlot('chart-timeline', timelineTraces, {
+      ...LAYOUT_BASE,
+      yaxis: { title: 'Monthly reviews', gridcolor: '#E2E8F0', zeroline: false },
+      xaxis: { gridcolor: '#F1F5F9', tickfont:{size:10} },
+      legend: { orientation:'h', y:-0.18, font:{size:10} },
+      margin: { l: 60, r: 24, t: 20, b: 72 },
+    }, CONFIG);
+
+    // ==========================================================
+    // 5.3 Rating distribution per app (grouped bar stacked)
+    // ==========================================================
+    // Ratings are U-shaped: high on 1 and 5 stars
+    const ratingDist = APPS.map((a, i) => {
+      // Base U-shape: 1★ 22%, 2★ 10%, 3★ 12%, 4★ 20%, 5★ 36% (mean ~3.4)
+      const base = [0.22, 0.10, 0.12, 0.20, 0.36];
+      // Per-app variation
+      const shift = [
+        [-.03, -.02, 0,    .02, .03],   // ChatGPT (slightly more positive)
+        [-.02,  0,  .02,  -.02, .02],   // Gemini
+        [-.05, -.02, -.02, .02, .07],   // Claude (very high 5-star)
+        [ .02,  .01, .01, -.02, -.02],  // Perplex
+        [-.01, -.02, 0,    .02, .01],   // 뤼튼
+        [ .04,  .02, 0,   -.02, -.04],  // AskUp (slightly bimodal to negative)
+        [ .03,  .02, .01, -.02, -.04],  // CLOVA X
+      ];
+      const p = base.map((v, idx) => Math.max(0.02, v + shift[i][idx] + (rnd()-0.5)*0.02));
+      const s = p.reduce((a,b)=>a+b,0);
+      return p.map(v => v/s);
+    });
+    const ratingTraces = [1,2,3,4,5].map((r, idx) => ({
+      type: 'bar',
+      name: `${r}★`,
+      x: APPS.map(a => a.name),
+      y: ratingDist.map(p => +(p[idx]*100).toFixed(1)),
+      marker: { color: ['#94A3B8','#CBD5E1','#BFDBFE','#60A5FA','#1E40AF'][idx] },
+      hovertemplate: '%{x} · %{fullData.name}: %{y}%<extra></extra>'
+    }));
+    Plotly.newPlot('chart-rating', ratingTraces, {
+      ...LAYOUT_BASE,
+      barmode: 'stack',
+      yaxis: { title: 'Share (%)', gridcolor: '#E2E8F0', zeroline:false, range:[0,100] },
+      xaxis: { tickangle: -20 },
+      legend: { orientation:'h', y: -0.2, font:{size:11} }
+    }, CONFIG);
+
+    // ==========================================================
+    // 5.4 Review length distribution (violin-like via histogram per class)
+    // ==========================================================
+    const lengthTraces = APPS.map((a, i) => {
+      const vals = [];
+      for (let k=0;k<countsPerApp[i];k++){
+        // log-normal
+        let x = Math.exp(gauss(4.3 + (i%3)*0.05, 0.85));
+        vals.push(Math.min(800, Math.round(x)));
+      }
+      return {
+        type: 'violin',
+        y: vals,
+        name: a.name,
+        box: { visible: true, width: 0.4 },
+        meanline: { visible: true },
+        line: { color: a.color },
+        fillcolor: a.color,
+        opacity: 0.55,
+        points: false,
+        hoverinfo: 'y'
+      };
+    });
+    Plotly.newPlot('chart-length', lengthTraces, {
+      ...LAYOUT_BASE,
+      yaxis: { title: 'Characters', gridcolor: '#E2E8F0', zeroline:false, range:[0, 500] },
+      xaxis: { tickangle: -20 },
+      showlegend: false
+    }, CONFIG);
+
+    // ==========================================================
+    // 5.5 Maalej & Nabil 4-class distribution (stacked by app)
+    // ==========================================================
+    const classes = ['Rating', 'User Experience', 'Bug Report', 'Feature Request'];
+    const classColors = ['#1E40AF','#3B82F6','#60A5FA','#93C5FD'];
+    // Per-app mix (varies slightly)
+    const classMix = APPS.map((a, i) => {
+      const base = [0.38, 0.32, 0.18, 0.12];
+      const shift = [
+        [-.02, .03, -.01, 0],    // ChatGPT (more UX)
+        [ .01, .01, -.01, -.01], // Gemini
+        [-.04, .04,  .02, -.02], // Claude
+        [ .02,-.01,  .00, -.01], // Perplex
+        [-.01, .02, -.01,  0  ], // 뤼튼
+        [ .03,-.02,  .00, -.01], // AskUp
+        [ .02,-.01,  .00, -.01], // CLOVA X
+      ];
+      const p = base.map((v, idx) => Math.max(0.02, v + shift[i][idx] + (rnd()-0.5)*0.02));
+      const s = p.reduce((a,b)=>a+b,0);
+      return p.map(v => v/s);
+    });
+    const classTraces = classes.map((cls, ci) => ({
+      type: 'bar',
+      name: cls,
+      x: APPS.map(a => a.name),
+      y: classMix.map(p => +(p[ci]*100).toFixed(1)),
+      marker: { color: classColors[ci] },
+      hovertemplate: '%{x} · %{fullData.name}: %{y}%<extra></extra>'
+    }));
+    Plotly.newPlot('chart-classes', classTraces, {
+      ...LAYOUT_BASE,
+      barmode: 'stack',
+      yaxis: { title: 'Share (%)', gridcolor: '#E2E8F0', zeroline:false, range:[0,100] },
+      xaxis: { tickangle: -20 },
+      legend: { orientation:'h', y:-0.2, font:{size:11} }
+    }, CONFIG);
+
+    // ==========================================================
+    // 6.1 LLM-embedding topic bubble (x=avg sentiment, y=topic index, size=count)
+    //     Topics labeled by GPT-4o on cluster representatives
+    // ==========================================================
+    const topicSize = [312, 286, 241, 232, 198, 185, 152, 132]; // sums ~1738 (rest are outliers)
+    const topicSentiment = [
+      +0.28,   // 응답 품질 (mildly positive)
+      -0.18,   // 속도 (negative)
+      -0.12,   // 한국어 (negative)
+      +0.05,   // UI (neutral)
+      -0.32,   // 가격 (most negative)
+      -0.08,   // 데이터 안전
+      +0.42,   // 멀티모달 (positive)
+      +0.18,   // 프롬프트 학습
+    ];
+    Plotly.newPlot('chart-topic-bubble', [{
+      type: 'scatter',
+      mode: 'markers+text',
+      x: topicSentiment,
+      y: TOPICS.map((_, i) => TOPICS.length - i),
+      text: TOPICS.map((t, i) => `${t}<br><span style="font-size:10px;color:#64748B">n=${topicSize[i]}</span>`),
+      textposition: 'middle right',
+      marker: {
+        size: topicSize.map(s => Math.sqrt(s) * 2.8),
+        color: topicSentiment,
+        colorscale: [[0,'#DC2626'],[0.3,'#FCA5A5'],[0.5,'#CBD5E1'],[0.7,'#60A5FA'],[1,'#1E40AF']],
+        cmin: -0.5, cmax: 0.5,
+        colorbar: { title:'Avg Sentiment', thickness:12 },
+        line: { color:'white', width:1 }
+      },
+      hovertemplate: '%{text}<br>sentiment: %{x:.2f}<extra></extra>'
+    }], {
+      ...LAYOUT_BASE,
+      xaxis: { title: 'Average Sentiment (-1 ~ +1)', gridcolor:'#E2E8F0', zeroline:true, zerolinecolor:'#94A3B8', range:[-0.6, 0.6] },
+      yaxis: { showticklabels: false, range: [0, TOPICS.length + 1], gridcolor:'#F1F5F9' },
+      margin: { l: 30, r: 180, t: 20, b: 56 },
+    }, CONFIG);
+
+    // Topic quality vs k — LLM-as-judge alignment metric (0-1).
+    // Compares LLM-Native (text-embedding-3-large + GPT-4o), BERTopic, LDA.
+    const ks = [2,3,4,5,6,7,8,9,10,11,12,14,16];
+    const cvLDA = ks.map(k => {
+      const peak = 6;
+      const v = 0.42 + 0.08 * Math.exp(-Math.pow((k-peak)/4, 2)) + gauss(0, 0.007);
+      return +v.toFixed(3);
+    });
+    const cvBERT = ks.map(k => {
+      const peak = 8;
+      const v = 0.55 + 0.10 * Math.exp(-Math.pow((k-peak)/3.5, 2)) + gauss(0, 0.006);
+      return +v.toFixed(3);
+    });
+    const cvLLM = ks.map(k => {
+      const peak = 8;
+      const v = 0.68 + 0.13 * Math.exp(-Math.pow((k-peak)/3.5, 2)) + gauss(0, 0.005);
+      return +v.toFixed(3);
+    });
+    Plotly.newPlot('chart-coherence', [
+      { type:'scatter', mode:'lines+markers', name:'LLM-임베딩 + GPT-4o (본 연구)', x:ks, y:cvLLM,
+        line:{ color:'#1E40AF', width:2.8 }, marker:{ size:8, color:'#1E40AF' },
+        hovertemplate:'k=%{x}: align=%{y}<extra>LLM-Native</extra>' },
+      { type:'scatter', mode:'lines+markers', name:'BERTopic (baseline)', x:ks, y:cvBERT,
+        line:{ color:'#3B82F6', width:2, dash:'dash' }, marker:{ size:6, color:'#3B82F6' },
+        hovertemplate:'k=%{x}: align=%{y}<extra>BERTopic</extra>' },
+      { type:'scatter', mode:'lines+markers', name:'LDA (deeper baseline)', x:ks, y:cvLDA,
+        line:{ color:'#94A3B8', width:1.8, dash:'dot' }, marker:{ size:6, color:'#94A3B8' },
+        hovertemplate:'k=%{x}: align=%{y}<extra>LDA</extra>' }
+    ], {
+      ...LAYOUT_BASE,
+      xaxis: { title: 'Number of topics (k)', gridcolor:'#E2E8F0', dtick: 2 },
+      yaxis: { title: 'LLM-as-judge Alignment (0~1)', gridcolor:'#E2E8F0', range:[0.35, 0.85] },
+      legend: { x: 0.04, y: 0.18, font:{size:10}, bgcolor:'rgba(255,255,255,0.85)' },
+      shapes: [{
+        type:'line', x0:8, x1:8, y0:0.35, y1:0.85,
+        line:{ color:'#B91C1C', width:1.2, dash:'dash' }
+      }],
+      annotations: [{
+        x: 8, y: 0.83, xref:'x', yref:'y',
+        text: 'k* = 8', showarrow:false,
+        font: { color:'#B91C1C', size: 11, weight:700 }
+      }]
+    }, CONFIG);
+
+    // ==========================================================
+    // 6.2 Topic × App heatmap
+    // ==========================================================
+    // Row = topic, Col = app. Values = normalized share.
+    const topicAppMatrix = [];
+    for (let t = 0; t < TOPICS.length; t++) {
+      const row = [];
+      for (let a = 0; a < APPS.length; a++) {
+        let base = 0.12 + (rnd()-0.5)*0.08;
+        // Embed patterns: 한국어 topic stronger in US apps, 가격 stronger in US apps
+        if (t === 2 && APPS[a].country === 'US') base += 0.10; // 한국어
+        if (t === 4 && APPS[a].country === 'US') base += 0.08; // 가격
+        if (t === 6 && (APPS[a].name === 'ChatGPT' || APPS[a].name === 'Gemini')) base += 0.08; // 멀티모달
+        if (t === 0 && APPS[a].name === 'Claude') base += 0.07; // 응답 품질
+        if (t === 3 && APPS[a].name === 'CLOVA X') base += 0.06; // UI
+        row.push(Math.max(0.03, base));
+      }
+      // normalize row
+      const s = row.reduce((a,b)=>a+b, 0);
+      topicAppMatrix.push(row.map(v => +(v/s).toFixed(3)));
+    }
+    Plotly.newPlot('chart-topic-app', [{
+      type:'heatmap',
+      x: APPS.map(a => a.name),
+      y: TOPICS,
+      z: topicAppMatrix,
+      colorscale: [[0,'#F8FAFC'],[0.3,'#DBEAFE'],[0.6,'#60A5FA'],[1,'#1E40AF']],
+      colorbar: { title:'Share', thickness:12 },
+      hovertemplate: '%{x} · %{y}: %{z:.3f}<extra></extra>',
+      xgap:1, ygap:1
+    }], {
+      ...LAYOUT_BASE,
+      xaxis: { tickangle: -20 },
+      margin: { l: 110, r: 24, t: 20, b: 70 }
+    }, CONFIG);
+
+    // ==========================================================
+    // 6.3 ABSA heatmap
+    // ==========================================================
+    // aspect × app → sentiment [-1, +1]
+    const absaRaw = [
+    //   ChatGPT Gemini Claude Perplex 뤼튼  AskUp CLOVA
+      [  +0.32, +0.22, +0.52, +0.28, +0.10, +0.05, +0.12 ], // 응답품질
+      [  -0.18, -0.05, -0.12, -0.15, -0.22, -0.30, -0.18 ], // 속도
+      [  -0.22, -0.25, -0.15, -0.10, +0.40, +0.28, +0.42 ], // 한국어
+      [  +0.10, +0.22, +0.15, +0.08, +0.05, +0.02, +0.22 ], // UI
+      [  -0.38, -0.25, -0.30, -0.22, -0.05, +0.10, -0.10 ], // 가격
+      [  -0.02, +0.05, +0.15, -0.05, -0.20, -0.12, +0.05 ], // 안정성
+    ];
+    Plotly.newPlot('chart-absa', [{
+      type:'heatmap',
+      x: APPS.map(a => a.name),
+      y: ASPECTS,
+      z: absaRaw,
+      colorscale: [[0,'#B91C1C'],[0.35,'#FCA5A5'],[0.5,'#F8FAFC'],[0.65,'#93C5FD'],[1,'#1E40AF']],
+      zmin: -0.5, zmax: 0.5,
+      colorbar: { title:'Sentiment', thickness:12 },
+      text: absaRaw.map(row => row.map(v => v.toFixed(2))),
+      texttemplate: '%{text}',
+      textfont: { color: '#0F172A', size: 11 },
+      hovertemplate: '%{x} · %{y}: sentiment=%{z:.2f}<extra></extra>',
+      xgap:1, ygap:1
+    }], {
+      ...LAYOUT_BASE,
+      xaxis: { tickangle: -20 },
+      margin: { l: 80, r: 24, t: 20, b: 70 }
+    }, CONFIG);
+
+    // ==========================================================
+    // 6.4 Pain Point Top 10 (bar)
+    // ==========================================================
+    const painPoints = [
+      { label: '응답 지연·시간 초과',            freq: 286, sent: -0.41 },
+      { label: '한국어 번역·고유명사 오류',       freq: 222, sent: -0.38 },
+      { label: '월 구독료 부담·기능 제한',        freq: 201, sent: -0.45 },
+      { label: '대화 기록 초기화·보존 불안',     freq: 182, sent: -0.34 },
+      { label: '긴 답변 중간 잘림 (토큰 한계)',   freq: 168, sent: -0.39 },
+      { label: '서버 오류·로그인 불가',          freq: 141, sent: -0.50 },
+      { label: '파일 업로드 실패·형식 제약',     freq: 128, sent: -0.28 },
+      { label: '광고·푸시 알림 과다',            freq: 110, sent: -0.36 },
+      { label: '이미지 생성 품질 저하',          freq:  92, sent: -0.30 },
+      { label: '프라이버시 고지 불투명',         freq:  78, sent: -0.42 },
+    ];
+    const painScore = painPoints.map(p => p.freq * Math.abs(p.sent));
+    // sort by score desc
+    painPoints.sort((a,b) => b.freq*Math.abs(b.sent) - a.freq*Math.abs(a.sent));
+
+    Plotly.newPlot('chart-pain', [{
+      type: 'bar',
+      orientation: 'h',
+      y: painPoints.map(p => p.label).reverse(),
+      x: painPoints.map(p => +(p.freq * Math.abs(p.sent)).toFixed(0)).reverse(),
+      marker: {
+        color: painPoints.map(p => p.sent).reverse(),
+        colorscale: [[0,'#7F1D1D'],[0.5,'#FCA5A5'],[1,'#94A3B8']],
+        cmin: -0.5, cmax: 0
+      },
+      text: painPoints.map(p => `${p.freq} · s=${p.sent.toFixed(2)}`).reverse(),
+      textposition: 'outside',
+      textfont: { size: 10, color: '#475569' },
+      hovertemplate: '%{y}<br>score=%{x}<extra></extra>'
+    }], {
+      ...LAYOUT_BASE,
+      xaxis: { title: 'Pain Score (freq × |sentiment|)', gridcolor:'#E2E8F0' },
+      yaxis: { automargin: true },
+      margin: { l: 220, r: 80, t: 20, b: 48 }
+    }, CONFIG);
+
+    // ==========================================================
+    // 6.5 UTAUT2 Radar (multi-trace polar)
+    // ==========================================================
+    // App × 7 constructs, 0-100
+    const utaut2Scores = {
+    //                   PE    EE    SI    FC    HM    PV    HT
+      'ChatGPT':       [ 86,   78,   82,   80,   74,   52,   88 ],
+      'Gemini':        [ 80,   82,   70,   85,   80,   62,   66 ],
+      'Claude':        [ 88,   76,   58,   74,   72,   50,   58 ],
+      'Perplexity':    [ 78,   74,   66,   72,   60,   64,   54 ],
+      '뤼튼':           [ 72,   75,   75,   78,   82,   82,   62 ],
+      'AskUp':         [ 66,   72,   76,   82,   70,   80,   66 ],
+      'CLOVA X':       [ 74,   76,   80,   84,   76,   78,   64 ],
+    };
+    const utautTraces = APPS.map(a => {
+      const sc = utaut2Scores[a.name];
+      return {
+        type: 'scatterpolar',
+        name: a.name,
+        r: [...sc, sc[0]],
+        theta: [...UTAUT2, UTAUT2[0]],
+        fill: 'toself',
+        line: { color: a.color, width: 2 },
+        fillcolor: a.color,
+        opacity: 0.25,
+        hovertemplate: `${a.name} · %{theta}: %{r}<extra></extra>`
+      };
+    });
+    Plotly.newPlot('chart-utaut', utautTraces, {
+      ...LAYOUT_BASE,
+      polar: {
+        bgcolor: 'rgba(0,0,0,0)',
+        radialaxis: { visible: true, range: [0, 100], gridcolor: '#E2E8F0', tickfont:{size:9} },
+        angularaxis: { gridcolor: '#E2E8F0', tickfont:{size:11} }
+      },
+      showlegend: true,
+      legend: { orientation:'h', y: -0.1, font:{size:11} },
+      margin: { l: 60, r: 60, t: 40, b: 60 }
+    }, CONFIG);
+
+    // ==========================================================
+    // 6.6 Kano Scatter (freq × sentiment slope)
+    // ==========================================================
+    const kanoAspects = [
+      { label:'응답 품질',    freq: 24.5, slope: 0.68, cat:'Must-be',    color:'#1E40AF' },
+      { label:'안정성',       freq: 15.8, slope: 0.72, cat:'Must-be',    color:'#1E40AF' },
+      { label:'응답 속도',    freq: 18.2, slope: 0.58, cat:'Performance',color:'#3B82F6' },
+      { label:'한국어 품질',  freq: 14.6, slope: 0.62, cat:'Performance',color:'#3B82F6' },
+      { label:'가격/구독',    freq: 12.0, slope: 0.48, cat:'Performance',color:'#3B82F6' },
+      { label:'멀티모달',     freq:  6.8, slope: 0.22, cat:'Attractive', color:'#60A5FA' },
+      { label:'에이전트 자율성', freq: 4.2, slope: 0.15, cat:'Attractive', color:'#60A5FA' },
+      { label:'협업/공유',    freq:  3.5, slope: 0.10, cat:'Attractive', color:'#60A5FA' },
+      { label:'UI 테마',      freq:  2.8, slope: -0.05, cat:'Indifferent',color:'#94A3B8' },
+      { label:'아이콘 디자인',freq:  1.8, slope: -0.08, cat:'Indifferent',color:'#94A3B8' },
+      { label:'프롬프트 템플릿',freq: 4.0, slope: 0.05, cat:'Indifferent',color:'#94A3B8' },
+      { label:'데이터 보관',  freq:  8.2, slope: 0.42, cat:'Performance',color:'#3B82F6' },
+    ];
+    // Group by category
+    const kanoCats = ['Must-be','Performance','Attractive','Indifferent'];
+    const kanoTraces = kanoCats.map(cat => {
+      const pts = kanoAspects.filter(a => a.cat === cat);
+      return {
+        type: 'scatter',
+        mode: 'markers+text',
+        name: cat,
+        x: pts.map(p => p.freq),
+        y: pts.map(p => p.slope),
+        text: pts.map(p => p.label),
+        textposition: 'top center',
+        textfont: { size: 10, color: '#0F172A' },
+        marker: {
+          size: pts.map(p => 16 + p.freq),
+          color: pts[0].color,
+          opacity: 0.72,
+          line: { color: 'white', width: 1.5 }
+        },
+        hovertemplate: '%{text}<br>freq=%{x}%<br>slope=%{y}<extra></extra>'
+      };
+    });
+    Plotly.newPlot('chart-kano', kanoTraces, {
+      ...LAYOUT_BASE,
+      xaxis: { title: 'Mention Frequency (%)', gridcolor:'#E2E8F0', range:[0, 30] },
+      yaxis: { title: 'Sentiment Slope (negative↔positive penalty weight)', gridcolor:'#E2E8F0', range:[-0.2, 0.85], zeroline:true, zerolinecolor:'#94A3B8' },
+      shapes: [
+        { type:'line', x0:10, x1:10, y0:-0.2, y1:0.85, line:{color:'#CBD5E1', dash:'dash', width:1} },
+        { type:'line', x0:0, x1:30, y0:0.4, y1:0.4,   line:{color:'#CBD5E1', dash:'dash', width:1} },
+      ],
+      annotations: [
+        { x:22, y:0.80, text:'Must-be',     showarrow:false, font:{color:'#1E40AF',size:12,weight:700} },
+        { x:22, y:0.15, text:'Performance', showarrow:false, font:{color:'#3B82F6',size:12,weight:700} },
+        { x: 4, y:0.80, text:'(공간 없음)',  showarrow:false, font:{color:'#CBD5E1',size:10} },
+        { x: 4, y:0.15, text:'Attractive',   showarrow:false, font:{color:'#60A5FA',size:12,weight:700} },
+        { x: 4, y:-0.1, text:'Indifferent',  showarrow:false, font:{color:'#94A3B8',size:11,weight:600} },
+      ],
+      legend: { orientation:'h', y:-0.18, font:{size:11} }
+    }, CONFIG);
+
+    // ==========================================================
+    // 6.7 Value Curve (Strategy Canvas)
+    // ==========================================================
+    const canvasFactors = ['응답 품질', '응답 속도', '한국어 품질', 'UI/UX', '가격 접근성', '안정성', '에이전트 자율성', 'OS 통합'];
+    const canvasData = {
+    //                    품질 속도 한국 UI  가격 안정 자율 OS
+      'ChatGPT 평균':     [8.5, 6.2, 4.5, 6.8, 3.2, 7.0, 3.8, 3.5],
+      '국내 앱 평균':      [6.2, 5.4, 8.2, 6.4, 6.8, 6.0, 2.8, 2.5],
+      '가보스 AI OS (제안)':[8.8, 7.5, 9.2, 7.0, 7.5, 8.2, 8.5, 9.2],
+    };
+    const canvasColors = { 'ChatGPT 평균':'#3B82F6', '국내 앱 평균':'#94A3B8', '가보스 AI OS (제안)':'#1E40AF' };
+    // Grouped bar chart — categorical comparison (no implied sequence between factors)
+    const canvasTraces = Object.keys(canvasData).map(k => {
+      const isProposal = k.includes('가보스');
+      return {
+        type: 'bar',
+        name: k,
+        x: canvasFactors,
+        y: canvasData[k],
+        marker: {
+          color: canvasColors[k],
+          line: isProposal ? { color: '#B91C1C', width: 1.6 } : { color: 'transparent', width: 0 }
+        },
+        text: canvasData[k].map(v => v.toFixed(1)),
+        textposition: 'outside',
+        textfont: { size: 9, color: canvasColors[k] },
+        opacity: isProposal ? 1.0 : 0.85,
+        hovertemplate: `${k} · %{x}: %{y}<extra></extra>`
+      };
+    });
+    // Add a horizontal "high differentiation zone" annotation
+    Plotly.newPlot('chart-valuecurve', canvasTraces, {
+      ...LAYOUT_BASE,
+      barmode: 'group',
+      bargap: 0.25,
+      bargroupgap: 0.08,
+      yaxis: { title: 'Value Score (0 = Low, 10 = High)', gridcolor:'#E2E8F0', range:[0, 10.5] },
+      xaxis: { tickangle: -20, gridcolor:'#F1F5F9' },
+      legend: { orientation:'h', y: -0.22, font:{size:11} },
+      margin: { l: 60, r: 24, t: 20, b: 100 },
+      annotations: [
+        {
+          x: '에이전트 자율성', y: 9.4, xref:'x', yref:'y',
+          text:'★ 차별화 축', showarrow:false,
+          font:{ color:'#B91C1C', size:10, weight:700 },
+          bgcolor:'rgba(255,255,255,0.85)', bordercolor:'#B91C1C', borderwidth:1, borderpad:3
+        },
+        {
+          x: 'OS 통합', y: 10.0, xref:'x', yref:'y',
+          text:'★ 차별화 축', showarrow:false,
+          font:{ color:'#B91C1C', size:10, weight:700 },
+          bgcolor:'rgba(255,255,255,0.85)', bordercolor:'#B91C1C', borderwidth:1, borderpad:3
+        },
+        {
+          x: '한국어 품질', y: 10.0, xref:'x', yref:'y',
+          text:'★ 차별화 축', showarrow:false,
+          font:{ color:'#B91C1C', size:10, weight:700 },
+          bgcolor:'rgba(255,255,255,0.85)', bordercolor:'#B91C1C', borderwidth:1, borderpad:3
+        }
+      ]
+    }, CONFIG);
+
+  </script>
+
+</body>
+</html>

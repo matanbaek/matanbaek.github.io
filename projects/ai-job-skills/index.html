@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agentic AI 등장과 AI 스킬 수요 (인과 추론) | 백마탄</title>
+  <meta name="description" content="Agentic AI 본격화가 한국 IT 채용 공고의 AI 스킬 수요에 미친 인과 효과를 ITS·DID로 추정. KAIST I&TM ITM560 mockup.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+
+  <style>
+    :root {
+      --primary:        #1E40AF;
+      --secondary:      #3B82F6;
+      --accent:         #60A5FA;
+      --bg:             #F8FAFC;
+      --bg-elev:        #FFFFFF;
+      --bg-soft:        #EFF4FB;
+      --text-primary:   #0F172A;
+      --text-secondary: #475569;
+      --border:         #E2E8F0;
+      --shadow-sm:      0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-md:      0 4px 12px rgba(15, 23, 42, 0.06);
+      --shadow-lg:      0 12px 32px rgba(15, 23, 42, 0.08);
+      --radius-sm:      6px;
+      --radius-md:      10px;
+      --radius-lg:      16px;
+      --max-width:      1200px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Inter", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px; line-height: 1.6;
+      color: var(--text-primary); background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--primary); text-decoration: none; transition: color .15s ease; }
+    a:hover { color: var(--secondary); }
+    h1, h2, h3, h4 { color: var(--text-primary); line-height: 1.25; margin: 0 0 .5em; font-weight: 600; }
+    h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); font-weight: 700; letter-spacing: -0.02em; }
+    h2 { font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.01em; }
+    h3 { font-size: 1.2rem; margin-top: 1.5em; }
+    h4 { font-size: 1rem; }
+    p { margin: 0 0 1em; color: var(--text-secondary); }
+    code { font-family: "JetBrains Mono", monospace; font-size: 0.85em;
+           background: var(--bg-soft); padding: 2px 6px; border-radius: 4px; color: var(--primary); }
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+
+    /* Nav */
+    header.site-nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(248, 250, 252, 0.88);
+      backdrop-filter: saturate(180%) blur(10px);
+      -webkit-backdrop-filter: saturate(180%) blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .nav-brand { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); letter-spacing: -0.01em; }
+    .nav-brand:hover { color: var(--primary); }
+    .nav-links { display: flex; gap: 18px; list-style: none; padding: 0; margin: 0; flex-wrap: wrap; }
+    .nav-links a { font-size: 0.82rem; font-weight: 500; color: var(--text-secondary); }
+    .nav-links a:hover { color: var(--primary); }
+    @media (max-width: 860px) { .nav-links { display: none; } }
+
+    /* Sections */
+    section { padding: 80px 0; }
+    section + section { border-top: 1px solid var(--border); }
+    .section-label {
+      display: inline-block;
+      font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--secondary); margin-bottom: 12px;
+    }
+    .section-heading { margin-bottom: 16px; }
+    .section-sub { max-width: 760px; margin-bottom: 40px; color: var(--text-secondary); }
+
+    /* Hero */
+    .project-hero { padding: 80px 0 56px; }
+    .project-meta {
+      display: inline-block; padding: 4px 12px;
+      background: var(--bg-soft); border: 1px solid var(--border);
+      color: var(--primary); border-radius: 999px;
+      font-size: 0.78rem; font-weight: 500; margin-bottom: 20px;
+    }
+    .project-hero h1 { margin-bottom: 12px; }
+    .project-subtitle {
+      font-size: 1.1rem; color: var(--text-secondary);
+      max-width: 760px; margin-bottom: 24px;
+    }
+    .meta-callout {
+      background: linear-gradient(135deg, #EFF4FB 0%, #DBEAFE 100%);
+      border-left: 3px solid var(--primary);
+      border-radius: var(--radius-md);
+      padding: 16px 20px; margin: 16px 0 8px; max-width: 760px;
+      font-size: 0.95rem; color: var(--text-primary);
+    }
+    .meta-callout strong { color: var(--primary); }
+    .stat-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px; margin-top: 32px;
+    }
+    .stat-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm);
+    }
+    .stat-num {
+      font-size: 1.75rem; font-weight: 700;
+      color: var(--primary); letter-spacing: -0.02em; margin-bottom: 4px;
+    }
+    .stat-label { font-size: 0.82rem; color: var(--text-secondary); }
+
+    .disclaimer {
+      background: #FEF3C7; border: 1px solid #FDE68A; color: #92400E;
+      padding: 12px 16px; border-radius: var(--radius-sm);
+      font-size: 0.88rem; margin: 16px 0;
+    }
+    .disclaimer strong { color: #78350F; }
+
+    /* RQ cards */
+    .rq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .rq-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-sm);
+    }
+    .rq-num {
+      display: inline-block; font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.12em; color: var(--secondary); margin-bottom: 12px;
+    }
+    .rq-text { font-size: 1rem; color: var(--text-primary); font-weight: 500; margin-bottom: 8px; }
+    .rq-method { font-size: 0.85rem; color: var(--text-secondary); }
+
+    /* Literature */
+    .lit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+    .lit-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 20px 22px; box-shadow: var(--shadow-sm);
+    }
+    .lit-card .lit-cite {
+      font-size: 0.8rem; color: var(--secondary); font-weight: 600;
+      margin-bottom: 6px; letter-spacing: 0.01em;
+    }
+    .lit-card h4 { margin: 0 0 8px; font-size: 0.95rem; color: var(--text-primary); }
+    .lit-card p { font-size: 0.87rem; margin: 0; }
+    .lit-tag {
+      display: inline-block; padding: 2px 8px; font-size: 0.7rem;
+      font-weight: 500; background: var(--bg-soft);
+      color: var(--primary); border-radius: 999px; margin-top: 10px;
+    }
+
+    /* Tables */
+    table.simple-table {
+      width: 100%; border-collapse: collapse; font-size: 0.88rem;
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); overflow: hidden;
+    }
+    table.simple-table th {
+      text-align: left; padding: 11px 14px;
+      background: var(--bg-soft); font-weight: 600;
+      font-size: 0.75rem; color: var(--text-secondary);
+      letter-spacing: 0.04em; text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    table.simple-table td {
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      color: var(--text-primary); vertical-align: top;
+    }
+    table.simple-table tr:last-child td { border-bottom: none; }
+    table.simple-table .num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; font-size: 0.83rem; }
+    table.simple-table .pos { color: #047857; font-weight: 600; }
+    table.simple-table .neg { color: #B91C1C; font-weight: 600; }
+
+    ul.method-list, ol.method-list { padding-left: 1.4em; margin: 0 0 1em; }
+    ul.method-list li, ol.method-list li { margin-bottom: 8px; color: var(--text-secondary); }
+    ul.method-list li::marker, ol.method-list li::marker { color: var(--secondary); font-weight: 600; }
+
+    /* Formula block */
+    .formula {
+      background: var(--bg-soft); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 16px 20px;
+      font-family: "JetBrains Mono", monospace; font-size: 0.9rem;
+      color: var(--text-primary); margin: 12px 0 16px;
+      overflow-x: auto; white-space: pre;
+    }
+    .formula-label {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--secondary); font-weight: 600; margin-bottom: 6px;
+    }
+
+    /* Charts */
+    .chart-container {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 24px;
+      box-shadow: var(--shadow-sm); margin-bottom: 20px;
+    }
+    .chart-title { font-size: 1rem; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+    .chart-desc { font-size: 0.86rem; color: var(--text-secondary); margin-bottom: 16px; }
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    @media (max-width: 860px) { .chart-row { grid-template-columns: 1fr; } }
+
+    /* Skill network */
+    #skill-net-svg {
+      width: 100%; height: 520px;
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); display: block;
+    }
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 20px;
+      margin-top: 12px; font-size: 0.85rem; color: var(--text-secondary);
+    }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+    .tooltip {
+      position: absolute; pointer-events: none;
+      background: rgba(15, 23, 42, 0.95); color: white;
+      padding: 10px 14px; border-radius: var(--radius-sm);
+      font-size: 0.82rem; line-height: 1.5;
+      opacity: 0; transition: opacity .12s ease;
+      z-index: 100; max-width: 260px;
+      box-shadow: var(--shadow-lg);
+    }
+    .tooltip.visible { opacity: 1; }
+    .tooltip strong { color: var(--accent); display: block; margin-bottom: 4px; font-size: 0.9rem; }
+
+    /* Insight cards */
+    .insight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .insight-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-left: 3px solid var(--primary); border-radius: var(--radius-md);
+      padding: 20px 22px; box-shadow: var(--shadow-sm);
+    }
+    .insight-card h4 {
+      color: var(--primary); margin: 0 0 8px;
+      font-size: 0.95rem; font-weight: 600;
+    }
+    .insight-card p { font-size: 0.92rem; margin: 0; }
+
+    /* Timeline / process steps */
+    .step-list { display: grid; gap: 10px; }
+    .step {
+      display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start;
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 16px 18px; box-shadow: var(--shadow-sm);
+    }
+    .step-num {
+      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--primary); color: white; font-weight: 700; font-size: 0.82rem;
+    }
+    .step-body h4 { margin: 0 0 4px; font-size: 0.95rem; }
+    .step-body p { margin: 0; font-size: 0.87rem; }
+
+    footer { border-top: 1px solid var(--border); padding: 32px 0 40px; }
+    .footer-inner {
+      display: flex; flex-wrap: wrap; justify-content: space-between;
+      gap: 12px; align-items: center;
+      font-size: 0.85rem; color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-nav">
+    <div class="container nav-inner">
+      <a href="../../index.html" class="nav-brand">← 백마탄 포트폴리오</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#purpose">목적</a></li>
+          <li><a href="#lit">선행연구</a></li>
+          <li><a href="#rq">RQ</a></li>
+          <li><a href="#data">데이터</a></li>
+          <li><a href="#eda">EDA</a></li>
+          <li><a href="#main">분석</a></li>
+          <li><a href="#conclusion">결론</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="project-hero">
+      <div class="container">
+        <span class="project-meta">ITM560 · 혁신조직과 리더십</span>
+        <h1>Agentic AI 등장과 AI 스킬 수요</h1>
+        <p class="project-subtitle">
+          Causal Impact on AI Skill Demand in Korean IT Labor Market — 사람인·원티드·프로그래머스의 IT 공고 11,700건을 대상으로, Agentic AI 본격화 시점(2024-10) 전후의 AI 스킬 수요 변화를 단절적 시계열(ITS)과 이중차분(DID)으로 추정합니다.
+        </p>
+        <div class="meta-callout">
+          📈 <strong>본 연구의 의의</strong> — "AI가 일자리를 어떻게 바꿨나"는 수많은 설문·인터뷰로 회자되지만, <em>인과적(causal) 추정</em>이 결여되어 왔습니다. 본 연구는 Agentic AI가 본격화한 <strong>2024-10을 자연 실험(natural experiment)</strong>으로 삼아 <em>단절적 시계열(Its-regression)</em>과 <em>이중차분(DID)</em>을 한국 IT 노동시장에 최초 적용합니다. 역량 진화(Competence Evolution) 이론이 예측하는 수요 대체·보완 패턴을 <strong>추정량의 크기·신뢰구간으로 수치화</strong>하고, 스킬 동반출현 네트워크로 <em>새로 요구되는 역량 조합(LLM+에이전트 프레임워크)</em>을 가시화합니다.
+        </div>
+        <div class="disclaimer">
+          <strong>⚠ Mock-up Notice.</strong> 본 페이지는 연구 설계를 시각화한 <em>시범 목업</em>입니다. 표시된 수치·스킬 분포·계수 추정은 실제 공고 수집 없이 시드 고정된 합성(synthetic) 데이터로 생성되었습니다. 본 설계에 따라 실제 데이터를 수집·분석하면 유사한 형태의 결과가 산출될 것으로 기대됩니다.
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-num">11,700</div>
+            <div class="stat-label">샘플 공고 수 (39개월 × 월 300건)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">2024-10</div>
+            <div class="stat-label">처치 시점 T* (Agentic AI 본격화)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">+15.2%p</div>
+            <div class="stat-label">DID 추정 처치효과 δ̂ (AI 스킬 공고 비중)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">462</div>
+            <div class="stat-label">스킬 키워드 taxonomy (큐레이션)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. PURPOSE -->
+    <section id="purpose">
+      <div class="container">
+        <div class="section-label">01 · Research Purpose</div>
+        <h2 class="section-heading">연구 목적</h2>
+        <p class="section-sub">
+          Agentic AI(자율 실행형 에이전트)의 산업적 확산이 한국 IT 인력시장의 스킬 수요 구조를 어떻게 재편하는지 <strong>인과적</strong>으로 규명하는 것이 목적입니다. 단순한 시계열 상관(trend)이 아닌, 기술 충격(technology shock)의 인과 효과를 식별하기 위해 단절적 시계열 분석과 이중차분법을 병행합니다.
+        </p>
+        <div class="insight-grid">
+          <div class="insight-card">
+            <h4>Why Now (2026)</h4>
+            <p>2024년 하반기 Anthropic Computer Use·OpenAI Operator, 2025년 초 Manus 등 에이전트 제품군이 확산되며 국내 기업의 채용 공고 요건에도 "AI 에이전트" 관련 키워드가 급증. 충분한 post-period 관측이 확보된 시점.</p>
+          </div>
+          <div class="insight-card">
+            <h4>Why Causal</h4>
+            <p>상관관계만으로는 "AI 스킬 수요 증가는 팬데믹·경기·산업구조 변화와 공존하는 시대적 추세일 뿐"이라는 반박에 대응 불가. ITS·DID는 처치 시점 전후 차이 및 통제군 대비 차이를 통해 반사실(counterfactual)을 구성.</p>
+          </div>
+          <div class="insight-card">
+            <h4>Why Korea</h4>
+            <p>글로벌 노동시장 연구는 많지만 한국어 공고 기반의 AI 스킬 수요 인과 추정은 희소. 언어 장벽으로 글로벌 프레임워크 확산이 지연되는 국내 맥락은 외생적 처치 시점 식별에 유리한 자연 실험 환경.</p>
+          </div>
+          <div class="insight-card">
+            <h4>Why 백마탄</h4>
+            <p>가우스전자 <strong>가보스 프로젝트</strong>(한국 주도 에이전트 AI OS) 인력 전략 수립에 직접 활용 가능. 어떤 스킬을 가진 인력을 언제 확보해야 하는지, 보상 프리미엄은 어느 수준으로 설계해야 하는지 근거 기반 판단 지원.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. LITERATURE -->
+    <section id="lit">
+      <div class="container">
+        <div class="section-label">02 · Literature Review</div>
+        <h2 class="section-heading">선행 연구 분석</h2>
+        <p class="section-sub">
+          기술 충격이 노동시장 스킬 수요에 미치는 인과 효과를 다룬 해외 노동경제학·혁신경영 문헌과, GenAI·LLM 등장 이후 태스크·직무 재편을 다룬 최근 연구를 검토합니다. 본 연구는 Agentic AI(GenAI 다음 세대)로 범위를 확장하고, 한국 데이터로 지역 맥락을 보강한다는 점에서 기존 문헌에 대한 보완적 기여를 지향합니다.
+        </p>
+        <div class="lit-grid">
+          <div class="lit-card">
+            <div class="lit-cite">Acemoglu &amp; Restrepo (2022)</div>
+            <h4>Tasks, Automation, and the Rise in US Wage Inequality</h4>
+            <p>자동화가 태스크 구조를 재편하며 임금 불평등을 확대한다는 태스크 기반 프레임워크(Task-Based Framework). 본 연구에서 "AI 스킬 프리미엄" 분석의 이론적 토대로 사용.</p>
+            <span class="lit-tag">Task-Based Framework</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Brynjolfsson, Li &amp; Raymond (2023)</div>
+            <h4>Generative AI at Work (NBER w31161)</h4>
+            <p>GenAI 도입이 콜센터 상담원 생산성을 평균 14% 향상시켰으며, 저숙련자에게 더 큰 효과. 기술 충격의 이질적 효과(heterogeneous effect) 관점은 본 연구의 직무별 이질성 검증에 적용.</p>
+            <span class="lit-tag">Heterogeneous Effects</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Felten, Raj &amp; Seamans (2023)</div>
+            <h4>Occupational Heterogeneity in Exposure to Generative AI</h4>
+            <p>O*NET 태스크 데이터를 활용한 직업별 GenAI 노출도 지표(AIOE). 본 연구의 treatment/control 직무 구분에서 AI 노출도가 높은 직무(AI/ML, Backend)와 낮은 직무(QA, Mobile)를 나누는 근거로 활용.</p>
+            <span class="lit-tag">Exposure Index</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Eloundou, Manning, Mishkin &amp; Rock (2023)</div>
+            <h4>GPTs are GPTs: Labor Market Impact Potential of LLMs</h4>
+            <p>미국 직업의 약 80%가 LLM 도입으로 태스크의 10% 이상 영향을 받을 것으로 추정. General Purpose Technology 관점에서 LLM 영향을 포괄적으로 평가한 선도 연구.</p>
+            <span class="lit-tag">General Purpose Tech</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Autor (2015, 2022)</div>
+            <h4>Why Are There Still So Many Jobs? / The Labor Market Impacts of Technological Change</h4>
+            <p>Polanyi's Paradox, 기술이 자동화하지 못하는 태스크(암묵적 지식 요구)에 대한 보완 효과 분석. 본 연구의 "AI 스킬 vs 비-AI 스킬" 보완/대체 가설 검증에 이론적 배경.</p>
+            <span class="lit-tag">Complement vs Substitute</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Dosi (1982), Teece (1986)</div>
+            <h4>기술 궤적 · 보완 자산(Complementary Assets)</h4>
+            <p>혁신의 상업화 과정에서 보완 자산의 중요성. Agentic AI 시대에는 "기반 모델(foundation model) + 에이전트 프레임워크 + 툴 통합" 스킬셋이 보완 자산 묶음으로 수요.</p>
+            <span class="lit-tag">Innovation Theory</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Bertrand, Duflo &amp; Mullainathan (2004)</div>
+            <h4>How Much Should We Trust Difference-in-Differences Estimates?</h4>
+            <p>DID 식별의 자기상관(serial correlation) 문제와 표준오차 교정. 본 연구에서 cluster-robust SE 적용, Bayesian 방법론으로 robustness 보완.</p>
+            <span class="lit-tag">DID Methodology</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">한국개발연구원 KDI (2024)</div>
+            <h4>생성형 AI가 국내 노동시장에 미치는 영향 분석</h4>
+            <p>직업사전 기반 한국 직종의 GenAI 노출도 추정 및 태스크 재편 전망. 본 연구는 공고 텍스트(수요 측) 관점에서 KDI의 공급·직무 측 접근을 보완.</p>
+            <span class="lit-tag">Korean Context</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Deming &amp; Kahn (2018)</div>
+            <h4>Skill Requirements across Firms and Labor Markets</h4>
+            <p>공고 텍스트를 활용한 스킬 수요 측정 방법론 정립. 본 연구의 공고 기반 스킬 추출·taxonomy 구축 및 회사 간 이질성 분석 절차의 직접적 방법론적 뿌리.</p>
+            <span class="lit-tag">Job Posting Data</span>
+          </div>
+        </div>
+        <h3 style="margin-top: 40px;">본 연구의 차별점</h3>
+        <ul class="method-list">
+          <li><strong>GenAI에서 Agentic AI로</strong>: 기존 문헌은 ChatGPT·코드 어시스턴트 효과에 집중. Agentic AI(Computer Use·Operator·Manus) 시점을 외생 충격으로 삼은 연구는 2026년 현재 초기 단계.</li>
+          <li><strong>한국어 공고 기반 마이크로 데이터</strong>: 대부분의 선행 연구는 영어권 데이터. 한국어 공고에서 Agent·RAG·Vector DB 등 전문 용어 확산 지연이 식별에 유리.</li>
+          <li><strong>수요 측(Demand-Side) 관점</strong>: 직무 노출도(공급·설계 측)가 아닌, 실제 기업이 공고로 드러낸 수요 변화를 측정.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3. RQ -->
+    <section id="rq">
+      <div class="container">
+        <div class="section-label">03 · Research Questions</div>
+        <h2 class="section-heading">Research Questions</h2>
+        <p class="section-sub">본 연구는 4개의 연구질문을 중심으로 설계됩니다. 각 RQ는 식별 전략과 대응되며, 검증 가능한 계량적 가설(testable hypothesis)을 수반합니다.</p>
+        <div class="rq-grid">
+          <div class="rq-card">
+            <div class="rq-num">RQ 01</div>
+            <p class="rq-text">Agentic AI 본격화(2024-10) 이후 AI 관련 스킬(LLM, Agent, RAG, Vector DB 등) 수요는 추세 이상으로 <strong>유의하게 증가</strong>했는가?</p>
+            <p class="rq-method">→ <strong>ITS (Interrupted Time Series)</strong>: 월별 AI 스킬 공고 비중에 대한 단절(level change)과 추세변화(trend change) 추정.</p>
+          </div>
+          <div class="rq-card">
+            <div class="rq-num">RQ 02</div>
+            <p class="rq-text">처치 효과는 <strong>직무별로 이질적</strong>인가? AI/ML·Backend vs Mobile·QA 집단 간 차이는 통계적으로 유의한가?</p>
+            <p class="rq-method">→ <strong>DID (Difference-in-Differences)</strong>: AI 노출도 높은 직무를 treatment, 낮은 직무를 control로 설정해 평균 처치효과(ATT) 추정.</p>
+          </div>
+          <div class="rq-card">
+            <div class="rq-num">RQ 03</div>
+            <p class="rq-text">AI 스킬 수요 증가가 기존 소프트웨어 스킬 수요를 <strong>구축(crowd-out)</strong>하는가, 아니면 <strong>보완(complement)</strong>하는가?</p>
+            <p class="rq-method">→ <strong>Skill Co-occurrence Network</strong>: 공고 내 스킬 동반출현 연결강도 변화. Pre vs Post 네트워크 modularity 비교.</p>
+          </div>
+          <div class="rq-card">
+            <div class="rq-num">RQ 04</div>
+            <p class="rq-text">AI 스킬 보유 공고의 <strong>연봉 프리미엄</strong>은 Agentic AI 등장 이후 확대/축소되었는가?</p>
+            <p class="rq-method">→ <strong>Hedonic Wage Regression</strong>: log(wage) = αX + βAIskill + γPost + δ(AIskill × Post) + ε, δ가 프리미엄 변화를 포착.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. DATA -->
+    <section id="data">
+      <div class="container">
+        <div class="section-label">04 · Data Collection</div>
+        <h2 class="section-heading">데이터 수집 계획</h2>
+        <p class="section-sub">국내 IT 채용 공고의 주요 3대 소스(사람인·원티드·프로그래머스)에서 IT 개발·데이터·AI 직군 공고를 통합 수집합니다. 모집단 규모와 이론적 검정력(power)을 동시에 고려해 <strong>월별 층화 무작위 표본 300건 × 39개월 = 11,700건</strong>의 샘플링 계획을 수립했습니다.</p>
+
+        <h3>소스 비교</h3>
+        <table class="simple-table">
+          <thead><tr><th>소스</th><th>활성 공고(월, 추정)</th><th>접근성</th><th>강점</th><th>한계</th></tr></thead>
+          <tbody>
+            <tr><td><strong>사람인</strong></td><td>1,200~1,500</td><td>HTML 파싱 (robots.txt 준수)</td><td>전 직무·전 기업규모 커버</td><td>스킬 필드가 비정형 텍스트</td></tr>
+            <tr><td><strong>원티드</strong></td><td>600~900</td><td>공개 API 일부 제공</td><td>테크 스타트업 공고 밀도 높음, 스킬 태그 정형화</td><td>대기업 공고 상대적 적음</td></tr>
+            <tr><td><strong>프로그래머스</strong></td><td>200~300</td><td>HTML 파싱</td><td>개발자 특화, 스택 태그 명확</td><td>비-개발 직무 미포함</td></tr>
+            <tr><td><strong>잡코리아 (보조)</strong></td><td>1,500~2,000</td><td>HTML 파싱 (rate-limited)</td><td>사람인 대안, 대기업 공고</td><td>사람인과 상당 중복</td></tr>
+            <tr><td colspan="5" style="background:var(--bg-soft);"><strong>통합(중복 제거 후) ≈ 2,000건/월</strong> · <code>company + title + posted_date</code> 기반 deduplication</td></tr>
+          </tbody>
+        </table>
+
+        <h3>샘플링 계획</h3>
+        <ul class="method-list">
+          <li><strong>기간</strong>: 2023-01 ~ 2026-03 (39개월). Pre-period = 21개월 (2023-01~2024-09), Post-period = 18개월 (2024-10~2026-03).</li>
+          <li><strong>표본 크기 결정 근거</strong>: 월 300건 × 39개월 = 11,700건. G*Power 기반 사전 검정력 분석 결과 DID 효과크기 <code>|δ|≥0.03</code> 검출에 80% power 충족 (α=0.05, 자기상관 ρ=0.4 가정, cluster-robust SE).</li>
+          <li><strong>층화 변수</strong>: 직무 카테고리 7개(Backend 25% / Frontend 15% / Data 15% / AI/ML 15% / DevOps 10% / Mobile 10% / Others 10%). 모집단 직무 분포에 비례 배분(proportional allocation).</li>
+          <li><strong>추출 절차</strong>: 월별 배치 작업으로 각 소스에서 공고 수집 → 중복 제거 → 직무 태깅(LLM 분류기 + 규칙) → 층별 확률추출 (<code>SAMPLE(strata, prob)</code>) → 월 300건 고정.</li>
+          <li><strong>결측 처리</strong>: 연봉 범위 결측(≈ 35%)은 multiple imputation(회사 규모 + 직무 + 경력으로 5회 imputation), 스킬 결측은 회사 소개 텍스트로 2차 추출 후 남는 결측은 listwise.</li>
+        </ul>
+
+        <h3>수집 프로세스 (6단계)</h3>
+        <div class="step-list">
+          <div class="step"><div class="step-num">1</div><div class="step-body"><h4>스킬 taxonomy 구축</h4><p>O*NET·Stack Overflow Developer Survey·국내 보도 기반 462개 스킬 키워드 큐레이션. 대분류 7개(AI/ML · LLM &amp; Agent · Data · Backend · Frontend · DevOps · Misc). 동의어 사전(예: "파이토치" ↔ "PyTorch") 매핑.</p></div></div>
+          <div class="step"><div class="step-num">2</div><div class="step-body"><h4>공고 수집 (crawl)</h4><p>Python Playwright 기반 수집기. 일별 증분(incremental) 크롤. robots.txt·이용약관 준수, rate-limit 1 req/3 sec, User-Agent 명시. 수집 로그 영구 보관.</p></div></div>
+          <div class="step"><div class="step-num">3</div><div class="step-body"><h4>정제 및 dedup</h4><p>HTML → 구조화 JSON. 중복 제거 기준: <code>(normalize(company), normalize(title), date-week)</code>. 동일 공고 재게시는 "공고 체인"으로 묶어 첫 게시일만 채택.</p></div></div>
+          <div class="step"><div class="step-num">4</div><div class="step-body"><h4>직무 태깅</h4><p>규칙(제목 키워드) 1차 + GPT-4o-mini 2차 분류(few-shot). 400건 수동 라벨링으로 검증, Cohen's κ ≥ 0.82 목표. 불일치 사례는 manual review.</p></div></div>
+          <div class="step"><div class="step-num">5</div><div class="step-body"><h4>스킬 추출</h4><p>taxonomy 기반 정규식 매칭 + 임베딩 유사도(<code>text-embedding-3-small</code>, cos ≥ 0.75). 공고당 평균 5~8개 스킬 추출 예상. 추출 정확도: 100건 랜덤 샘플에서 precision/recall ≥ 0.88 목표.</p></div></div>
+          <div class="step"><div class="step-num">6</div><div class="step-body"><h4>층화 추출 및 패널 구축</h4><p>월별 직무 층 비율 유지하며 300건 무작위 추출. 결과를 long 포맷 패널(posting × skill)로 변환. 시드(seed=20260417) 고정으로 재현성 확보.</p></div></div>
+        </div>
+
+        <h3>데이터 스키마</h3>
+        <table class="simple-table">
+          <thead><tr><th>필드</th><th>타입</th><th>설명 / 예시</th></tr></thead>
+          <tbody>
+            <tr><td><code>posting_id</code></td><td>string</td><td>소스 PK (예: <code>saramin_12345678</code>)</td></tr>
+            <tr><td><code>source</code></td><td>enum</td><td>saramin / wanted / programmers / jobkorea</td></tr>
+            <tr><td><code>posted_date</code></td><td>date</td><td>YYYY-MM-DD (첫 게시일)</td></tr>
+            <tr><td><code>company</code></td><td>string</td><td>정규화된 회사명</td></tr>
+            <tr><td><code>company_size</code></td><td>enum</td><td>대기업 / 중견 / 중소 / 스타트업</td></tr>
+            <tr><td><code>job_category</code></td><td>enum</td><td>Backend / Frontend / Data / AI-ML / DevOps / Mobile / Others</td></tr>
+            <tr><td><code>experience</code></td><td>int</td><td>요구 경력 년수 (신입=0)</td></tr>
+            <tr><td><code>salary_min / max</code></td><td>int / null</td><td>연봉(만원), 결측 허용</td></tr>
+            <tr><td><code>skills[]</code></td><td>array&lt;string&gt;</td><td>taxonomy 매칭 스킬 리스트 (예: ["Python", "LangChain", "RAG"])</td></tr>
+            <tr><td><code>ai_skill_count</code></td><td>int</td><td>AI/ML + LLM/Agent 대분류 스킬 수</td></tr>
+            <tr><td><code>treatment_group</code></td><td>bool</td><td>AI/ML + Backend 여부 (DID treatment)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5. EDA -->
+    <section id="eda">
+      <div class="container">
+        <div class="section-label">05 · Exploratory Analysis</div>
+        <h2 class="section-heading">탐색적 분석</h2>
+        <p class="section-sub">
+          본격 인과 추정에 앞서 시간·직무·스킬 3축을 따라 분포를 확인합니다. 처치 시점 주변의 구조적 단절이 <em>눈으로도</em> 식별되는지, 그리고 DID 설정에 필요한 treatment/control 군의 병행 추세(parallel trends) 가정이 이의 없이 보이는지 검토합니다.
+        </p>
+
+        <div class="chart-container">
+          <div class="chart-title">① 월별 공고 수 및 AI 스킬 공고 비중</div>
+          <div class="chart-desc">
+            막대 = 월별 공고 수(이중축 좌), 실선 = AI 스킬 포함 공고 비중(%, 이중축 우). 점선 = 처치 시점 2024-10.
+          </div>
+          <div id="chart-ts-share"></div>
+        </div>
+
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">② Pre vs Post: Top 15 스킬 공고 비중</div>
+            <div class="chart-desc">Pre(2023-01~2024-09) 대비 Post(2024-10~2026-03) 상위 15개 스킬 등장 빈도 비교.</div>
+            <div id="chart-top-skills"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">③ 직무 카테고리별 AI 스킬 비중 (Pre vs Post)</div>
+            <div class="chart-desc">7개 직무군 각각에서 AI 스킬 포함 공고 비중이 얼마나 이동했는가.</div>
+            <div id="chart-cat-share"></div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-title">④ 스킬 대분류별 점유 추이 (Stacked Area)</div>
+          <div class="chart-desc">AI/ML · LLM &amp; Agent · Data · Backend · Frontend · DevOps 6개 대분류의 월별 share. LLM &amp; Agent 대분류가 처치 이후 급증.</div>
+          <div id="chart-stacked"></div>
+        </div>
+
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">⑤ 연봉 분포: AI 스킬 vs 일반 공고</div>
+            <div class="chart-desc">박스플롯 (Pre / Post × AI/일반). Post·AI가 유의하게 위로 이동.</div>
+            <div id="chart-salary"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">⑥ 경력 요구 분포 (바이올린)</div>
+            <div class="chart-desc">AI/ML 공고의 평균 요구 경력이 post 이후 0.9년 하락 (신규 직군 진입 확대).</div>
+            <div id="chart-exp"></div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-title">⑦ 스킬 동반출현 네트워크 (Post-period, top 30 skills)</div>
+          <div class="chart-desc">
+            노드 = 스킬(크기 = 등장 빈도), 엣지 = 동반출현 PMI ≥ 3.0. LLM·Agent 클러스터(파란색)가 중앙 Python·Backend 클러스터와 강하게 연결되어 <strong>구축(crowd-out)보다 보완(complement)</strong> 관계를 시사.
+          </div>
+          <div style="position:relative;">
+            <svg id="skill-net-svg"></svg>
+            <div id="skill-tooltip" class="tooltip"></div>
+          </div>
+          <div class="legend">
+            <div class="legend-item"><span class="legend-dot" style="background:#1E40AF;"></span>LLM &amp; Agent</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#3B82F6;"></span>AI/ML</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#60A5FA;"></span>Backend / Data</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#93C5FD;"></span>Frontend / DevOps</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. MAIN ANALYSIS -->
+    <section id="main">
+      <div class="container">
+        <div class="section-label">06 · Main Analysis</div>
+        <h2 class="section-heading">메인 분석 · 인과 추정</h2>
+        <p class="section-sub">
+          ITS로 AI 스킬 비중의 단절·추세변화를 추정하고, DID로 직무군 간 상대효과를 식별합니다. 사전추세(parallel trends) 점검을 위한 Event Study, 외생충격의 타이밍 조작(placebo test), 통제변수 민감도 분석을 통해 결과의 robustness를 검토합니다.
+        </p>
+
+        <h3>6.1 ITS (Interrupted Time Series)</h3>
+        <div class="formula-label">Specification</div>
+        <div class="formula">Y_t = β₀ + β₁·t + β₂·D_t + β₃·(t − T*)·D_t + ε_t
+
+  Y_t  = 월별 AI 스킬 공고 비중 (%)
+  t    = 시점 (month index, 1..39)
+  D_t  = 1[t ≥ T*] (T* = 2024-10, t=22)
+  β₂   = 단절효과 (level shift)
+  β₃   = 추세변화 (slope change)</div>
+        <div class="chart-container">
+          <div class="chart-title">ITS 적합: 관측값 · 사전 추세 · 사후 추세 · 반사실 외삽</div>
+          <div class="chart-desc">파란 점 = 실측 월별 AI 스킬 공고 비중. 실선 = ITS 적합. 점선 = pre-trend 연장(counterfactual). 회색 수직선 = T* = 2024-10.</div>
+          <div id="chart-its"></div>
+        </div>
+
+        <h3>6.2 DID (Difference-in-Differences)</h3>
+        <div class="formula-label">Specification (two-way fixed effects)</div>
+        <div class="formula">Y_it = α_i + γ_t + δ·(Treat_i × Post_t) + X_it·θ + ε_it
+
+  i = 공고, t = 월
+  Treat_i = 1[AI/ML ∨ Backend]    (AI 노출도 높음)
+  Post_t  = 1[t ≥ 2024-10]
+  δ       = 평균 처치효과 (ATT)
+  Cluster-robust SE (company 단위)</div>
+
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">DID: 집단별 AI 스킬 비중 추이</div>
+            <div class="chart-desc">Treatment(AI/ML + Backend) vs Control(Mobile + QA). Pre-period 병행 추세는 안정적, Post 이후 격차 확대.</div>
+            <div id="chart-did-trends"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">Event Study: 분기별 계수</div>
+            <div class="chart-desc">t=−1 분기를 기준(0)으로 정규화. 사전 계수 95% CI가 0 포함, 사후 계수 유의하게 양(+)으로 이동.</div>
+            <div id="chart-event-study"></div>
+          </div>
+        </div>
+
+        <h3>6.3 Robustness · Placebo</h3>
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">Placebo Test: 가상 처치 시점 500회 반복</div>
+            <div class="chart-desc">2023-04 ~ 2024-06 사이 임의의 가짜 처치 시점에서 추정한 δ의 분포. 실제 δ̂(빨간선)은 분포의 우측 꼬리 밖.</div>
+            <div id="chart-placebo"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">모델별 δ̂ (민감도)</div>
+            <div class="chart-desc">통제변수 추가 모델 5종에서 δ̂ 안정적으로 [+12.8%p, +17.1%p] 구간에 분포.</div>
+            <div id="chart-sensitivity"></div>
+          </div>
+        </div>
+
+        <h3>6.4 계수 요약 테이블</h3>
+        <table class="simple-table">
+          <thead><tr><th>계수</th><th>해석</th><th>추정치</th><th>SE</th><th>p-value</th></tr></thead>
+          <tbody>
+            <tr><td class="num">β₀</td><td>Pre-period 절편</td><td class="num">7.84</td><td class="num">0.42</td><td class="num">&lt; 0.001</td></tr>
+            <tr><td class="num">β₁</td><td>Pre 추세 (%p/month)</td><td class="num pos">+0.28</td><td class="num">0.033</td><td class="num">&lt; 0.001</td></tr>
+            <tr><td class="num">β₂</td><td>단절 (level shift)</td><td class="num pos">+7.81</td><td class="num">1.04</td><td class="num">&lt; 0.001</td></tr>
+            <tr><td class="num">β₃</td><td>추세변화 (Δslope)</td><td class="num pos">+0.92</td><td class="num">0.12</td><td class="num">&lt; 0.001</td></tr>
+            <tr><td class="num">δ (DID)</td><td>Treatment × Post ATT</td><td class="num pos">+15.20</td><td class="num">1.86</td><td class="num">&lt; 0.001</td></tr>
+            <tr><td class="num">δ (Hedonic)</td><td>log(wage): AI 스킬 × Post</td><td class="num pos">+0.082</td><td class="num">0.014</td><td class="num">&lt; 0.001</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:.85rem; margin-top:8px;">
+          <em>주</em>: ITS는 월별 aggregate(N=39), DID는 공고 수준(N=11,700, company cluster 단위 robust SE). Hedonic은 연봉 관측 가능 공고(N=7,605) 기준 log-OLS.
+        </p>
+      </div>
+    </section>
+
+    <!-- 7. CONCLUSION -->
+    <section id="conclusion">
+      <div class="container">
+        <div class="section-label">07 · Conclusion &amp; Implication</div>
+        <h2 class="section-heading">결론 및 함의</h2>
+        <p class="section-sub">
+          Agentic AI 본격화(2024-10)는 한국 IT 채용 시장에서 AI 스킬 수요에 <strong>통계적·실질적으로 의미 있는 인과 효과</strong>를 남긴 것으로 추정됩니다. 네 가지 핵심 발견과 네 이해관계자 관점의 함의를 정리합니다.
+        </p>
+
+        <h3>핵심 발견</h3>
+        <div class="insight-grid">
+          <div class="insight-card"><h4>① 명확한 단절과 추세 가속</h4><p>AI 스킬 공고 비중은 T* 시점에서 즉시 +7.8%p 도약했고, 이후 월별 증가율이 3배로 가속(+0.28 → +1.20 %p/month). ITS의 단절·추세변화 계수 모두 p &lt; 0.001.</p></div>
+          <div class="insight-card"><h4>② 직무별 이질적 효과</h4><p>DID ATT 전체 +15.2%p 중 AI/ML은 +24.1%p, Backend는 +12.6%p, Data는 +9.8%p. 반대로 Mobile·QA는 유의한 변화 없음. GenAI 노출도 가설과 정합.</p></div>
+          <div class="insight-card"><h4>③ 보완(complement) 가설 지지</h4><p>스킬 동반출현 네트워크에서 LLM·Agent 클러스터와 Python·Backend 클러스터의 edge weight가 Pre→Post 1.8배 증가. 기존 스킬을 대체하기보다 <strong>번들로 묶어 요구</strong>하는 패턴.</p></div>
+          <div class="insight-card"><h4>④ AI 프리미엄 확대</h4><p>Hedonic 회귀 기준, AI 스킬 보유 공고의 연봉 프리미엄이 Pre 4.2% → Post 12.4%로 확대. 희소성 기반 렌트(rent)가 아직 해소되지 않은 국면.</p></div>
+        </div>
+
+        <h3>이해관계자별 함의</h3>
+        <table class="simple-table">
+          <thead><tr><th>대상</th><th>함의</th></tr></thead>
+          <tbody>
+            <tr><td><strong>구직자</strong></td><td>Python 기반 Backend 경력자는 LangChain·RAG·Vector DB 등 경량 에이전트 스킬 번들을 12~18개월 내 확보하는 것이 프리미엄 포착 경로. AI/ML 진입 경력 요구가 0.9년 하락(신규 진입 창 열림).</td></tr>
+            <tr><td><strong>기업 HR / L&amp;D</strong></td><td>스킬 갭 해소 전략: (1) 신규 채용은 Agent 네이티브 인력 확보, (2) 내부 Backend 인력 리스킬링 프로그램 병행. 프리미엄 12%를 감당할 수 없는 중견 이하는 내부 양성 우위.</td></tr>
+            <tr><td><strong>정책 결정자</strong></td><td>리스킬링 바우처·대학원·부트캠프 공공 지원 우선순위: LangChain/Agent Framework 계열. AI/ML만 지원하던 기존 정책의 업데이트 필요. Deming &amp; Kahn(2018) 관점에서 공고 데이터는 정책 모니터링의 고빈도 지표.</td></tr>
+            <tr><td><strong>백마탄 · 가우스전자 Gaboss 프로젝트</strong></td><td>에이전트 AI OS 인력 확보는 비용 곡선이 가팔라지는 구간에 진입. <em>"지금 확보 vs 12개월 뒤 확보"</em>의 기회비용이 급증하므로 Q3까지 선제적 확보 목표 설정. 직무 설계는 "Python Backend + Agent Bundle" 합성 직무군 중심.</td></tr>
+          </tbody>
+        </table>
+
+        <h3>한계와 향후 과제</h3>
+        <ul class="method-list">
+          <li><strong>수요 proxy의 한계</strong>: 공고는 "드러난 수요"만 관측. 내부 재배치, 외주, 비공식 채용 채널(레퍼럴) 불포함.</li>
+          <li><strong>스킬 추출 노이즈</strong>: "책임감 있는 AI"처럼 비-기술 용어가 AI 스킬로 오분류될 수 있음. 현재 taxonomy에 stop-phrase 목록 추가 중.</li>
+          <li><strong>외생성 가정</strong>: T* = 2024-10은 여러 사건(Computer Use · Operator · 국내 대기업 사내 공지 등)의 복합. 단일 외생충격 해석은 주의. RD-in-Time 보완 계획.</li>
+          <li><strong>향후</strong>: 월 → 주 단위 패널 확장, 회사 레벨 이질성(상장/비상장, 산업) 분석, 실제 인력 이동(LinkedIn 공개 프로필 cross-section) 결합 확장.</li>
+        </ul>
+
+        <p style="margin-top: 40px;">
+          <a href="../../index.html">← 포트폴리오로 돌아가기</a>
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div>© 2026 백마탄 (Baek Ma-tan) · KAIST I&amp;TM · <em>ITM560 혁신조직과 리더십</em></div>
+      <div>Data sources: 사람인 · 원티드 · 프로그래머스 (설계상) · 본 페이지 데이터는 목업</div>
+    </div>
+  </footer>
+
+  <script>
+    // ============== Mock Data Generation ==============
+    function mulberry32(seed) {
+      return function() {
+        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+        let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+    const rand = mulberry32(20260417);
+
+    // 39 months: 2023-01 ~ 2026-03
+    const N_MONTHS = 39;
+    const T_STAR = 22; // 2024-10 = index 22 (1-indexed: Jan2023=1, ..., Oct2024=22)
+    function monthLabel(i) {
+      const y = 2023 + Math.floor((i - 1) / 12);
+      const m = ((i - 1) % 12) + 1;
+      return `${y}-${String(m).padStart(2, '0')}`;
+    }
+    const MONTHS = Array.from({length: N_MONTHS}, (_, k) => monthLabel(k + 1));
+
+    // AI skill share monthly (%)
+    // Pre: 8% + 0.28*t + noise
+    // Post: jump +7.8, slope becomes 0.28+0.92=1.20, plus noise
+    function genShare() {
+      const arr = [];
+      for (let i = 1; i <= N_MONTHS; i++) {
+        const D = i >= T_STAR ? 1 : 0;
+        const noise = (rand() - 0.5) * 1.4;
+        let y = 7.84 + 0.28 * i + 7.81 * D + 0.92 * Math.max(0, i - T_STAR) * D + noise;
+        y = Math.max(3, y);
+        arr.push(y);
+      }
+      return arr;
+    }
+    const SHARE = genShare();
+
+    // Monthly posting volume: 300 ± 20
+    const VOLUME = MONTHS.map(() => 280 + Math.round(rand() * 40));
+
+    // ========== Chart 1: Time series share + volume ==========
+    Plotly.newPlot('chart-ts-share', [
+      {
+        x: MONTHS, y: VOLUME, type: 'bar', name: '공고 수(샘플)',
+        marker: { color: '#DCE8FB', line: { color: '#BED5F5', width: 0.5 } },
+        yaxis: 'y', opacity: 0.85,
+        hovertemplate: '%{x}<br>공고 %{y}건<extra></extra>'
+      },
+      {
+        x: MONTHS, y: SHARE, type: 'scatter', mode: 'lines+markers',
+        name: 'AI 스킬 공고 비중(%)',
+        line: { color: '#1E40AF', width: 2.2 },
+        marker: { color: '#1E40AF', size: 6 },
+        yaxis: 'y2',
+        hovertemplate: '%{x}<br>AI 스킬 비중 %{y:.1f}%<extra></extra>'
+      }
+    ], {
+      margin: { t: 20, r: 60, b: 50, l: 50 },
+      xaxis: { tickangle: -45, tickfont: { size: 9 }, nticks: 14 },
+      yaxis: { title: '공고 수', side: 'left', gridcolor: '#F1F5F9', zeroline: false },
+      yaxis2: { title: 'AI 스킬 비중(%)', overlaying: 'y', side: 'right', range: [0, 50], zeroline: false, gridcolor: 'transparent' },
+      shapes: [{
+        type: 'line', x0: MONTHS[T_STAR - 1], x1: MONTHS[T_STAR - 1], y0: 0, y1: 1, yref: 'paper',
+        line: { color: '#B91C1C', width: 1.5, dash: 'dash' }
+      }],
+      annotations: [{
+        x: MONTHS[T_STAR - 1], y: 1.02, yref: 'paper', text: 'T* = 2024-10 (Agentic AI)',
+        showarrow: false, font: { size: 11, color: '#B91C1C' }, xshift: -5
+      }],
+      legend: { orientation: 'h', y: -0.22, x: 0 },
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 2: Top skills Pre vs Post ==========
+    const TOP_SKILLS = [
+      { s: 'Python',          pre: 42.1, post: 58.3 },
+      { s: 'Java',            pre: 36.5, post: 29.8 },
+      { s: 'Spring',          pre: 28.4, post: 23.6 },
+      { s: 'SQL',             pre: 31.2, post: 32.5 },
+      { s: 'AWS',             pre: 27.0, post: 33.1 },
+      { s: 'React',           pre: 24.2, post: 22.8 },
+      { s: 'LangChain',       pre: 2.1,  post: 24.6 },
+      { s: 'RAG',             pre: 1.4,  post: 19.8 },
+      { s: 'Vector DB',       pre: 0.9,  post: 14.5 },
+      { s: 'PyTorch',         pre: 12.7, post: 18.2 },
+      { s: 'Kubernetes',      pre: 16.8, post: 19.3 },
+      { s: 'TypeScript',      pre: 22.1, post: 24.0 },
+      { s: 'OpenAI API',      pre: 1.8,  post: 21.4 },
+      { s: 'Agent Framework', pre: 0.4,  post: 12.1 },
+      { s: 'Docker',          pre: 20.3, post: 22.7 },
+    ];
+    Plotly.newPlot('chart-top-skills', [
+      { y: TOP_SKILLS.map(s => s.s), x: TOP_SKILLS.map(s => s.pre),
+        name: 'Pre (2023-01~2024-09)', type: 'bar', orientation: 'h',
+        marker: { color: '#94A3B8' }, hovertemplate: '%{y}: %{x:.1f}%<extra>Pre</extra>' },
+      { y: TOP_SKILLS.map(s => s.s), x: TOP_SKILLS.map(s => s.post),
+        name: 'Post (2024-10~2026-03)', type: 'bar', orientation: 'h',
+        marker: { color: '#1E40AF' }, hovertemplate: '%{y}: %{x:.1f}%<extra>Post</extra>' },
+    ], {
+      barmode: 'group', margin: { t: 10, r: 20, b: 40, l: 110 },
+      xaxis: { title: '공고 비중(%)', gridcolor: '#F1F5F9' },
+      yaxis: { autorange: 'reversed', tickfont: { size: 10 } },
+      legend: { orientation: 'h', y: -0.18, x: 0 },
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', height: 480,
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 3: Category AI share Pre vs Post ==========
+    const CAT_SHARE = [
+      { c: 'AI/ML',    pre: 48.2, post: 72.3 },
+      { c: 'Backend',  pre: 9.1,  post: 21.7 },
+      { c: 'Data',     pre: 11.5, post: 21.3 },
+      { c: 'DevOps',   pre: 8.4,  post: 14.1 },
+      { c: 'Frontend', pre: 3.2,  post: 6.8 },
+      { c: 'Mobile',   pre: 2.1,  post: 3.3 },
+      { c: 'QA',       pre: 1.8,  post: 2.6 },
+    ];
+    Plotly.newPlot('chart-cat-share', [
+      { x: CAT_SHARE.map(c => c.c), y: CAT_SHARE.map(c => c.pre), name: 'Pre',
+        type: 'bar', marker: { color: '#94A3B8' }, hovertemplate: '%{x} Pre: %{y:.1f}%<extra></extra>' },
+      { x: CAT_SHARE.map(c => c.c), y: CAT_SHARE.map(c => c.post), name: 'Post',
+        type: 'bar', marker: { color: '#1E40AF' }, hovertemplate: '%{x} Post: %{y:.1f}%<extra></extra>' },
+    ], {
+      barmode: 'group', margin: { t: 10, r: 20, b: 40, l: 50 },
+      yaxis: { title: 'AI 스킬 비중(%)', gridcolor: '#F1F5F9' },
+      legend: { orientation: 'h', y: -0.22, x: 0 },
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', height: 430,
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 4: Stacked area by category ==========
+    function genCatSeries() {
+      // 6 categories
+      const cats = ['AI/ML', 'LLM & Agent', 'Data', 'Backend', 'Frontend', 'DevOps'];
+      const series = cats.map(() => []);
+      for (let i = 1; i <= N_MONTHS; i++) {
+        const D = i >= T_STAR ? 1 : 0;
+        const aiml  = 12 + 0.15 * i + 2.0 * D + 0.10 * Math.max(0, i - T_STAR) * D + (rand() - .5);
+        const llm   = 1.5 + 0.08 * i + 6.5 * D + 0.55 * Math.max(0, i - T_STAR) * D + (rand() - .5);
+        const data  = 14 + 0.05 * i + (rand() - .5);
+        const back  = 26 - 0.10 * i + (rand() - .5);
+        const fr    = 16 - 0.05 * i + (rand() - .5);
+        const dev   = 12 + 0.04 * i + (rand() - .5);
+        const row = [aiml, llm, data, back, fr, dev];
+        const sum = row.reduce((a, b) => a + b, 0);
+        row.forEach((v, k) => series[k].push(100 * v / sum));
+      }
+      return { cats, series };
+    }
+    const stacked = genCatSeries();
+    const colorsCat = ['#3B82F6', '#1E40AF', '#60A5FA', '#93C5FD', '#BFDBFE', '#DBEAFE'];
+    Plotly.newPlot('chart-stacked',
+      stacked.cats.map((c, k) => ({
+        x: MONTHS, y: stacked.series[k], name: c, type: 'scatter', mode: 'none',
+        stackgroup: 'one', fillcolor: colorsCat[k],
+        hovertemplate: '%{x}<br>' + c + ' %{y:.1f}%<extra></extra>'
+      })),
+      {
+        margin: { t: 10, r: 20, b: 50, l: 50 },
+        xaxis: { tickangle: -45, tickfont: { size: 9 }, nticks: 14 },
+        yaxis: { title: '스킬 대분류 share(%)', gridcolor: '#F1F5F9', range: [0, 100] },
+        shapes: [{ type: 'line', x0: MONTHS[T_STAR - 1], x1: MONTHS[T_STAR - 1], y0: 0, y1: 100,
+                   line: { color: '#B91C1C', width: 1.3, dash: 'dash' } }],
+        legend: { orientation: 'h', y: -0.25, x: 0 },
+        paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+        font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+      }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 5: Salary boxplot ==========
+    function genSalaries(mean, sd, n) {
+      const arr = [];
+      for (let i = 0; i < n; i++) {
+        // Box-Muller
+        const u1 = Math.max(1e-6, rand()), u2 = rand();
+        const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+        arr.push(Math.round(mean + sd * z));
+      }
+      return arr;
+    }
+    const salPreAI    = genSalaries(5800, 1300, 240);
+    const salPostAI   = genSalaries(7200, 1500, 240);
+    const salPreNon   = genSalaries(4900, 1100, 240);
+    const salPostNon  = genSalaries(5200, 1150, 240);
+    Plotly.newPlot('chart-salary', [
+      { y: salPreAI, name: 'Pre · AI', type: 'box', marker: { color: '#94A3B8' }, boxmean: 'sd' },
+      { y: salPostAI, name: 'Post · AI', type: 'box', marker: { color: '#1E40AF' }, boxmean: 'sd' },
+      { y: salPreNon, name: 'Pre · 일반', type: 'box', marker: { color: '#CBD5E1' }, boxmean: 'sd' },
+      { y: salPostNon, name: 'Post · 일반', type: 'box', marker: { color: '#60A5FA' }, boxmean: 'sd' },
+    ], {
+      margin: { t: 10, r: 20, b: 40, l: 50 },
+      yaxis: { title: '연봉(만원)', gridcolor: '#F1F5F9' },
+      showlegend: false,
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', height: 380,
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 6: Experience distribution ==========
+    function genExp(mean, n) {
+      const arr = [];
+      for (let i = 0; i < n; i++) {
+        const u = rand();
+        // Poisson-like via inverse transform
+        let x = 0, p = Math.exp(-mean), s = p;
+        while (u > s && x < 15) { x += 1; p *= mean / x; s += p; }
+        arr.push(x);
+      }
+      return arr;
+    }
+    Plotly.newPlot('chart-exp', [
+      { x: genExp(3.5, 240), name: 'Pre · AI/ML', type: 'violin', side: 'positive',
+        line: { color: '#94A3B8' }, fillcolor: 'rgba(148,163,184,0.3)', meanline: { visible: true }, points: false },
+      { x: genExp(2.6, 240), name: 'Post · AI/ML', type: 'violin', side: 'negative',
+        line: { color: '#1E40AF' }, fillcolor: 'rgba(30,64,175,0.25)', meanline: { visible: true }, points: false },
+    ], {
+      margin: { t: 10, r: 20, b: 40, l: 90 },
+      xaxis: { title: '요구 경력(년)', gridcolor: '#F1F5F9' },
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', height: 380,
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 },
+      violinmode: 'overlay'
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 7: Skill co-occurrence network (D3) ==========
+    const SKILL_NODES = [
+      // LLM & Agent cluster
+      { id: 'LangChain',      cat: 0, size: 28 },
+      { id: 'RAG',            cat: 0, size: 24 },
+      { id: 'OpenAI API',     cat: 0, size: 26 },
+      { id: 'Claude API',     cat: 0, size: 20 },
+      { id: 'Vector DB',      cat: 0, size: 22 },
+      { id: 'Agent Framework',cat: 0, size: 18 },
+      { id: 'Prompt Eng',     cat: 0, size: 19 },
+      // AI/ML
+      { id: 'Python',         cat: 1, size: 40 },
+      { id: 'PyTorch',        cat: 1, size: 26 },
+      { id: 'HuggingFace',    cat: 1, size: 22 },
+      { id: 'MLflow',         cat: 1, size: 18 },
+      { id: 'Fine-tuning',    cat: 1, size: 20 },
+      // Backend / Data
+      { id: 'Java',           cat: 2, size: 30 },
+      { id: 'Spring',         cat: 2, size: 26 },
+      { id: 'SQL',            cat: 2, size: 30 },
+      { id: 'Kafka',          cat: 2, size: 18 },
+      { id: 'Airflow',        cat: 2, size: 17 },
+      { id: 'Snowflake',      cat: 2, size: 15 },
+      { id: 'Node.js',        cat: 2, size: 22 },
+      // Frontend / DevOps
+      { id: 'React',          cat: 3, size: 26 },
+      { id: 'TypeScript',     cat: 3, size: 24 },
+      { id: 'Next.js',        cat: 3, size: 18 },
+      { id: 'AWS',            cat: 3, size: 28 },
+      { id: 'Kubernetes',     cat: 3, size: 22 },
+      { id: 'Docker',         cat: 3, size: 24 },
+      { id: 'Terraform',      cat: 3, size: 14 },
+    ];
+    // Edges: PMI-weighted (mock). Hub connections
+    const SKILL_EDGES = [
+      // LLM-Agent cluster inner
+      ['LangChain', 'RAG', 4.8], ['LangChain', 'OpenAI API', 4.5], ['LangChain', 'Vector DB', 4.2],
+      ['RAG', 'Vector DB', 4.6], ['RAG', 'OpenAI API', 3.9], ['OpenAI API', 'Claude API', 3.5],
+      ['Agent Framework', 'LangChain', 4.0], ['Agent Framework', 'OpenAI API', 3.6],
+      ['Prompt Eng', 'OpenAI API', 3.4], ['Prompt Eng', 'LangChain', 3.2],
+      // LLM <-> AI/ML bridge
+      ['LangChain', 'Python', 4.1], ['OpenAI API', 'Python', 3.8], ['HuggingFace', 'PyTorch', 4.0],
+      ['Fine-tuning', 'HuggingFace', 3.6], ['Fine-tuning', 'PyTorch', 3.5],
+      // LLM <-> Backend bridge (KEY for complement hypothesis)
+      ['LangChain', 'Java', 3.0], ['RAG', 'Python', 3.9], ['Vector DB', 'SQL', 3.4],
+      ['Python', 'SQL', 4.4], ['Python', 'Kafka', 3.3],
+      // AI/ML inner
+      ['Python', 'PyTorch', 4.5], ['Python', 'MLflow', 3.2], ['Python', 'HuggingFace', 4.0],
+      // Backend inner
+      ['Java', 'Spring', 4.7], ['Java', 'SQL', 4.0], ['SQL', 'Kafka', 3.5], ['SQL', 'Airflow', 3.3],
+      ['SQL', 'Snowflake', 3.6], ['Node.js', 'TypeScript', 3.8],
+      // Frontend
+      ['React', 'TypeScript', 4.6], ['React', 'Next.js', 4.0],
+      // DevOps
+      ['AWS', 'Kubernetes', 4.0], ['AWS', 'Docker', 3.8], ['Kubernetes', 'Docker', 4.3],
+      ['AWS', 'Terraform', 3.5],
+      // cross
+      ['Python', 'AWS', 3.4], ['Node.js', 'AWS', 3.2], ['Spring', 'AWS', 3.2],
+    ];
+    const CAT_COLORS = ['#1E40AF', '#3B82F6', '#60A5FA', '#93C5FD'];
+
+    (function renderSkillNet() {
+      const svg = d3.select('#skill-net-svg');
+      const w = svg.node().getBoundingClientRect().width;
+      const h = 520;
+      svg.attr('viewBox', `0 0 ${w} ${h}`);
+      const nodes = SKILL_NODES.map(d => Object.assign({}, d));
+      const links = SKILL_EDGES.map(([s, t, w]) => ({ source: s, target: t, weight: w }));
+
+      const sim = d3.forceSimulation(nodes)
+        .force('link', d3.forceLink(links).id(d => d.id)
+          .distance(d => 120 - d.weight * 10).strength(d => Math.min(0.9, d.weight / 5)))
+        .force('charge', d3.forceManyBody().strength(-220))
+        .force('center', d3.forceCenter(w / 2, h / 2))
+        .force('collision', d3.forceCollide().radius(d => d.size / 2 + 12));
+
+      const linkSel = svg.append('g')
+        .attr('stroke', '#1E40AF').attr('stroke-opacity', 0.22)
+        .selectAll('line').data(links).enter().append('line')
+        .attr('stroke-width', d => Math.max(0.8, (d.weight - 2.8) * 1.2));
+
+      const nodeG = svg.append('g').selectAll('g').data(nodes).enter().append('g')
+        .style('cursor', 'pointer')
+        .call(d3.drag()
+          .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+          .on('drag',  (e, d) => { d.fx = e.x; d.fy = e.y; })
+          .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0);  d.fx = null; d.fy = null; })
+        );
+
+      nodeG.append('circle')
+        .attr('r', d => Math.sqrt(d.size) * 2.2)
+        .attr('fill', d => CAT_COLORS[d.cat])
+        .attr('fill-opacity', 0.92)
+        .attr('stroke', 'white').attr('stroke-width', 1.6);
+
+      nodeG.append('text')
+        .text(d => d.id)
+        .attr('text-anchor', 'middle')
+        .attr('dy', d => Math.sqrt(d.size) * 2.2 + 12)
+        .attr('font-size', 10)
+        .attr('font-weight', 500)
+        .attr('fill', '#0F172A')
+        .attr('pointer-events', 'none');
+
+      const tip = d3.select('#skill-tooltip');
+      nodeG.on('mouseover', (e, d) => {
+        tip.classed('visible', true)
+          .html(`<strong>${d.id}</strong>Cluster: ${['LLM & Agent', 'AI/ML', 'Backend/Data', 'Frontend/DevOps'][d.cat]}<br>Weight score: ${d.size}`)
+          .style('left', (e.offsetX + 14) + 'px')
+          .style('top', (e.offsetY + 14) + 'px');
+      }).on('mouseout', () => tip.classed('visible', false));
+
+      sim.on('tick', () => {
+        linkSel
+          .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+          .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+        nodeG.attr('transform', d => `translate(${d.x},${d.y})`);
+      });
+    })();
+
+    // ========== Chart 8: ITS fit ==========
+    const ITS_fit = MONTHS.map((_, k) => {
+      const i = k + 1;
+      const D = i >= T_STAR ? 1 : 0;
+      return 7.84 + 0.28 * i + 7.81 * D + 0.92 * Math.max(0, i - T_STAR) * D;
+    });
+    const ITS_counter = MONTHS.map((_, k) => 7.84 + 0.28 * (k + 1));
+    Plotly.newPlot('chart-its', [
+      { x: MONTHS, y: SHARE, mode: 'markers', name: '관측 (월별)',
+        marker: { color: '#1E40AF', size: 7, opacity: 0.85 },
+        hovertemplate: '%{x}<br>%{y:.1f}%<extra></extra>' },
+      { x: MONTHS, y: ITS_fit, mode: 'lines', name: 'ITS 적합',
+        line: { color: '#1E40AF', width: 2.2 },
+        hovertemplate: '%{x}<br>%{y:.1f}%<extra>Fit</extra>' },
+      { x: MONTHS, y: ITS_counter, mode: 'lines', name: '반사실 (pre-trend 연장)',
+        line: { color: '#94A3B8', width: 1.8, dash: 'dash' },
+        hovertemplate: '%{x}<br>%{y:.1f}%<extra>Counterfactual</extra>' },
+    ], {
+      margin: { t: 10, r: 20, b: 50, l: 50 },
+      xaxis: { tickangle: -45, tickfont: { size: 9 }, nticks: 14 },
+      yaxis: { title: 'AI 스킬 공고 비중(%)', gridcolor: '#F1F5F9' },
+      shapes: [{ type: 'line', x0: MONTHS[T_STAR - 1], x1: MONTHS[T_STAR - 1], y0: 0, y1: 1, yref: 'paper',
+                 line: { color: '#B91C1C', width: 1.5, dash: 'dash' } }],
+      annotations: [{ x: MONTHS[T_STAR - 1], y: 1.02, yref: 'paper', text: 'T* = 2024-10',
+                       showarrow: false, font: { size: 10, color: '#B91C1C' } }],
+      legend: { orientation: 'h', y: -0.25, x: 0 },
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 9: DID trends ==========
+    function genTreatControl() {
+      const treat = [], ctrl = [];
+      for (let i = 1; i <= N_MONTHS; i++) {
+        const D = i >= T_STAR ? 1 : 0;
+        const tNoise = (rand() - 0.5) * 1.4, cNoise = (rand() - 0.5) * 1.1;
+        treat.push(12 + 0.32 * i + 11.0 * D + 0.85 * Math.max(0, i - T_STAR) * D + tNoise);
+        ctrl.push(5 + 0.08 * i + 1.2 * D + 0.05 * Math.max(0, i - T_STAR) * D + cNoise);
+      }
+      return { treat, ctrl };
+    }
+    const tc = genTreatControl();
+    Plotly.newPlot('chart-did-trends', [
+      { x: MONTHS, y: tc.treat, mode: 'lines+markers',
+        name: 'Treat (AI/ML + Backend)', line: { color: '#1E40AF', width: 2 },
+        marker: { size: 5 }, hovertemplate: '%{x}<br>%{y:.1f}%<extra>Treat</extra>' },
+      { x: MONTHS, y: tc.ctrl, mode: 'lines+markers',
+        name: 'Control (Mobile + QA)', line: { color: '#94A3B8', width: 2 },
+        marker: { size: 5 }, hovertemplate: '%{x}<br>%{y:.1f}%<extra>Control</extra>' },
+    ], {
+      margin: { t: 10, r: 20, b: 60, l: 50 },
+      xaxis: { tickangle: -45, tickfont: { size: 8 }, nticks: 10 },
+      yaxis: { title: 'AI 스킬 비중(%)', gridcolor: '#F1F5F9' },
+      shapes: [{ type: 'line', x0: MONTHS[T_STAR - 1], x1: MONTHS[T_STAR - 1], y0: 0, y1: 1, yref: 'paper',
+                 line: { color: '#B91C1C', width: 1.3, dash: 'dash' } }],
+      legend: { orientation: 'h', y: -0.3, x: 0 },
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', height: 420,
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 10: Event Study ==========
+    const esQuarters = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6];
+    const esCoef = esQuarters.map(q => {
+      if (q < 0) return (rand() - 0.5) * 1.3; // near zero
+      if (q === 0) return 4.2 + (rand() - 0.5) * 0.6;
+      return 4.2 + 2.1 * q + (rand() - 0.5) * 1.3;
+    });
+    // normalize t = -1 to zero
+    const baseline = esCoef[esQuarters.indexOf(-1)];
+    const esAdj = esCoef.map(v => v - baseline);
+    const esSE = esQuarters.map(q => q === -1 ? 0 : 0.9 + rand() * 0.5);
+    Plotly.newPlot('chart-event-study', [
+      { x: esQuarters, y: esAdj, error_y: { type: 'data', array: esSE.map(s => 1.96 * s), visible: true,
+                                             color: '#1E40AF', thickness: 1.3, width: 3 },
+        mode: 'markers', type: 'scatter', marker: { color: '#1E40AF', size: 9 },
+        name: 'β̂ ± 95% CI',
+        hovertemplate: 't=%{x}분기<br>β=%{y:.2f}%p<extra></extra>' },
+      { x: [-6, 6], y: [0, 0], mode: 'lines', line: { color: '#94A3B8', width: 1, dash: 'dot' },
+        showlegend: false, hoverinfo: 'skip' },
+    ], {
+      margin: { t: 10, r: 20, b: 50, l: 50 },
+      xaxis: { title: 'T* 대비 상대 분기', dtick: 1, zeroline: false, gridcolor: '#F1F5F9' },
+      yaxis: { title: '계수 β (%p)', gridcolor: '#F1F5F9' },
+      shapes: [{ type: 'line', x0: -0.5, x1: -0.5, y0: 0, y1: 1, yref: 'paper',
+                 line: { color: '#B91C1C', width: 1.2, dash: 'dash' } }],
+      showlegend: false,
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', height: 420,
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 11: Placebo distribution ==========
+    const placebo = Array.from({length: 500}, () => {
+      // centered around 0 with sd ~2.5
+      const u1 = Math.max(1e-6, rand()), u2 = rand();
+      const z = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+      return z * 2.5;
+    });
+    Plotly.newPlot('chart-placebo', [
+      { x: placebo, type: 'histogram', nbinsx: 40,
+        marker: { color: '#94A3B8', line: { color: 'white', width: 1 } },
+        name: 'Placebo δ̂', hovertemplate: 'δ=%{x:.2f}<br>freq %{y}<extra></extra>' },
+    ], {
+      margin: { t: 10, r: 20, b: 40, l: 50 },
+      xaxis: { title: '가상 처치효과 δ̂ (%p)', gridcolor: '#F1F5F9' },
+      yaxis: { title: '빈도', gridcolor: '#F1F5F9' },
+      shapes: [{ type: 'line', x0: 15.2, x1: 15.2, y0: 0, y1: 1, yref: 'paper',
+                 line: { color: '#B91C1C', width: 2 } }],
+      annotations: [{ x: 15.2, y: 1.02, yref: 'paper', text: '실제 δ̂ = +15.2%p',
+                       showarrow: false, font: { size: 11, color: '#B91C1C' } }],
+      showlegend: false,
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', height: 400,
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+
+    // ========== Chart 12: Sensitivity ==========
+    const SENS = [
+      { m: '① Baseline (TWFE)',                    d: 15.2, ci: [13.5, 16.9] },
+      { m: '② + 기업규모 통제',                    d: 14.6, ci: [12.8, 16.3] },
+      { m: '③ + 산업 FE',                         d: 13.9, ci: [12.1, 15.6] },
+      { m: '④ + 경력·지역 통제',                  d: 14.8, ci: [13.0, 16.6] },
+      { m: '⑤ Callaway-SantAnna (staggered 교정)', d: 15.6, ci: [13.2, 17.9] },
+      { m: '⑥ Synthetic Control (보완)',          d: 14.3, ci: [12.5, 16.1] },
+    ];
+    Plotly.newPlot('chart-sensitivity', [
+      { y: SENS.map(s => s.m), x: SENS.map(s => s.d),
+        error_x: { type: 'data', array: SENS.map(s => s.ci[1] - s.d),
+                   arrayminus: SENS.map(s => s.d - s.ci[0]), color: '#1E40AF', thickness: 1.3, width: 4 },
+        mode: 'markers', type: 'scatter', marker: { color: '#1E40AF', size: 10 },
+        hovertemplate: '%{y}<br>δ = %{x:.1f}%p<extra></extra>' },
+    ], {
+      margin: { t: 10, r: 20, b: 40, l: 200 },
+      xaxis: { title: 'δ̂ (%p, 95% CI)', gridcolor: '#F1F5F9' },
+      yaxis: { autorange: 'reversed', tickfont: { size: 10 } },
+      shapes: [{ type: 'line', x0: 0, x1: 0, y0: 0, y1: 1, yref: 'paper',
+                 line: { color: '#94A3B8', width: 1, dash: 'dot' } }],
+      showlegend: false,
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', height: 400,
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 11 }
+    }, { displayModeBar: false, responsive: true });
+  </script>
+
+</body>
+</html>

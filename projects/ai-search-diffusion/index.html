@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI에게 물은 AI 수용도 · 합성 페르소나 2,000인 설문 | 백마탄</title>
+  <meta name="description" content="KOSIS 2024 인구통계에 정합한 합성 페르소나 2,000인에게 LLM이 응답한 AI 수용도 8차원 설문. 대표성 검증·편향 진단 포함. KAIST I&TM ITM501 프로젝트 mockup.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+
+  <style>
+    :root {
+      --primary:        #1E40AF;
+      --secondary:      #3B82F6;
+      --accent:         #60A5FA;
+      --bg:             #F8FAFC;
+      --bg-elev:        #FFFFFF;
+      --bg-soft:        #EFF4FB;
+      --text-primary:   #0F172A;
+      --text-secondary: #475569;
+      --border:         #E2E8F0;
+      --shadow-sm:      0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-md:      0 4px 12px rgba(15, 23, 42, 0.06);
+      --shadow-lg:      0 12px 32px rgba(15, 23, 42, 0.08);
+      --radius-sm:      6px;
+      --radius-md:      10px;
+      --radius-lg:      16px;
+      --max-width:      1200px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Inter", "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px; line-height: 1.6;
+      color: var(--text-primary); background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--primary); text-decoration: none; transition: color .15s ease; }
+    a:hover { color: var(--secondary); }
+    h1, h2, h3, h4 { color: var(--text-primary); line-height: 1.25; margin: 0 0 .5em; font-weight: 600; }
+    h1 { font-size: clamp(2rem, 4.5vw, 2.75rem); font-weight: 700; letter-spacing: -0.02em; }
+    h2 { font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.01em; }
+    h3 { font-size: 1.2rem; margin-top: 1.5em; }
+    h4 { font-size: 1rem; }
+    p { margin: 0 0 1em; color: var(--text-secondary); }
+    code { font-family: "JetBrains Mono", monospace; font-size: 0.85em;
+           background: var(--bg-soft); padding: 2px 6px; border-radius: 4px; color: var(--primary); }
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+
+    header.site-nav {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(248, 250, 252, 0.88);
+      backdrop-filter: saturate(180%) blur(10px);
+      -webkit-backdrop-filter: saturate(180%) blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+    .nav-brand { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); letter-spacing: -0.01em; }
+    .nav-brand:hover { color: var(--primary); }
+    .nav-links { display: flex; gap: 18px; list-style: none; padding: 0; margin: 0; flex-wrap: wrap; }
+    .nav-links a { font-size: 0.82rem; font-weight: 500; color: var(--text-secondary); }
+    .nav-links a:hover { color: var(--primary); }
+    @media (max-width: 860px) { .nav-links { display: none; } }
+
+    section { padding: 80px 0; }
+    section + section { border-top: 1px solid var(--border); }
+    .section-label {
+      display: inline-block;
+      font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--secondary); margin-bottom: 12px;
+    }
+    .section-heading { margin-bottom: 16px; }
+    .section-sub { max-width: 760px; margin-bottom: 40px; color: var(--text-secondary); }
+
+    .project-hero { padding: 80px 0 56px; }
+    .project-meta {
+      display: inline-block; padding: 4px 12px;
+      background: var(--bg-soft); border: 1px solid var(--border);
+      color: var(--primary); border-radius: 999px;
+      font-size: 0.78rem; font-weight: 500; margin-bottom: 20px;
+    }
+    .project-hero h1 { margin-bottom: 12px; }
+    .project-subtitle {
+      font-size: 1.1rem; color: var(--text-secondary);
+      max-width: 760px; margin-bottom: 24px;
+    }
+    .meta-callout {
+      background: linear-gradient(135deg, #EFF4FB 0%, #DBEAFE 100%);
+      border-left: 3px solid var(--primary);
+      border-radius: var(--radius-md);
+      padding: 16px 20px; margin: 16px 0 8px; max-width: 760px;
+      font-size: 0.95rem; color: var(--text-primary);
+    }
+    .meta-callout strong { color: var(--primary); }
+
+    .stat-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px; margin-top: 32px;
+    }
+    .stat-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 20px; box-shadow: var(--shadow-sm);
+    }
+    .stat-num {
+      font-size: 1.75rem; font-weight: 700;
+      color: var(--primary); letter-spacing: -0.02em; margin-bottom: 4px;
+    }
+    .stat-label { font-size: 0.82rem; color: var(--text-secondary); }
+
+    .disclaimer {
+      background: #FEF3C7; border: 1px solid #FDE68A; color: #92400E;
+      padding: 12px 16px; border-radius: var(--radius-sm);
+      font-size: 0.88rem; margin: 16px 0;
+    }
+    .disclaimer strong { color: #78350F; }
+
+    .rq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .rq-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 24px; box-shadow: var(--shadow-sm);
+    }
+    .rq-num {
+      display: inline-block; font-size: 0.72rem; font-weight: 700;
+      letter-spacing: 0.12em; color: var(--secondary); margin-bottom: 12px;
+    }
+    .rq-text { font-size: 1rem; color: var(--text-primary); font-weight: 500; margin-bottom: 8px; }
+    .rq-method { font-size: 0.85rem; color: var(--text-secondary); }
+
+    .lit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+    .lit-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 20px 22px; box-shadow: var(--shadow-sm);
+    }
+    .lit-card .lit-cite {
+      font-size: 0.8rem; color: var(--secondary); font-weight: 600;
+      margin-bottom: 6px; letter-spacing: 0.01em;
+    }
+    .lit-card h4 { margin: 0 0 8px; font-size: 0.95rem; color: var(--text-primary); }
+    .lit-card p { font-size: 0.87rem; margin: 0; }
+    .lit-tag {
+      display: inline-block; padding: 2px 8px; font-size: 0.7rem;
+      font-weight: 500; background: var(--bg-soft);
+      color: var(--primary); border-radius: 999px; margin-top: 10px;
+    }
+
+    table.simple-table {
+      width: 100%; border-collapse: collapse; font-size: 0.88rem;
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); overflow: hidden;
+    }
+    table.simple-table th {
+      text-align: left; padding: 11px 14px;
+      background: var(--bg-soft); font-weight: 600;
+      font-size: 0.75rem; color: var(--text-secondary);
+      letter-spacing: 0.04em; text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    table.simple-table td {
+      padding: 10px 14px; border-bottom: 1px solid var(--border);
+      color: var(--text-primary); vertical-align: top;
+    }
+    table.simple-table tr:last-child td { border-bottom: none; }
+    table.simple-table .num { font-variant-numeric: tabular-nums; font-family: "JetBrains Mono", monospace; font-size: 0.83rem; }
+
+    ul.method-list, ol.method-list { padding-left: 1.4em; margin: 0 0 1em; }
+    ul.method-list li, ol.method-list li { margin-bottom: 8px; color: var(--text-secondary); }
+    ul.method-list li::marker, ol.method-list li::marker { color: var(--secondary); font-weight: 600; }
+
+    .formula {
+      background: var(--bg-soft); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 16px 20px;
+      font-family: "JetBrains Mono", monospace; font-size: 0.86rem;
+      color: var(--text-primary); margin: 12px 0 16px;
+      overflow-x: auto; white-space: pre-wrap; line-height: 1.5;
+    }
+    .formula-label {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--secondary); font-weight: 600; margin-bottom: 6px;
+    }
+
+    .chart-container {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 24px;
+      box-shadow: var(--shadow-sm); margin-bottom: 20px;
+    }
+    .chart-title { font-size: 1rem; font-weight: 600; margin-bottom: 4px; color: var(--text-primary); }
+    .chart-desc { font-size: 0.86rem; color: var(--text-secondary); margin-bottom: 16px; }
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    @media (max-width: 860px) { .chart-row { grid-template-columns: 1fr; } }
+
+    .insight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .insight-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-left: 3px solid var(--primary); border-radius: var(--radius-md);
+      padding: 20px 22px; box-shadow: var(--shadow-sm);
+    }
+    .insight-card h4 {
+      color: var(--primary); margin: 0 0 8px;
+      font-size: 0.95rem; font-weight: 600;
+    }
+    .insight-card p { font-size: 0.92rem; margin: 0; }
+
+    .step-list { display: grid; gap: 10px; }
+    .step {
+      display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start;
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 16px 18px; box-shadow: var(--shadow-sm);
+    }
+    .step-num {
+      display: flex; align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--primary); color: white; font-weight: 700; font-size: 0.82rem;
+    }
+    .step-body h4 { margin: 0 0 4px; font-size: 0.95rem; }
+    .step-body p { margin: 0; font-size: 0.87rem; }
+
+    .persona-card-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .persona-card {
+      background: var(--bg-elev); border: 1px solid var(--border);
+      border-radius: var(--radius-md); padding: 16px 18px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+    .persona-card .pid {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+      color: var(--secondary); margin-bottom: 4px; letter-spacing: 0.04em;
+    }
+    .persona-card .demo {
+      font-size: 0.85rem; color: var(--text-primary);
+      font-weight: 600; margin-bottom: 6px;
+    }
+    .persona-card .demo span { font-weight: 400; color: var(--text-secondary); }
+    .persona-card .narr {
+      font-size: 0.83rem; color: var(--text-secondary);
+      line-height: 1.5; font-style: italic;
+      border-left: 2px solid var(--accent); padding-left: 10px; margin-top: 8px;
+    }
+    .persona-card .acc-tag {
+      display: inline-block; font-size: 0.7rem; font-weight: 600;
+      padding: 2px 8px; border-radius: 999px;
+      margin-top: 8px; margin-right: 4px;
+    }
+    .acc-pos { background: #DBEAFE; color: #1E40AF; }
+    .acc-neg { background: #FEE2E2; color: #B91C1C; }
+    .acc-neu { background: #F1F5F9; color: #475569; }
+
+    /* benchmark badges */
+    .bench-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px; margin-top: 12px; font-size: 0.82rem; }
+    .bench-grid .b-item {
+      background: var(--bg-soft); padding: 8px 10px; border-radius: var(--radius-sm);
+      border-left: 3px solid var(--primary);
+    }
+    .bench-grid .b-item strong { display: block; color: var(--primary); font-size: 0.85rem; margin-bottom:2px; }
+    .bench-grid .b-item span { color: var(--text-secondary); font-size: 0.78rem; }
+
+    footer { border-top: 1px solid var(--border); padding: 32px 0 40px; }
+    .footer-inner {
+      display: flex; flex-wrap: wrap; justify-content: space-between;
+      gap: 12px; align-items: center;
+      font-size: 0.85rem; color: var(--text-secondary);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-nav">
+    <div class="container nav-inner">
+      <a href="../../index.html" class="nav-brand">← 백마탄 포트폴리오</a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#purpose">목적</a></li>
+          <li><a href="#lit">선행연구</a></li>
+          <li><a href="#rq">RQ</a></li>
+          <li><a href="#data">페르소나·설문</a></li>
+          <li><a href="#eda">EDA</a></li>
+          <li><a href="#main">메인 분석</a></li>
+          <li><a href="#conclusion">결론</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- HERO -->
+    <section class="project-hero">
+      <div class="container">
+        <span class="project-meta">ITM501 · 이노베이션경영</span>
+        <h1>AI에게 물은 AI 수용도: 합성 페르소나 2,000인 설문</h1>
+        <p class="project-subtitle">
+          Asking AI about AI: A Synthetic-Persona Survey on Korean Acceptance of AI —
+          KOSIS 2024 인구통계에 정합하도록 IPF로 생성한 합성 페르소나 <strong>2,000인</strong>에게 LLM이 응답한 AI 수용도 <strong>8차원</strong> 설문. 한국갤럽·과기정통부 실측 데이터에 대한 <strong>예측 검증</strong>과 LLM 편향 진단을 함께 수행합니다.
+        </p>
+        <div class="meta-callout">
+          🪞 <strong>본 연구의 의의</strong> — 이 연구의 흥미는 <em>AI에게 AI에 대한 인식을 묻는다</em>는 점입니다. LLM은 수억 명의 인간 텍스트로 학습했기에 <strong>인간의 AI 수용 패턴을 잠재적으로 시뮬레이션할 수 있는 잠재 모집단</strong>으로 기능할 수 있습니다(Argyle et al. 2023; Park et al. 2024). 동시에 LLM은 자신을 평가하므로 <em>자기참조 편향</em>의 위험도 가집니다(Santurkar et al. 2023). 본 연구는 이 양면을 모두 수치화해 보고합니다.
+        </div>
+        <div class="disclaimer">
+          <strong>⚠ Mock-up Notice.</strong> 본 페이지는 연구 설계를 시각화한 <em>시범 목업</em>입니다. 표시된 페르소나 분포·수용도 점수·검증 지표는 실제 LLM 호출 없이 시드 고정(mulberry32, seed 20260420) 합성 데이터입니다. 설계대로 GPT-4o + Claude Opus 4 + Gemini 2.0 Pro 페르소나로 실제 실행 시 유사 형태의 결과가 산출될 것으로 기대됩니다.
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-num">2,000</div>
+            <div class="stat-label">합성 페르소나 (KOSIS 2024 정합)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">8</div>
+            <div class="stat-label">AI 수용도 차원 (UTAUT2 + AI 특화)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">JS 0.043</div>
+            <div class="stat-label">갤럽 benchmark 대비 분포 거리</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">12</div>
+            <div class="stat-label">시각화 차트 (EDA + 메인)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 1. PURPOSE -->
+    <section id="purpose">
+      <div class="container">
+        <div class="section-label">01 · Research Purpose</div>
+        <h2 class="section-heading">연구 목적</h2>
+        <p class="section-sub">
+          한국인의 AI 수용·저항 패턴을 인구통계 단위로 빠르게 매핑하는 방법으로 <strong>합성 페르소나 설문(synthetic persona survey)</strong>을 검증합니다. 동시에 <em>LLM이 자신에 대한 인식을 시뮬레이션</em>한다는 메타적 흥미를 통계적으로 다룹니다.
+        </p>
+        <div class="insight-grid">
+          <div class="insight-card">
+            <h4>왜 합성 설문인가</h4>
+            <p>전통 설문은 N=1,000 기준 4–8주, 약 5,000만 원이 소요. 합성 페르소나 설문은 동일 규모를 <strong>수 시간·수십만 원</strong>에 수행 가능. 가설 탐색·세그먼트 발견·설문 문항 사전 점검 단계에서 <em>실설문의 보완재</em>로 기능.</p>
+          </div>
+          <div class="insight-card">
+            <h4>왜 AI 수용도인가</h4>
+            <p>가보스 프로젝트의 핵심 질문은 <strong>"누가 AI를 빨리 받아들이고 누가 거부하는가"</strong>. 인구통계 × 수용 차원 매트릭스가 사용자 세그먼테이션·메시지 톤·가격 정책의 출발점.</p>
+          </div>
+          <div class="insight-card">
+            <h4>왜 메타 — AI에게 AI를 묻는가</h4>
+            <p>LLM은 수억 명 텍스트로 학습된 <em>잠재 여론 표본</em>이지만 동시에 <em>스스로의 평가 대상</em>. 이 자기참조 구조가 만드는 편향(친 AI bias, 회피 편향)을 분리하는 시도가 본 연구의 학문적 기여.</p>
+          </div>
+          <div class="insight-card">
+            <h4>왜 백마탄인가</h4>
+            <p>가우스전자의 <strong>가보스 AI OS</strong>는 한국 시장에 특화된 AI 수용도 데이터가 필수. 합성 설문은 빠른 가설 검증, 실설문 전 사전 점검, 그리고 <em>실설문이 닿기 어려운 마이너 세그먼트</em>(고령·농어촌)의 추정에 유용.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. LITERATURE -->
+    <section id="lit">
+      <div class="container">
+        <div class="section-label">02 · Literature Review</div>
+        <h2 class="section-heading">선행 연구 분석</h2>
+        <p class="section-sub">
+          본 연구는 세 흐름의 교집합에 자리합니다: (α) LLM 기반 인간 시뮬레이션 (computational social science), (β) AI 수용 이론 (IS·HCI), (γ) 한국 실측 AI 인식 조사 (benchmark). 각 흐름의 표준 인용을 토대로 합니다.
+        </p>
+        <div class="lit-grid">
+          <div class="lit-card">
+            <div class="lit-cite">Argyle, Busby, Fulda, Gubler, Rytting &amp; Wingate (2023)</div>
+            <h4>Out of One, Many: Using LMs to Simulate Human Samples (Political Analysis)</h4>
+            <p>LLM에 인구통계를 조건 부여(conditioning)하면 미국 선거 응답을 통계적으로 재현 가능함을 처음 입증. 본 연구의 <strong>foundational reference</strong>. "silicon sample" 용어 도입.</p>
+            <span class="lit-tag">Foundational</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Park, Zou, Shaw, Hill, Cai et al. (2024)</div>
+            <h4>Generative Agent Simulations of 1,000 People (Stanford preprint)</h4>
+            <p>2시간 인터뷰로 추출한 1,000인 디지털 트윈이 본인의 GSS·BIG5 응답을 평균 85% 정확도로 재현. <strong>대규모 인간 시뮬레이션의 현재 SOTA</strong>. 본 연구는 인터뷰 대신 KOSIS+narrative augmentation 활용.</p>
+            <span class="lit-tag">SOTA Scale</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Aher, Arriaga &amp; Kalai (2023)</div>
+            <h4>Using LLMs to Simulate Multiple Humans &amp; Replicate Human Subject Studies (ICML)</h4>
+            <p>LLM이 Ultimatum Game·Garden Path·Wisdom of Crowd 실험을 정성적으로 재현. <strong>"Turing Experiments"</strong> 프로토콜 제안. 본 연구의 multi-persona prompt 설계 기초.</p>
+            <span class="lit-tag">Methodology</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Horton (2023)</div>
+            <h4>Large Language Models as Simulated Economic Agents (NBER WP)</h4>
+            <p>LLM 응답이 행동경제학 고전 실험(공정성·위험회피)의 효과 방향을 일치시킴. <strong>경제학에서 합성 응답자 채택의 출발점</strong>. 본 연구의 비용·시간 절감 논거.</p>
+            <span class="lit-tag">Econ Validation</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Hewitt, Ashokkumar, Ghezae &amp; Willer (2024)</div>
+            <h4>Predicting Results of Social Science Experiments Using LLMs</h4>
+            <p>GPT-4가 70개 사회과학 실험의 처치효과 방향을 r=0.85로 예측. <strong>합성 응답의 예측 타당성(predictive validity) 정량 근거</strong>. 본 연구의 검증 프레임 채택.</p>
+            <span class="lit-tag">Predictive Validity</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Santurkar, Durmus, Ladhak, Lee, Liang &amp; Hashimoto (2023)</div>
+            <h4>Whose Opinions Do Language Models Reflect? (ICML)</h4>
+            <p>OpinionQA 60문항으로 LLM이 미국 평균 대비 <strong>고학력·도시·진보 편향</strong>을 가짐을 정량화. 본 연구의 <em>핵심 caveat</em>이자 편향 진단 차트의 이론 근거.</p>
+            <span class="lit-tag">Bias Caveat</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Hu &amp; Collier (2024)</div>
+            <h4>Quantifying the Persona Effect in LLM Simulations (ACL)</h4>
+            <p>persona steering이 응답을 얼마나 안정적으로 바꾸는지 측정. 인구통계 conditioning은 <strong>중간 강도 효과</strong>(η²≈0.15)에 그침. 본 연구는 narrative augmentation으로 효과 크기를 키우는 시도.</p>
+            <span class="lit-tag">Persona Limits</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">Venkatesh, Thong &amp; Xu (2012)</div>
+            <h4>UTAUT2: Consumer Acceptance and Use of Technology (MISQ)</h4>
+            <p>본 연구의 8차원 수용 척도(Performance Exp · Effort Exp · Hedonic Motivation · Price Value · Habit · Social Influence · Trust · Privacy Concern)의 이론 골격. AI 특화 차원 2개(Trust·Privacy) 추가.</p>
+            <span class="lit-tag">Acceptance Theory</span>
+          </div>
+          <div class="lit-card">
+            <div class="lit-cite">한국갤럽·과학기술정보통신부 (2024)</div>
+            <h4>한국인의 AI 인식 및 활용 실태 조사 (N=1,500)</h4>
+            <p>20–69세 한국인 대상 면접조사. AI 인지율 79%, 사용 경험 41%, 일자리 위협 인식 56%. 본 연구의 <strong>대표성 검증 benchmark</strong>로 사용 (Jensen-Shannon divergence, calibration plot).</p>
+            <span class="lit-tag">Korean Benchmark</span>
+          </div>
+        </div>
+        <h3 style="margin-top: 40px;">본 연구의 위치와 차별점</h3>
+        <ul class="method-list">
+          <li><strong>한국 맥락 + KOSIS 정합</strong>: 기존 LLM 인간 시뮬레이션 연구는 미국 데이터(GSS·ANES) 중심. 본 연구는 KOSIS 2024 17개 시·도 × 6 연령대 × 2 성별 marginals를 IPF로 결합한 한국 특화 frame을 적용.</li>
+          <li><strong>대표성 검증 패널을 명시적으로 보고</strong>: 합성 설문 연구가 검증을 생략하는 경우가 많음. 본 연구는 갤럽·과기정통부 N=1,500 실측치를 hold-out으로 두고 <em>예측 타당성·JS divergence·calibration plot</em>를 함께 공개.</li>
+          <li><strong>LLM의 자기참조 편향 분리 시도</strong>: 동일 페르소나에 GPT-4o · Claude Opus 4 · Gemini 2.0 Pro 3개 모델로 동시 응답 → 모델 간 분산을 측정해 <strong>자기참조 편향</strong>(LLM이 자신을 평가)을 진단.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 3. RQ -->
+    <section id="rq">
+      <div class="container">
+        <div class="section-label">03 · Research Questions</div>
+        <h2 class="section-heading">Research Questions</h2>
+        <p class="section-sub">4개 질문은 (i) 페르소나 대표성, (ii) 수용 분포, (iii) 세그먼트, (iv) 메타 편향의 4축으로 구성됩니다.</p>
+        <div class="rq-grid">
+          <div class="rq-card">
+            <div class="rq-num">RQ 01</div>
+            <p class="rq-text">합성 페르소나 2,000인의 인구통계 분포가 <strong>KOSIS 2024 모집단</strong>과 통계적으로 정합하는가?</p>
+            <p class="rq-method">→ 17개 시·도 × 6 연령대 × 2 성별 marginal alignment(χ²), 직업·교육·소득 secondary attribute IPF 잔차.</p>
+          </div>
+          <div class="rq-card">
+            <div class="rq-num">RQ 02</div>
+            <p class="rq-text">합성 페르소나의 <strong>AI 수용도 응답</strong>이 한국갤럽·과기정통부 실측치와 얼마나 일치하는가?</p>
+            <p class="rq-method">→ 8개 핵심 응답 항목 calibration scatter, Jensen-Shannon divergence, Pearson r.</p>
+          </div>
+          <div class="rq-card">
+            <div class="rq-num">RQ 03</div>
+            <p class="rq-text">한국인의 AI 수용 패턴은 <strong>인구통계 × 수용 차원</strong>에서 어떤 세그먼트를 형성하는가? Rogers 채택자 5범주는 어떻게 분포하는가?</p>
+            <p class="rq-method">→ UMAP 2D 페르소나 임베딩 + HDBSCAN 클러스터, Rogers 5-범주 매핑, segment 프로파일.</p>
+          </div>
+          <div class="rq-card">
+            <div class="rq-num">RQ 04</div>
+            <p class="rq-text">3개 LLM(GPT-4o · Claude · Gemini)이 동일 페르소나에 다른 답을 내놓는가? 이는 <strong>자기참조 편향</strong>으로 해석 가능한가?</p>
+            <p class="rq-method">→ 모델 × 차원 평균 응답 비교, 모델 간 분산 분해, Santurkar 스타일 anchor distribution overlay.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. DATA -->
+    <section id="data">
+      <div class="container">
+        <div class="section-label">04 · Persona Generation &amp; Survey Protocol</div>
+        <h2 class="section-heading">페르소나 생성 및 설문 프로토콜</h2>
+        <p class="section-sub">
+          KOSIS 2024 marginals → IPF로 joint 분포 합성 → 2,000인 추출 → narrative augmentation → 3개 LLM에서 동시 설문 → 한국갤럽 benchmark에 calibration. 6단계 파이프라인을 명시합니다.
+        </p>
+
+        <h3>4.1 페르소나 생성 파이프라인</h3>
+        <div class="step-list">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body"><h4>Demographic Frame (KOSIS 2024)</h4>
+              <p>17개 시·도 × 6 연령대(18–29 / 30–39 / 40–49 / 50–59 / 60–69 / 70+) × 2 성별 = 204 셀에 대해 통계청 인구총조사 marginals를 추출. 직업(KSCO 9대 분류) · 교육(고졸 이하/전문대/4년제/대학원) · 소득(5분위) marginals도 통계청 가계금융복지조사·경제활동인구조사에서 함께 수집.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body"><h4>IPF (Iterative Proportional Fitting)</h4>
+              <p>marginal 분포로부터 joint 분포를 합성하는 표준 기법(Deming &amp; Stephan 1940; Beckman et al. 1996). 시·도 × 연령 × 성별 joint를 먼저 산출한 뒤 직업·교육·소득을 marginal 정합으로 IPF 반복(수렴 ε &lt; 1e-4)해 5차원 joint 확보.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body"><h4>Stratified Sampling (N=2,000)</h4>
+              <p>5차원 joint에서 layered sampling으로 2,000인 추출. 각 페르소나는 <em>(시·도, 연령대, 성별, 직업, 교육, 소득분위)</em> 6-tuple. 시드 고정으로 재현성 확보.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body"><h4>Narrative Augmentation (GPT-4o)</h4>
+              <p>각 페르소나에 100–200자의 짧은 생애 내러티브를 GPT-4o가 생성: <em>"OO에서 살아온 OO세 OO 종사자, 가족 구성, 일상의 한 장면, 디지털 사용 정도"</em>. Hu &amp; Collier(2024)가 지적한 demographic-only conditioning의 효과 약화 문제를 보완.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-body"><h4>Survey Battery 실행 (3 LLMs · 30 questions)</h4>
+              <p>UTAUT2 기반 8차원(Performance Exp · Effort Exp · Hedonic Motivation · Price Value · Habit · Social Influence · Trust · Privacy Concern) 각 3–4문항 + 7-점 Likert + 자유응답 2개. 각 페르소나가 <strong>GPT-4o · Claude Opus 4 · Gemini 2.0 Pro</strong>에서 독립 답변. 시간: 페르소나당 약 90초 → 총 약 50시간 (3 모델 동시 실행).</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">6</div>
+            <div class="step-body"><h4>Quality Control &amp; Validation</h4>
+              <p>(a) 응답 일관성: 인구통계 attention check 3건 / 페르소나, 불일치 응답 폐기. (b) 모델 간 합치: 3 모델 평균 + ICC(2,k) 0.65 이상 항목만 보고. (c) 외적 타당성: 한국갤럽·과기정통부 실측 benchmark에 calibration scatter / JS divergence 계산.</p>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 32px;">4.2 IPF 수렴 공식 (참고)</h3>
+        <div class="formula">
+<span style="color:#64748B;">-- Iterative Proportional Fitting (Deming &amp; Stephan 1940) --</span>
+n_ij^(k+1) = n_ij^(k) · (P_i^row / Σ_j n_ij^(k))     <span style="color:#64748B;"># row update</span>
+n_ij^(k+2) = n_ij^(k+1) · (P_j^col / Σ_i n_ij^(k+1)) <span style="color:#64748B;"># col update</span>
+
+수렴 조건: max |Σ_j n_ij^(k) - P_i^row| &lt; ε  (ε = 1e-4)
+다차원 (5D) 일반화: 각 marginal에 대해 순환 업데이트
+        </div>
+
+        <h3>4.3 대표성 검증 지표</h3>
+        <div class="bench-grid">
+          <div class="b-item">
+            <strong>χ² test</strong>
+            <span>17 × 6 × 2 marginal cell 일치도 (df=203, target p &gt; 0.10)</span>
+          </div>
+          <div class="b-item">
+            <strong>JS divergence</strong>
+            <span>응답 분포 거리 (target ≤ 0.05, 갤럽 8문항 대비)</span>
+          </div>
+          <div class="b-item">
+            <strong>Pearson r</strong>
+            <span>실측 평균 vs 합성 평균 상관 (target ≥ 0.85)</span>
+          </div>
+          <div class="b-item">
+            <strong>Calibration RMSE</strong>
+            <span>per-cell 예측 RMSE (target ≤ 0.10 in 0–1 scale)</span>
+          </div>
+          <div class="b-item">
+            <strong>Coverage</strong>
+            <span>95% PI 안에 실측치 포함 비율 (target ≥ 0.90)</span>
+          </div>
+          <div class="b-item">
+            <strong>ICC(2,k)</strong>
+            <span>3개 LLM 간 응답 일치도 (target ≥ 0.65)</span>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 32px;">4.4 페르소나 샘플 (3인)</h3>
+        <div class="persona-card-grid">
+          <div class="persona-card">
+            <div class="pid">PID-0142</div>
+            <div class="demo">52세 여성 · 부산 · 자영업 · 고졸 · 소득 3분위 <span></span></div>
+            <div class="narr">"동래에서 분식집을 27년째 운영하고 있어요. 키오스크는 3년 전에 들였는데, 손주 보러 갈 때 카톡으로 자동 답변 보내주는 AI는 들어봤어요. 솔직히 무서워요. 우리 집 손님이 다 50대 이상이라 다 같이 안 쓰니까요."</div>
+            <span class="acc-tag acc-neu">신뢰: 중</span>
+            <span class="acc-tag acc-neg">일자리 위협: 강</span>
+          </div>
+          <div class="persona-card">
+            <div class="pid">PID-0871</div>
+            <div class="demo">29세 남성 · 서울 · IT 개발자 · 4년제 · 소득 4분위 <span></span></div>
+            <div class="narr">"강남 IT 회사 백엔드 개발자입니다. ChatGPT는 일상 업무 도구이고, 사이드 프로젝트는 Cursor + Claude로 거의 다 짜요. AI가 일자리를 줄인다기보다 일하는 방식을 바꾸는 거라고 봅니다. 월 구독료는 이미 4–5개 결제 중이에요."</div>
+            <span class="acc-tag acc-pos">사용 빈도: 매일</span>
+            <span class="acc-tag acc-pos">신뢰: 강</span>
+          </div>
+          <div class="persona-card">
+            <div class="pid">PID-1593</div>
+            <div class="demo">68세 남성 · 전남 (군 단위) · 농업 · 중졸 · 소득 1분위 <span></span></div>
+            <div class="narr">"농사일하다 잠깐 쉬는 시간에 손자가 가르쳐줘서 ChatGPT라는 거 한 번 써봤어요. 글자가 작고, 내가 묻고 싶은 게 잘 정리가 안 돼요. AI가 사람 일을 대신해주는 건 좋은 거 같지만, 내 일은 아니고요."</div>
+            <span class="acc-tag acc-neu">관심: 약</span>
+            <span class="acc-tag acc-neg">접근성: 낮음</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. EDA -->
+    <section id="eda">
+      <div class="container">
+        <div class="section-label">05 · Exploratory Data Analysis</div>
+        <h2 class="section-heading">탐색적 분석 · 페르소나 분포</h2>
+        <p class="section-sub">
+          2,000인 페르소나의 인구통계 분포가 KOSIS 2024 모집단과 정합하는지, 응답 분포에 비정상 신호가 있는지 점검합니다.
+        </p>
+
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">연령 × 성별 분포 (페르소나 vs KOSIS 2024)</div>
+            <div class="chart-desc">청·녹·검 마커 = KOSIS 모집단, 막대 = 합성 페르소나. 모든 셀에서 ±1.5%p 이내.</div>
+            <div id="chart-age-gender" style="width:100%;height:340px;"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">17개 시·도 분포 (페르소나 vs KOSIS)</div>
+            <div class="chart-desc">막대 = 페르소나 점유, 점 = KOSIS 점유. 서울·경기 비중 정확 재현.</div>
+            <div id="chart-region" style="width:100%;height:340px;"></div>
+          </div>
+        </div>
+
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">직업 · 교육 · 소득 marginal 정합도</div>
+            <div class="chart-desc">3개 secondary attribute의 IPF 후 잔차(절대오차 %p). 모든 카테고리에서 1.2%p 이내.</div>
+            <div id="chart-secondary" style="width:100%;height:340px;"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">AI 수용 8차원 응답 분포 (7-점 Likert)</div>
+            <div class="chart-desc">차원별 박스플롯. Performance Expectancy 중앙값 5.4, Privacy Concern 중앙값 4.8, Trust 중앙값 4.2.</div>
+            <div id="chart-likert" style="width:100%;height:340px;"></div>
+          </div>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-title">대표성 검증: 갤럽·과기정통부 N=1,500 benchmark calibration</div>
+          <div class="chart-desc">8개 핵심 항목에서 합성 응답 평균(x) vs 실측 평균(y). 45° 선 = 완전 일치. JS divergence = 0.043 / Pearson r = 0.91.</div>
+          <div id="chart-calib" style="width:100%;height:380px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. MAIN -->
+    <section id="main">
+      <div class="container">
+        <div class="section-label">06 · Main Analysis</div>
+        <h2 class="section-heading">메인 분석 · 수용 패턴 · 세그먼트 · 자기참조 편향</h2>
+        <p class="section-sub">
+          (1) 8차원 수용 프로파일, (2) UMAP 임베딩 기반 세그먼트 발견, (3) Rogers 채택자 분포, (4) 3 LLM 응답 차이로 본 자기참조 편향. 네 층위로 분석합니다.
+        </p>
+
+        <h3>6.1 AI 수용 차원 프로파일</h3>
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">전체 평균 8차원 Radar (UTAUT2 + AI 특화)</div>
+            <div class="chart-desc">Performance Expectancy·Hedonic Motivation 강세, Trust·Privacy Concern은 중하위.</div>
+            <div id="chart-radar" style="width:100%;height:420px;"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">차원 간 상관 매트릭스</div>
+            <div class="chart-desc">Performance Exp – Adoption Intention r=0.72, Privacy Concern – Trust r=−0.54.</div>
+            <div id="chart-corr" style="width:100%;height:420px;"></div>
+          </div>
+        </div>
+
+        <h3>6.2 인구통계 × 수용 차원</h3>
+        <div class="chart-container">
+          <div class="chart-title">연령대 × 수용 차원 히트맵</div>
+          <div class="chart-desc">20대–30대는 Performance·Hedonic 모든 차원 5점대, 60대 이상은 Trust·Habit 큰 폭으로 하락. 50대는 Privacy Concern이 가장 높음.</div>
+          <div id="chart-age-dim" style="width:100%;height:340px;"></div>
+        </div>
+
+        <h3>6.3 세그먼트 발견 (UMAP + HDBSCAN)</h3>
+        <div class="chart-container">
+          <div class="chart-title">페르소나 2D 임베딩 · 6개 수용 세그먼트</div>
+          <div class="chart-desc">8차원 응답 벡터를 UMAP 2D로 축소 후 HDBSCAN 클러스터. 6개 자연 클러스터 발견: <strong>Power User · Curious Pragmatist · Mainstream Late · Skeptical Mid · Disengaged Senior · Anxious Worker</strong>.</div>
+          <div id="chart-umap" style="width:100%;height:480px;"></div>
+        </div>
+
+        <h3>6.4 Rogers 채택자 5범주</h3>
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">Rogers 5-범주 분포 (페르소나 추정)</div>
+            <div class="chart-desc">Innovators 4.6% · Early Adopters 18.2% · Early Majority 31.4% · Late Majority 28.5% · Laggards 17.3%.</div>
+            <div id="chart-rogers" style="width:100%;height:380px;"></div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">채택자 범주 × 인구통계 (연령)</div>
+            <div class="chart-desc">Innovators는 20–30대 IT·전문직에 집중. Laggards는 60대 이상 + 소득 1분위에 편중.</div>
+            <div id="chart-rogers-demo" style="width:100%;height:380px;"></div>
+          </div>
+        </div>
+
+        <h3>6.5 자기참조 편향: 3개 LLM 비교</h3>
+        <div class="chart-container">
+          <div class="chart-title">동일 페르소나에 대한 GPT-4o · Claude Opus 4 · Gemini 2.0 Pro 응답 차이</div>
+          <div class="chart-desc">8차원 평균 응답을 모델별로 정렬. <strong>친 AI 편향</strong>(Performance Exp·Hedonic Motivation 과대 추정) 일관 관찰. Privacy Concern은 모델 간 가장 큰 분산을 보임 — Santurkar et al.(2023)이 지적한 "회피 편향" 흔적.</div>
+          <div id="chart-model" style="width:100%;height:420px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. CONCLUSION -->
+    <section id="conclusion">
+      <div class="container">
+        <div class="section-label">07 · Conclusion &amp; Implications</div>
+        <h2 class="section-heading">결론 및 함의</h2>
+        <p class="section-sub">
+          합성 페르소나 설문은 AI 수용 분포의 <strong>1차 추정</strong>으로 충분한 정확도를 보였고(JS 0.043, Pearson r=0.91), 동시에 <strong>친 AI 편향과 회피 편향</strong>을 LLM 간 분산으로 정량 진단했습니다. 가보스 AI OS 전략에는 6개 수용 세그먼트 별 메시지·가격·채널 차별화가 직접 적용 가능합니다.
+        </p>
+
+        <div class="insight-grid">
+          <div class="insight-card">
+            <h4>발견 1 · 합성 설문은 "1차 추정"으로 유효</h4>
+            <p>JS 0.043 / Pearson r 0.91 / Coverage 0.93. 가설 탐색·세그먼트 발견 단계에서 실설문 대체재로 실용적. 단 정책 결정·중요 투자 판단에는 실측 보강 필수.</p>
+          </div>
+          <div class="insight-card">
+            <h4>발견 2 · 6개 세그먼트, 4개가 "거부에 가까움"</h4>
+            <p>UMAP 클러스터 6개 중 Skeptical Mid · Disengaged Senior · Anxious Worker · Mainstream Late는 현행 AI 앱에 거부·소극. 합쳐 약 60% — 가보스 OS의 핵심 미수용 시장.</p>
+          </div>
+          <div class="insight-card">
+            <h4>발견 3 · 가장 큰 변수는 Trust · Privacy</h4>
+            <p>Performance Expectancy는 모든 세그먼트에서 5점대로 평탄. 결정적 차이는 Trust(연령 −0.4/decade)와 Privacy Concern(50대 정점). 가보스 OS는 <em>한국 데이터 거주성·감사 가능성</em>을 우선 메시지.</p>
+          </div>
+          <div class="insight-card">
+            <h4>발견 4 · LLM의 "친 AI 자기참조 편향"</h4>
+            <p>3개 LLM 모두 Performance Expectancy를 0.4–0.6점 과대 추정. 합성 설문 응답을 그대로 사용하면 <em>실제 거부 강도를 과소평가</em>. 보정 계수(post-hoc shrinkage) 필요.</p>
+          </div>
+        </div>
+
+        <h3 style="margin-top: 40px;">가보스 AI OS 전략 함의</h3>
+        <ul class="method-list">
+          <li><strong>세그먼트 우선순위</strong>: Curious Pragmatist(약 22%) — 최단 거리에서 전환 가능. 광고·온보딩 우선 타겟.</li>
+          <li><strong>Trust 메시지 강화</strong>: 한국 데이터 거주, 감사 로그, 옵트아웃 명시. Skeptical Mid · Anxious Worker 세그먼트의 거부감 완화 핵심.</li>
+          <li><strong>접근성 채널 확장</strong>: Disengaged Senior(약 14%)는 앱 자체에 닿지 않음. 가족 연결·키오스크 임베드·통신사 번들 채널 필요.</li>
+          <li><strong>가격: Price Value 차원 활용</strong>: 60대 이상 + 1·2분위에 무료 ad-supported 트랙, 30–40대 IT·전문직에 Pro 트랙. 동일 가격 일률 정책 회피.</li>
+        </ul>
+
+        <h3 style="margin-top: 40px;">한계와 향후 연구</h3>
+        <ul class="method-list">
+          <li><strong>자기참조 편향 보정</strong>: 본 연구는 분산만 측정. Santurkar 스타일 anchor-based reweighting으로 post-hoc 보정 후속 연구.</li>
+          <li><strong>narrative augmentation 효과</strong>: Hu &amp; Collier(2024)의 한계 극복 가설은 미검증. ablation 실험 필요(narrative 유/무 비교).</li>
+          <li><strong>실설문 동시 수행 검증</strong>: 본 연구는 갤럽 기존 데이터에 calibration. 동일 문항으로 N=300 mini-survey와 합성 설문 동시 수행하면 더 강한 외적 타당성 확보.</li>
+          <li><strong>인구통계 외 conditioning</strong>: 정치·종교·기술 친밀도 등 가치 변수가 AI 수용에 미치는 영향 큼. 차후 KGSS 2024 가치문항 결합 conditioning 가능성.</li>
+        </ul>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <span>© 2026 백마탄 · KAIST I&amp;TM · ITM501 이노베이션경영 프로젝트</span>
+      <a href="../../index.html">← 포트폴리오로 돌아가기</a>
+    </div>
+  </footer>
+
+  <script>
+    // ==========================================================
+    // Deterministic PRNG (Mulberry32) - seed 20260420
+    // ==========================================================
+    function mulberry32(seed) {
+      return function() {
+        let t = seed += 0x6D2B79F5;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    const rnd = mulberry32(20260420);
+    function gauss(mu, sigma) {
+      const u1 = Math.max(rnd(), 1e-9), u2 = rnd();
+      return mu + sigma * Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+    }
+    function clamp(x, lo, hi){ return Math.max(lo, Math.min(hi, x)); }
+
+    // ==========================================================
+    // Constants
+    // ==========================================================
+    const AGE_BANDS = ['18-29','30-39','40-49','50-59','60-69','70+'];
+    // KOSIS 2024 approximate share by age band (×0.5 male, ×0.5 female)
+    const KOSIS_AGE = [0.157, 0.160, 0.180, 0.198, 0.162, 0.143];
+
+    const REGIONS = [
+      ['서울', 0.184], ['부산', 0.064], ['인천', 0.058], ['대구', 0.046],
+      ['대전', 0.029], ['광주', 0.028], ['울산', 0.022], ['세종', 0.008],
+      ['경기', 0.265], ['강원', 0.030], ['충북', 0.031], ['충남', 0.041],
+      ['전북', 0.034], ['전남', 0.035], ['경북', 0.050], ['경남', 0.063],
+      ['제주', 0.013],
+    ];
+
+    const DIMS = [
+      'Performance\nExp.',
+      'Effort\nExp.',
+      'Hedonic\nMotivation',
+      'Price\nValue',
+      'Habit',
+      'Social\nInfluence',
+      'Trust',
+      'Privacy\nConcern',
+    ];
+    const DIM_SHORT = ['Perf.Exp','Effort.Exp','Hedonic','Price','Habit','Social','Trust','Privacy'];
+
+    const LAYOUT_BASE = {
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor: 'rgba(0,0,0,0)',
+      font: { family: 'Inter, Noto Sans KR, sans-serif', size: 12, color: '#0F172A' },
+      margin: { l: 60, r: 24, t: 28, b: 56 },
+    };
+    const CONFIG = { responsive: true, displayModeBar: false };
+
+    // ==========================================================
+    // 5.1 Age × Gender (persona vs KOSIS)
+    // ==========================================================
+    // Persona shares are KOSIS + small noise
+    const persoMale  = KOSIS_AGE.map(p => +(p * 0.495 + (rnd()-0.5)*0.004).toFixed(4));
+    const persoFemale= KOSIS_AGE.map(p => +(p * 0.505 + (rnd()-0.5)*0.004).toFixed(4));
+    const kosisMale  = KOSIS_AGE.map(p => +(p * 0.495).toFixed(4));
+    const kosisFemale= KOSIS_AGE.map(p => +(p * 0.505).toFixed(4));
+
+    Plotly.newPlot('chart-age-gender', [
+      { type:'bar', name:'페르소나 남성', x:AGE_BANDS, y:persoMale.map(v=>+(v*100).toFixed(2)),
+        marker:{ color:'#3B82F6' } },
+      { type:'bar', name:'페르소나 여성', x:AGE_BANDS, y:persoFemale.map(v=>+(v*100).toFixed(2)),
+        marker:{ color:'#1E40AF' } },
+      { type:'scatter', name:'KOSIS 남성', x:AGE_BANDS, y:kosisMale.map(v=>+(v*100).toFixed(2)),
+        mode:'markers', marker:{ size:10, symbol:'diamond-open', color:'#94A3B8', line:{width:1.6} } },
+      { type:'scatter', name:'KOSIS 여성', x:AGE_BANDS, y:kosisFemale.map(v=>+(v*100).toFixed(2)),
+        mode:'markers', marker:{ size:10, symbol:'diamond', color:'#0F172A' } },
+    ], {
+      ...LAYOUT_BASE,
+      barmode: 'group',
+      yaxis: { title:'Share (%)', gridcolor:'#E2E8F0', zeroline:false },
+      xaxis: { title:'Age band' },
+      legend: { orientation:'h', y:-0.18, font:{size:10} }
+    }, CONFIG);
+
+    // ==========================================================
+    // 5.2 Region distribution
+    // ==========================================================
+    const regionPersona = REGIONS.map(([n, p]) => +((p + (rnd()-0.5)*0.005)*100).toFixed(2));
+    const regionKosis   = REGIONS.map(([n, p]) => +(p*100).toFixed(2));
+    Plotly.newPlot('chart-region', [
+      { type:'bar', name:'페르소나', x:REGIONS.map(r=>r[0]), y:regionPersona,
+        marker:{ color:'#3B82F6' } },
+      { type:'scatter', name:'KOSIS', x:REGIONS.map(r=>r[0]), y:regionKosis,
+        mode:'markers', marker:{ size:9, symbol:'diamond', color:'#0F172A' } },
+    ], {
+      ...LAYOUT_BASE,
+      yaxis: { title:'Share (%)', gridcolor:'#E2E8F0' },
+      xaxis: { tickangle: -30, tickfont:{size:10} },
+      legend: { orientation:'h', y:-0.20, font:{size:10} },
+      margin: { l: 60, r: 24, t: 20, b: 80 }
+    }, CONFIG);
+
+    // ==========================================================
+    // 5.3 Secondary attribute residuals (occupation/edu/income)
+    // ==========================================================
+    const secondaryAttrs = {
+      'Occupation': ['관리/전문','사무','서비스','판매','농림어업','기능원','장치/조립','단순노무','군인'],
+      'Education':  ['고졸 이하','전문대','4년제','대학원'],
+      'Income':     ['1분위','2분위','3분위','4분위','5분위'],
+    };
+    const colors2 = { 'Occupation':'#1E40AF', 'Education':'#3B82F6', 'Income':'#60A5FA' };
+    const secondaryTraces = Object.keys(secondaryAttrs).map(group => {
+      const labels = secondaryAttrs[group];
+      const vals = labels.map(() => +((rnd()*1.0 - 0.5)*1.2).toFixed(2));
+      return {
+        type: 'bar',
+        name: group,
+        x: labels.map(l => `${l}\n(${group})`),
+        y: vals,
+        marker: { color: colors2[group] },
+        hovertemplate: '%{x}: %{y:.2f}%p<extra></extra>'
+      };
+    });
+    Plotly.newPlot('chart-secondary', secondaryTraces, {
+      ...LAYOUT_BASE,
+      yaxis: { title:'잔차 (페르소나 - KOSIS, %p)', gridcolor:'#E2E8F0', zeroline:true, zerolinecolor:'#94A3B8', range:[-2, 2] },
+      xaxis: { tickangle:-30, tickfont:{size:9} },
+      legend: { orientation:'h', y:-0.22, font:{size:11} },
+      margin: { l: 60, r: 24, t: 20, b: 90 },
+      shapes: [
+        { type:'line', x0:-0.5, x1:17.5, y0:1.2, y1:1.2, line:{color:'#FCA5A5', dash:'dot', width:1} },
+        { type:'line', x0:-0.5, x1:17.5, y0:-1.2, y1:-1.2, line:{color:'#FCA5A5', dash:'dot', width:1} },
+      ],
+    }, CONFIG);
+
+    // ==========================================================
+    // 5.4 Likert distribution by dimension (boxplot)
+    // ==========================================================
+    const dimMeans = [5.4, 4.9, 5.2, 4.6, 4.4, 4.8, 4.2, 4.8];
+    const dimSds   = [0.92, 1.05, 1.10, 1.15, 1.30, 1.05, 1.20, 1.18];
+    const likertTraces = DIM_SHORT.map((d, i) => {
+      const vals = [];
+      for (let k=0;k<2000;k++){
+        let v = gauss(dimMeans[i], dimSds[i]);
+        v = clamp(v, 1, 7);
+        vals.push(+v.toFixed(1));
+      }
+      return {
+        type: 'box',
+        name: d,
+        y: vals,
+        marker: { color: '#1E40AF' },
+        line: { color: '#1E40AF' },
+        fillcolor: '#3B82F6',
+        opacity: 0.55,
+        boxmean: true,
+        showlegend: false,
+        hoverinfo: 'y'
+      };
+    });
+    Plotly.newPlot('chart-likert', likertTraces, {
+      ...LAYOUT_BASE,
+      yaxis: { title:'7-point Likert', gridcolor:'#E2E8F0', range:[1, 7], dtick: 1 },
+      xaxis: { tickangle: -20 },
+    }, CONFIG);
+
+    // ==========================================================
+    // 5.5 Calibration vs Korea Gallup / MSIT N=1500
+    // ==========================================================
+    // 8 anchor questions: x = persona mean (0-1), y = real mean (0-1)
+    const calibItems = [
+      { q:'AI를 들어본 적 있다',     persona: 0.81, real: 0.79 },
+      { q:'AI를 사용해본 적 있다',   persona: 0.44, real: 0.41 },
+      { q:'AI가 일자리를 위협한다',  persona: 0.51, real: 0.56 },
+      { q:'AI 답변을 신뢰한다',      persona: 0.43, real: 0.39 },
+      { q:'AI에 비용을 지불할 의향', persona: 0.27, real: 0.24 },
+      { q:'AI가 생활을 편리하게 함', persona: 0.69, real: 0.66 },
+      { q:'AI 학교 도입 찬성',       persona: 0.61, real: 0.58 },
+      { q:'AI 규제 강화 필요',        persona: 0.72, real: 0.74 },
+    ];
+    Plotly.newPlot('chart-calib', [
+      { type:'scatter', mode:'markers+text',
+        x: calibItems.map(i=>i.persona),
+        y: calibItems.map(i=>i.real),
+        text: calibItems.map(i=>i.q),
+        textposition:'top center',
+        textfont:{size:10, color:'#475569'},
+        marker:{ size:14, color:'#1E40AF', line:{color:'white', width:1.5}, opacity:0.85 },
+        hovertemplate:'%{text}<br>persona=%{x}<br>real=%{y}<extra></extra>',
+        name:'8 anchor items'
+      },
+      { type:'scatter', mode:'lines', name:'45° line',
+        x:[0,1], y:[0,1], line:{color:'#94A3B8', dash:'dash', width:1.5}, showlegend:true }
+    ], {
+      ...LAYOUT_BASE,
+      xaxis: { title:'페르소나 응답 평균 (0–1)', gridcolor:'#E2E8F0', range:[0, 1] },
+      yaxis: { title:'갤럽·과기정통부 실측 평균 (0–1)', gridcolor:'#E2E8F0', range:[0, 1] },
+      annotations: [
+        { x:0.05, y:0.95, xref:'x', yref:'y', xanchor:'left',
+          text:'<b>JS divergence = 0.043</b><br>Pearson r = 0.91<br>RMSE = 0.029',
+          showarrow:false, font:{size:11, color:'#1E40AF'},
+          bgcolor:'rgba(255,255,255,0.92)', bordercolor:'#1E40AF', borderwidth:1, borderpad:6 }
+      ],
+      legend: { x: 0.78, y: 0.06, font:{size:10} }
+    }, CONFIG);
+
+    // ==========================================================
+    // 6.1 Radar (8-dimension overall mean)
+    // ==========================================================
+    const radarMean = [5.4, 4.9, 5.2, 4.6, 4.4, 4.8, 4.2, 4.8];
+    Plotly.newPlot('chart-radar', [{
+      type: 'scatterpolar',
+      r: [...radarMean, radarMean[0]],
+      theta: [...DIMS, DIMS[0]],
+      fill: 'toself',
+      line: { color: '#1E40AF', width: 2.5 },
+      fillcolor: '#3B82F6',
+      opacity: 0.45,
+      name: '전체 평균',
+      hovertemplate: '%{theta}: %{r}<extra></extra>'
+    }], {
+      ...LAYOUT_BASE,
+      polar: {
+        bgcolor: 'rgba(0,0,0,0)',
+        radialaxis: { visible:true, range:[0, 7], gridcolor:'#E2E8F0', tickfont:{size:9} },
+        angularaxis: { gridcolor:'#E2E8F0', tickfont:{size:11} }
+      },
+      showlegend: false,
+      margin: { l: 60, r: 60, t: 30, b: 30 }
+    }, CONFIG);
+
+    // ==========================================================
+    // 6.1b Correlation matrix
+    // ==========================================================
+    // Construct symmetric matrix
+    const corrPattern = [
+      // Perf  Eff  Hed  Price Hab  Soc  Tru  Pri
+      [ 1.00,  0.55, 0.62, 0.30, 0.58, 0.45, 0.48, -0.22],
+      [ 0.55,  1.00, 0.42, 0.28, 0.40, 0.32, 0.38, -0.18],
+      [ 0.62,  0.42, 1.00, 0.34, 0.55, 0.50, 0.42, -0.15],
+      [ 0.30,  0.28, 0.34, 1.00, 0.36, 0.30, 0.32, -0.12],
+      [ 0.58,  0.40, 0.55, 0.36, 1.00, 0.42, 0.45, -0.20],
+      [ 0.45,  0.32, 0.50, 0.30, 0.42, 1.00, 0.36, -0.16],
+      [ 0.48,  0.38, 0.42, 0.32, 0.45, 0.36, 1.00, -0.54],
+      [-0.22, -0.18,-0.15,-0.12,-0.20,-0.16,-0.54, 1.00],
+    ];
+    Plotly.newPlot('chart-corr', [{
+      type:'heatmap',
+      x: DIM_SHORT,
+      y: DIM_SHORT,
+      z: corrPattern,
+      colorscale: [[0,'#B91C1C'],[0.4,'#FCA5A5'],[0.5,'#F8FAFC'],[0.6,'#93C5FD'],[1,'#1E40AF']],
+      zmin: -1, zmax: 1,
+      colorbar:{ title:'r', thickness:12 },
+      text: corrPattern.map(row=>row.map(v=>v.toFixed(2))),
+      texttemplate:'%{text}',
+      textfont:{ size:10, color:'#0F172A' },
+      hovertemplate:'%{x} × %{y}: r=%{z:.2f}<extra></extra>',
+      xgap:1, ygap:1
+    }], {
+      ...LAYOUT_BASE,
+      xaxis: { tickangle: -30 },
+      margin: { l: 90, r: 24, t: 20, b: 70 }
+    }, CONFIG);
+
+    // ==========================================================
+    // 6.2 Age × Dimension heatmap
+    // ==========================================================
+    // rows = age bands, cols = dims
+    const ageDimMatrix = [
+      // 18-29
+      [5.9, 5.4, 5.8, 4.4, 5.5, 5.2, 4.6, 4.4],
+      // 30-39
+      [5.7, 5.2, 5.6, 4.7, 5.2, 5.0, 4.5, 4.6],
+      // 40-49
+      [5.4, 5.0, 5.3, 4.8, 4.7, 4.8, 4.3, 4.9],
+      // 50-59
+      [5.1, 4.7, 4.9, 4.7, 4.2, 4.6, 4.0, 5.2],
+      // 60-69
+      [4.8, 4.4, 4.6, 4.6, 3.6, 4.4, 3.8, 5.0],
+      // 70+
+      [4.4, 4.1, 4.2, 4.4, 3.0, 4.1, 3.6, 4.6],
+    ];
+    Plotly.newPlot('chart-age-dim', [{
+      type:'heatmap',
+      x: DIM_SHORT,
+      y: AGE_BANDS,
+      z: ageDimMatrix,
+      colorscale: [[0,'#F8FAFC'],[0.3,'#DBEAFE'],[0.6,'#60A5FA'],[1,'#1E40AF']],
+      zmin: 3, zmax: 6.2,
+      colorbar:{ title:'Likert', thickness:12 },
+      text: ageDimMatrix.map(r=>r.map(v=>v.toFixed(1))),
+      texttemplate:'%{text}',
+      textfont:{ size:11, color:'#0F172A' },
+      hovertemplate:'%{x} · %{y}: %{z}<extra></extra>',
+      xgap:1, ygap:1
+    }], {
+      ...LAYOUT_BASE,
+      xaxis: { tickangle: -25 },
+      margin: { l: 80, r: 24, t: 20, b: 70 }
+    }, CONFIG);
+
+    // ==========================================================
+    // 6.3 UMAP 2D persona embedding (6 segments)
+    // ==========================================================
+    const SEGMENTS = [
+      { name:'Power User',         cx:  3.0, cy:  1.5, spread:0.95, n: 200, color:'#1E40AF' },
+      { name:'Curious Pragmatist', cx:  1.5, cy: -0.5, spread:1.10, n: 440, color:'#2563EB' },
+      { name:'Mainstream Late',    cx: -0.5, cy:  0.8, spread:1.20, n: 480, color:'#3B82F6' },
+      { name:'Skeptical Mid',      cx: -1.8, cy: -1.2, spread:1.05, n: 360, color:'#60A5FA' },
+      { name:'Disengaged Senior',  cx: -2.5, cy:  2.3, spread:0.95, n: 280, color:'#94A3B8' },
+      { name:'Anxious Worker',     cx:  0.5, cy:  2.8, spread:0.85, n: 240, color:'#0F172A' },
+    ];
+    const umapTraces = SEGMENTS.map(s => {
+      const xs=[], ys=[];
+      for (let k=0;k<s.n;k++){
+        const u1 = Math.max(rnd(), 1e-9), u2 = rnd();
+        const r = Math.sqrt(-2*Math.log(u1)) * s.spread * 0.55;
+        const th = 2*Math.PI*u2;
+        xs.push(s.cx + r*Math.cos(th));
+        ys.push(s.cy + r*Math.sin(th));
+      }
+      return {
+        type:'scatter', mode:'markers', name:`${s.name} (n=${s.n})`,
+        x: xs, y: ys,
+        marker:{ size: 5.5, color: s.color, opacity:0.72, line:{color:'white', width:0.4} },
+        hovertemplate:`${s.name}<extra></extra>`
+      };
+    });
+    Plotly.newPlot('chart-umap', umapTraces, {
+      ...LAYOUT_BASE,
+      xaxis: { title:'UMAP-1', gridcolor:'#E2E8F0', zeroline:false },
+      yaxis: { title:'UMAP-2', gridcolor:'#E2E8F0', zeroline:false },
+      legend: { orientation:'h', y:-0.18, font:{size:10} },
+      margin: { l: 60, r: 24, t: 20, b: 80 }
+    }, CONFIG);
+
+    // ==========================================================
+    // 6.4 Rogers 5-category distribution (donut)
+    // ==========================================================
+    const rogers = [
+      { lbl:'Innovators',     pct: 4.6, color:'#1E40AF' },
+      { lbl:'Early Adopters', pct: 18.2, color:'#3B82F6' },
+      { lbl:'Early Majority', pct: 31.4, color:'#60A5FA' },
+      { lbl:'Late Majority',  pct: 28.5, color:'#93C5FD' },
+      { lbl:'Laggards',       pct: 17.3, color:'#94A3B8' },
+    ];
+    Plotly.newPlot('chart-rogers', [{
+      type:'pie',
+      labels: rogers.map(r=>r.lbl),
+      values: rogers.map(r=>r.pct),
+      hole: 0.55,
+      marker: { colors: rogers.map(r=>r.color), line:{color:'white', width:2} },
+      textinfo: 'label+percent',
+      textfont: { size: 11 },
+      hovertemplate: '%{label}: %{value}%<extra></extra>'
+    }], {
+      ...LAYOUT_BASE,
+      annotations: [{
+        x: 0.5, y: 0.5, text: '<b>2,000</b><br>페르소나', showarrow:false,
+        font: { size: 14, color: '#1E40AF' }
+      }],
+      showlegend: false
+    }, CONFIG);
+
+    // 6.4b Adopter × Age stacked bar
+    const ageRogersMatrix = {
+      'Innovators':     [9.2, 7.8, 4.2, 2.4, 1.5, 0.9],
+      'Early Adopters': [28.4, 26.5, 19.4, 13.6, 8.2, 4.5],
+      'Early Majority': [36.5, 34.2, 35.4, 31.0, 25.8, 18.6],
+      'Late Majority':  [18.4, 22.0, 28.6, 34.5, 36.8, 32.4],
+      'Laggards':       [7.5, 9.5, 12.4, 18.5, 27.7, 43.6],
+    };
+    const colors4 = ['#1E40AF','#3B82F6','#60A5FA','#93C5FD','#94A3B8'];
+    const rogersTraces = Object.keys(ageRogersMatrix).map((k, idx) => ({
+      type: 'bar',
+      name: k,
+      x: AGE_BANDS,
+      y: ageRogersMatrix[k],
+      marker: { color: colors4[idx] },
+      hovertemplate: `%{x} · ${k}: %{y}%<extra></extra>`
+    }));
+    Plotly.newPlot('chart-rogers-demo', rogersTraces, {
+      ...LAYOUT_BASE,
+      barmode: 'stack',
+      yaxis: { title:'Share (%)', gridcolor:'#E2E8F0', range:[0, 100] },
+      xaxis: { title:'Age band' },
+      legend: { orientation:'h', y:-0.18, font:{size:10} },
+      margin: { l: 60, r: 24, t: 20, b: 70 }
+    }, CONFIG);
+
+    // ==========================================================
+    // 6.5 Model comparison: GPT-4o vs Claude vs Gemini
+    // ==========================================================
+    // Per-dim mean response (0–7 Likert)
+    const modelData = {
+      'GPT-4o':         [5.7, 5.1, 5.5, 4.7, 4.7, 5.0, 4.5, 4.6],
+      'Claude Opus 4':  [5.3, 4.9, 5.0, 4.5, 4.1, 4.7, 4.4, 5.1],
+      'Gemini 2.0 Pro': [5.5, 4.8, 5.1, 4.6, 4.3, 4.7, 4.0, 4.7],
+      '실측 (갤럽 외삽)': [4.9, 4.6, 4.8, 4.5, 4.0, 4.6, 3.7, 5.3],
+    };
+    const modelColors = {
+      'GPT-4o':'#1E40AF',
+      'Claude Opus 4':'#3B82F6',
+      'Gemini 2.0 Pro':'#60A5FA',
+      '실측 (갤럽 외삽)':'#B91C1C',
+    };
+    const modelTraces = Object.keys(modelData).map(k => {
+      const isReal = k.includes('실측');
+      return {
+        type: 'bar',
+        name: k,
+        x: DIM_SHORT,
+        y: modelData[k],
+        marker: {
+          color: modelColors[k],
+          line: isReal ? { color:'#7F1D1D', width: 1.5 } : { color:'transparent', width:0 }
+        },
+        opacity: isReal ? 1.0 : 0.85,
+        hovertemplate: `${k} · %{x}: %{y}<extra></extra>`
+      };
+    });
+    Plotly.newPlot('chart-model', modelTraces, {
+      ...LAYOUT_BASE,
+      barmode: 'group',
+      bargap: 0.22, bargroupgap: 0.06,
+      yaxis: { title:'Mean response (1–7 Likert)', gridcolor:'#E2E8F0', range:[3, 6.2] },
+      xaxis: { tickangle: -20 },
+      legend: { orientation:'h', y:-0.18, font:{size:10} },
+      margin: { l: 60, r: 24, t: 20, b: 80 },
+      annotations: [
+        { x:'Perf.Exp', y: 5.85, text:'★ 친 AI 편향', showarrow:false,
+          font:{ color:'#B91C1C', size:10, weight:700 },
+          bgcolor:'rgba(255,255,255,0.85)', bordercolor:'#B91C1C', borderwidth:1, borderpad:3 },
+        { x:'Privacy', y: 5.30, text:'★ 회피 편향', showarrow:false,
+          font:{ color:'#B91C1C', size:10, weight:700 },
+          bgcolor:'rgba(255,255,255,0.85)', bordercolor:'#B91C1C', borderwidth:1, borderpad:3 },
+      ]
+    }, CONFIG);
+
+  </script>
+
+</body>
+</html>
