@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>백마탄 | Baek Ma-tan — Agent AI OS Researcher</title>
   <meta name="description" content="가우스전자 개발부서 × KAIST I&TM. 에이전트 AI OS 생태계와 플랫폼 전략을 연구하는 백마탄의 포트폴리오.">
+  <link rel="icon" type="image/x-icon" href="assets/images/logo/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/images/logo/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/images/logo/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/images/logo/apple-touch-icon.png">
+  <meta name="theme-color" content="#1E40AF">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -71,8 +76,14 @@
       height: 64px;
     }
     .nav-brand {
+      display: inline-flex; align-items: center; gap: 10px;
       font-weight: 700; font-size: 1rem; color: var(--text-primary);
-      letter-spacing: -0.01em;
+      letter-spacing: -0.01em; text-decoration: none;
+    }
+    .nav-brand img {
+      width: 32px; height: 32px; border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+      background: var(--bg);
     }
     .nav-brand span { color: var(--primary); }
     .nav-links { display: flex; gap: 28px; list-style: none; padding: 0; margin: 0; }
@@ -389,7 +400,10 @@
   <!-- =============== NAV =============== -->
   <header class="site-nav">
     <div class="container nav-inner">
-      <a href="#top" class="nav-brand">백마탄<span>.</span></a>
+      <a href="#top" class="nav-brand">
+        <img src="assets/images/logo/logo-64.png" alt="백마탄 로고" width="32" height="32">
+        백마탄<span>.</span>
+      </a>
       <nav aria-label="Primary">
         <ul class="nav-links">
           <li><a href="#about">About</a></li>

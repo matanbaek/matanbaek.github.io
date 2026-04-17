@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>러닝 기록 · Running Log | 백마탄</title>
   <meta name="description" content="한강·남산 중심 러닝 기록. FIT 파일을 AI 코치에 넘겨 주간 훈련 플랜을 받는 파이프라인과 누적 1,247km·주별 거리·페이스 분포 시각화. 백마탄 개인 라이프로그 mockup.">
+  <link rel="icon" type="image/x-icon" href="../../assets/images/logo/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/images/logo/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../assets/images/logo/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/images/logo/apple-touch-icon.png">
+  <meta name="theme-color" content="#1E40AF">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,7 +52,13 @@
       border-bottom: 1px solid var(--border);
     }
     .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-    .nav-brand { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); }
+    .nav-brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.95rem; color: var(--text-primary); text-decoration: none; }
+    .nav-brand img {
+      width: 28px; height: 28px; border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+      background: var(--bg);
+      flex-shrink: 0;
+    }
     .nav-links { display: flex; gap: 18px; list-style: none; padding: 0; margin: 0; flex-wrap: wrap; }
     .nav-links a { font-size: 0.82rem; font-weight: 500; color: var(--text-secondary); }
     .nav-links a:hover { color: var(--primary); }
@@ -167,7 +178,7 @@
 
   <header class="site-nav">
     <div class="container nav-inner">
-      <a href="../../index.html" class="nav-brand">← 백마탄 포트폴리오</a>
+      <a href="../../index.html" class="nav-brand"><img src="../../assets/images/logo/logo-64.png" alt="백마탄 로고" width="28" height="28"><span>← 백마탄 포트폴리오</span></a>
       <nav>
         <ul class="nav-links">
           <li><a href="#map-section">지도</a></li>

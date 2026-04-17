@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Agentic AI 등장과 AI 스킬 수요 (인과 추론) | 백마탄</title>
   <meta name="description" content="Agentic AI 본격화가 한국 IT 채용 공고의 AI 스킬 수요에 미친 인과 효과를 ITS·DID로 추정. KAIST I&TM ITM560 mockup.">
+  <link rel="icon" type="image/x-icon" href="../../assets/images/logo/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="../../assets/images/logo/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../../assets/images/logo/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../../assets/images/logo/apple-touch-icon.png">
+  <meta name="theme-color" content="#1E40AF">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -62,8 +67,14 @@
       border-bottom: 1px solid var(--border);
     }
     .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-    .nav-brand { font-weight: 700; font-size: 0.95rem; color: var(--text-primary); letter-spacing: -0.01em; }
+    .nav-brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.95rem; color: var(--text-primary); letter-spacing: -0.01em; text-decoration: none; }
     .nav-brand:hover { color: var(--primary); }
+    .nav-brand img {
+      width: 28px; height: 28px; border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+      background: var(--bg);
+      flex-shrink: 0;
+    }
     .nav-links { display: flex; gap: 18px; list-style: none; padding: 0; margin: 0; flex-wrap: wrap; }
     .nav-links a { font-size: 0.82rem; font-weight: 500; color: var(--text-secondary); }
     .nav-links a:hover { color: var(--primary); }
@@ -269,7 +280,7 @@
 
   <header class="site-nav">
     <div class="container nav-inner">
-      <a href="../../index.html" class="nav-brand">← 백마탄 포트폴리오</a>
+      <a href="../../index.html" class="nav-brand"><img src="../../assets/images/logo/logo-64.png" alt="백마탄 로고" width="28" height="28"><span>← 백마탄 포트폴리오</span></a>
       <nav>
         <ul class="nav-links">
           <li><a href="#purpose">목적</a></li>
