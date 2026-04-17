@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Running Log: Seoul trail map with 3 routes, pace histogram, and cumulative km">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#F8FAFC"/>
+    <stop offset="100%" stop-color="#DCE8FB"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="58%" cy="46%" r="60%">
+    <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.18"/>
+    <stop offset="100%" stop-color="#60A5FA" stop-opacity="0"/>
+  </radialGradient>
+  <pattern id="mapgrid" x="0" y="0" width="36" height="36" patternUnits="userSpaceOnUse">
+    <path d="M 36 0 L 0 0 0 36" fill="none" stroke="#CBD5E1" stroke-opacity="0.35" stroke-width="0.6"/>
+  </pattern>
+</defs>
+
+<rect width="800" height="450" fill="url(#bg)"/>
+<rect width="800" height="450" fill="url(#glow)"/>
+
+<!-- Left text panel -->
+<text x="40" y="50" font-family="Inter" font-size="11" fill="#3B82F6" font-weight="600" letter-spacing="1.4">LIFE LOG · RUNNING</text>
+<text x="40" y="94" font-family="Inter" font-size="30" fill="#0F172A" font-weight="700" letter-spacing="-0.5">Trails</text>
+<text x="40" y="126" font-family="Inter" font-size="30" fill="#0F172A" font-weight="700" letter-spacing="-0.5">&amp; Pace</text>
+<text x="40" y="156" font-family="Inter" font-size="12" fill="#475569">한강·남산·청계천 3 코스</text>
+<text x="40" y="174" font-family="Inter" font-size="12" fill="#475569">GPT-4o 코치 파이프라인</text>
+
+<!-- Stat badges -->
+<g font-family="Inter">
+  <rect x="40" y="200" width="222" height="40" rx="8" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="56" y="218" font-size="10" fill="#64748B" font-weight="600" letter-spacing="1">CUMULATIVE</text>
+  <text x="56" y="234" font-size="16" fill="#1E40AF" font-weight="700">1,247 km</text>
+  <rect x="40" y="250" width="222" height="40" rx="8" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="56" y="268" font-size="10" fill="#64748B" font-weight="600" letter-spacing="1">BEST 10K PACE</text>
+  <text x="56" y="284" font-size="16" fill="#1E40AF" font-weight="700">4'52" / km</text>
+  <rect x="40" y="300" width="222" height="40" rx="8" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="56" y="318" font-size="10" fill="#64748B" font-weight="600" letter-spacing="1">AI COACH SESSIONS</text>
+  <text x="56" y="334" font-size="16" fill="#1E40AF" font-weight="700">62 회</text>
+</g>
+
+<!-- Map area -->
+<g transform="translate(300, 50)">
+  <rect x="0" y="0" width="460" height="260" rx="14" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <rect x="0" y="0" width="460" height="260" rx="14" fill="url(#mapgrid)"/>
+
+  <!-- River abstraction (Han river suggestion) -->
+  <path d="M 10 150 Q 100 120 180 145 T 360 155 T 450 138" stroke="#BFDBFE" stroke-width="14" fill="none" stroke-linecap="round" opacity="0.7"/>
+
+  <!-- Route 1: Han river (deep blue, longest) -->
+  <path d="M 40 170 Q 110 148 170 158 T 280 168 Q 340 172 400 162"
+        stroke="#1E40AF" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Route 2: Namsan loop (mid blue, loop) -->
+  <path d="M 180 90 Q 230 60 280 80 Q 320 105 300 150 Q 270 190 220 170 Q 175 145 180 90 Z"
+        stroke="#3B82F6" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Route 3: Cheonggyecheon (light blue, straight-ish) -->
+  <path d="M 60 220 Q 130 210 200 218 T 350 225 Q 390 227 420 220"
+        stroke="#60A5FA" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+
+  <!-- Route markers -->
+  <circle cx="40" cy="170" r="5" fill="#1E40AF"/>
+  <circle cx="400" cy="162" r="5" fill="#1E40AF"/>
+  <circle cx="180" cy="90" r="4.5" fill="#3B82F6"/>
+  <circle cx="60" cy="220" r="4.5" fill="#60A5FA"/>
+  <circle cx="420" cy="220" r="4.5" fill="#60A5FA"/>
+
+  <!-- Legend -->
+  <g font-family="Inter" font-size="9" fill="#475569">
+    <rect x="16" y="16" width="180" height="54" rx="6" fill="#FFFFFF" fill-opacity="0.95" stroke="#E2E8F0"/>
+    <line x1="26" y1="30" x2="44" y2="30" stroke="#1E40AF" stroke-width="3"/>
+    <text x="50" y="33">한강 (12.8 km)</text>
+    <line x1="26" y1="46" x2="44" y2="46" stroke="#3B82F6" stroke-width="2.5"/>
+    <text x="50" y="49">남산 순환 (7.2 km)</text>
+    <line x1="26" y1="62" x2="44" y2="62" stroke="#60A5FA" stroke-width="2.5"/>
+    <text x="50" y="65">청계천 (8.6 km)</text>
+  </g>
+
+  <!-- Elevation profile mini -->
+  <g transform="translate(280, 20)">
+    <rect x="0" y="0" width="160" height="52" rx="6" fill="#F8FAFC" stroke="#E2E8F0"/>
+    <text x="10" y="15" font-family="Inter" font-size="9" fill="#64748B" font-weight="600" letter-spacing="0.6">ELEVATION (m)</text>
+    <path d="M 8 42 L 24 32 L 40 24 L 56 18 L 72 22 L 88 16 L 104 28 L 120 38 L 136 34 L 152 42"
+          stroke="#1E40AF" stroke-width="1.6" fill="none"/>
+    <path d="M 8 42 L 24 32 L 40 24 L 56 18 L 72 22 L 88 16 L 104 28 L 120 38 L 136 34 L 152 42 L 152 48 L 8 48 Z"
+          fill="#1E40AF" fill-opacity="0.12"/>
+  </g>
+</g>
+
+<!-- Pace histogram bottom-right -->
+<g transform="translate(300, 330)">
+  <rect x="0" y="0" width="460" height="86" rx="10" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="16" y="20" font-family="Inter" font-size="10" fill="#64748B" font-weight="600" letter-spacing="0.8">PACE DISTRIBUTION (last 90 days)</text>
+  <g transform="translate(16, 32)">
+    <rect x="0" y="28" width="22" height="20" fill="#BFDBFE"/>
+    <rect x="28" y="18" width="22" height="30" fill="#93C5FD"/>
+    <rect x="56" y="8" width="22" height="40" fill="#60A5FA"/>
+    <rect x="84" y="0" width="22" height="48" fill="#3B82F6"/>
+    <rect x="112" y="6" width="22" height="42" fill="#3B82F6"/>
+    <rect x="140" y="14" width="22" height="34" fill="#1E40AF"/>
+    <rect x="168" y="22" width="22" height="26" fill="#1E40AF"/>
+    <rect x="196" y="32" width="22" height="16" fill="#1E40AF" fill-opacity="0.6"/>
+    <rect x="224" y="38" width="22" height="10" fill="#1E40AF" fill-opacity="0.4"/>
+    <line x1="-4" y1="48" x2="256" y2="48" stroke="#CBD5E1" stroke-width="0.8"/>
+    <g font-family="Inter" font-size="8" fill="#94A3B8">
+      <text x="0" y="60">4'30</text>
+      <text x="56" y="60">5'00</text>
+      <text x="112" y="60">5'30</text>
+      <text x="168" y="60">6'00</text>
+      <text x="224" y="60">6'30</text>
+    </g>
+  </g>
+  <!-- zone overlays -->
+  <g transform="translate(16, 32)">
+    <rect x="84" y="-6" width="22" height="2" fill="#1E40AF"/>
+    <text x="108" y="-2" font-family="Inter" font-size="8" fill="#1E40AF" font-weight="600">Tempo</text>
+    <rect x="168" y="-6" width="50" height="2" fill="#60A5FA"/>
+    <text x="222" y="-2" font-family="Inter" font-size="8" fill="#60A5FA" font-weight="600">Easy Z2</text>
+  </g>
+  <!-- Weekly km badge -->
+  <g transform="translate(300, 12)">
+    <rect x="0" y="0" width="146" height="64" rx="8" fill="#EFF4FB" stroke="#DBEAFE"/>
+    <text x="14" y="20" font-family="Inter" font-size="9" fill="#64748B" font-weight="600" letter-spacing="0.6">WEEKLY AVG</text>
+    <text x="14" y="44" font-family="Inter" font-size="22" fill="#1E40AF" font-weight="700">28.4 km</text>
+    <text x="14" y="58" font-family="Inter" font-size="9" fill="#3B82F6">+10% capped (Atkinson)</text>
+  </g>
+</g>
+
+<!-- Section divider -->
+<line x1="284" y1="44" x2="284" y2="406" stroke="#CBD5E1" stroke-width="0.6" stroke-dasharray="3 4"/>
+
+<!-- Badge -->
+<rect x="670" y="410" width="110" height="26" rx="4" fill="#0F172A" fill-opacity="0.9"/>
+<text x="725" y="427" font-family="Inter" font-size="10" fill="#DBEAFE" text-anchor="middle" letter-spacing="1.2" font-weight="600">AI RUN COACH</text>
+</svg>

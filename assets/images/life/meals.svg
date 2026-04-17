@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Nutrition Log: 8-axis micronutrient radar, PFC composition donut, weekly meal plan grid, GPT-4o dietitian pipeline">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#F8FAFC"/>
+    <stop offset="100%" stop-color="#DCE8FB"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="58%" cy="46%" r="60%">
+    <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.16"/>
+    <stop offset="100%" stop-color="#60A5FA" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+
+<rect width="800" height="450" fill="url(#bg)"/>
+<rect width="800" height="450" fill="url(#glow)"/>
+
+<!-- Left text panel -->
+<text x="40" y="50" font-family="Inter" font-size="11" fill="#3B82F6" font-weight="600" letter-spacing="1.4">LIFE LOG · NUTRITION</text>
+<text x="40" y="94" font-family="Inter" font-size="30" fill="#0F172A" font-weight="700" letter-spacing="-0.5">Meal</text>
+<text x="40" y="126" font-family="Inter" font-size="30" fill="#0F172A" font-weight="700" letter-spacing="-0.5">Plan</text>
+<text x="40" y="156" font-family="Inter" font-size="12" fill="#475569">GPT-4o 식단 + 식약처 DB RAG</text>
+<text x="40" y="174" font-family="Inter" font-size="12" fill="#475569">훈련 부하 연동 주간 식단</text>
+
+<!-- Stat badges -->
+<g font-family="Inter">
+  <rect x="40" y="200" width="222" height="40" rx="8" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="56" y="218" font-size="10" fill="#64748B" font-weight="600" letter-spacing="1">DAILY TARGET</text>
+  <text x="56" y="234" font-size="16" fill="#1E40AF" font-weight="700">2,650 kcal</text>
+  <rect x="40" y="250" width="222" height="40" rx="8" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="56" y="268" font-size="10" fill="#64748B" font-weight="600" letter-spacing="1">PFC RATIO</text>
+  <text x="56" y="284" font-size="16" fill="#1E40AF" font-weight="700">40 / 30 / 30</text>
+  <rect x="40" y="300" width="222" height="40" rx="8" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="56" y="318" font-size="10" fill="#64748B" font-weight="600" letter-spacing="1">AI ADOPTION</text>
+  <text x="56" y="334" font-size="16" fill="#1E40AF" font-weight="700">94 % 채택</text>
+</g>
+
+<!-- Radar: 8-axis micronutrient coverage -->
+<g transform="translate(440, 150)">
+  <!-- axes -->
+  <g stroke="#CBD5E1" stroke-width="0.6" fill="none">
+    <circle cx="0" cy="0" r="30"/>
+    <circle cx="0" cy="0" r="60"/>
+    <circle cx="0" cy="0" r="90"/>
+    <!-- 8 radial lines -->
+    <line x1="0" y1="-90" x2="0" y2="90"/>
+    <line x1="-90" y1="0" x2="90" y2="0"/>
+    <line x1="-63.6" y1="-63.6" x2="63.6" y2="63.6"/>
+    <line x1="-63.6" y1="63.6" x2="63.6" y2="-63.6"/>
+  </g>
+
+  <!-- 100% reference polygon (dotted) -->
+  <polygon points="0,-70 49.5,-49.5 70,0 49.5,49.5 0,70 -49.5,49.5 -70,0 -49.5,-49.5"
+           fill="none" stroke="#94A3B8" stroke-width="0.8" stroke-dasharray="3 3"/>
+
+  <!-- Actual coverage polygon -->
+  <!-- Values: Fe 108, Ca 112, Mg 104, VitD 80, B12 96, Omega3 72, Fiber 118, Na 92 (scale 70 = 100%) -->
+  <polygon points="0,-75.6 55.5,-55.5 72.8,0 53.2,53.2 0,50.4 -35.6,35.6 -50.4,0 -45.4,-45.4"
+           fill="#1E40AF" fill-opacity="0.22" stroke="#1E40AF" stroke-width="2"/>
+
+  <!-- Markers -->
+  <g fill="#1E40AF">
+    <circle cx="0" cy="-75.6" r="3"/>
+    <circle cx="55.5" cy="-55.5" r="3"/>
+    <circle cx="72.8" cy="0" r="3"/>
+    <circle cx="53.2" cy="53.2" r="3"/>
+    <circle cx="0" cy="50.4" r="3"/>
+    <circle cx="-35.6" cy="35.6" r="3"/>
+    <circle cx="-50.4" cy="0" r="3"/>
+    <circle cx="-45.4" cy="-45.4" r="3"/>
+  </g>
+
+  <!-- Axis labels -->
+  <g font-family="Inter" font-size="9" fill="#475569" text-anchor="middle">
+    <text x="0" y="-102">Fe</text>
+    <text x="68" y="-68">Ca</text>
+    <text x="106" y="4">Mg</text>
+    <text x="68" y="76">VitD</text>
+    <text x="0" y="108">B12</text>
+    <text x="-68" y="76">ω-3</text>
+    <text x="-106" y="4">Fiber</text>
+    <text x="-68" y="-68">Na</text>
+  </g>
+
+  <!-- Title above -->
+  <text x="0" y="-120" font-family="Inter" font-size="10" fill="#64748B" font-weight="600" text-anchor="middle" letter-spacing="0.8">MICRONUTRIENT %RDA</text>
+</g>
+
+<!-- PFC donut (top right) -->
+<g transform="translate(640, 100)">
+  <text x="0" y="-70" font-family="Inter" font-size="10" fill="#64748B" font-weight="600" text-anchor="middle" letter-spacing="0.8">PFC (kcal %)</text>
+  <!-- donut segments, 40/30/30 -->
+  <!-- Carbs 40% = -90 → 54, Protein 30% = 54 → 162, Fat 30% = 162 → 270 (back to -90) -->
+  <!-- Using circle strokes for simplicity -->
+  <circle cx="0" cy="0" r="44" fill="none" stroke="#E2E8F0" stroke-width="16"/>
+  <!-- Carbs 40% -->
+  <circle cx="0" cy="0" r="44" fill="none" stroke="#1E40AF" stroke-width="16"
+          stroke-dasharray="110.6 276.4" transform="rotate(-90)"/>
+  <!-- Protein 30% -->
+  <circle cx="0" cy="0" r="44" fill="none" stroke="#3B82F6" stroke-width="16"
+          stroke-dasharray="82.9 304.1" stroke-dashoffset="-110.6" transform="rotate(-90)"/>
+  <!-- Fat 30% -->
+  <circle cx="0" cy="0" r="44" fill="none" stroke="#60A5FA" stroke-width="16"
+          stroke-dasharray="82.9 304.1" stroke-dashoffset="-193.5" transform="rotate(-90)"/>
+  <!-- center text -->
+  <text x="0" y="-2" font-family="Inter" font-size="12" fill="#1E40AF" font-weight="700" text-anchor="middle">2,650</text>
+  <text x="0" y="14" font-family="Inter" font-size="8" fill="#64748B" text-anchor="middle">kcal</text>
+</g>
+
+<!-- Weekly meal plan grid -->
+<g transform="translate(300, 280)">
+  <rect x="0" y="0" width="460" height="140" rx="10" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="16" y="20" font-family="Inter" font-size="10" fill="#64748B" font-weight="600" letter-spacing="0.8">WEEKLY PLAN · 2026-04-13</text>
+
+  <!-- Column headers: days -->
+  <g font-family="Inter" font-size="9" fill="#64748B" font-weight="600">
+    <text x="100" y="40" text-anchor="middle">월</text>
+    <text x="148" y="40" text-anchor="middle">화</text>
+    <text x="196" y="40" text-anchor="middle">수</text>
+    <text x="244" y="40" text-anchor="middle">목</text>
+    <text x="292" y="40" text-anchor="middle">금</text>
+    <text x="340" y="40" text-anchor="middle">토</text>
+    <text x="388" y="40" text-anchor="middle">일</text>
+  </g>
+
+  <!-- Row labels -->
+  <g font-family="Inter" font-size="9" fill="#475569">
+    <text x="16" y="62">아침</text>
+    <text x="16" y="84">점심</text>
+    <text x="16" y="106">저녁</text>
+    <text x="16" y="126">간식</text>
+  </g>
+
+  <!-- Grid cells (color-coded by calories) -->
+  <!-- Mon=Easy normal -->
+  <g>
+    <rect x="80" y="50" width="40" height="16" fill="#BFDBFE"/>
+    <rect x="80" y="72" width="40" height="16" fill="#93C5FD"/>
+    <rect x="80" y="94" width="40" height="16" fill="#93C5FD"/>
+    <rect x="80" y="116" width="40" height="12" fill="#DBEAFE"/>
+
+    <rect x="128" y="48" width="40" height="18" fill="#93C5FD"/>
+    <rect x="128" y="70" width="40" height="18" fill="#3B82F6"/>
+    <rect x="128" y="92" width="40" height="18" fill="#3B82F6"/>
+    <rect x="128" y="116" width="40" height="12" fill="#BFDBFE"/>
+
+    <rect x="176" y="52" width="40" height="14" fill="#BFDBFE"/>
+    <rect x="176" y="74" width="40" height="14" fill="#93C5FD"/>
+    <rect x="176" y="96" width="40" height="14" fill="#93C5FD"/>
+    <rect x="176" y="116" width="40" height="10" fill="#DBEAFE"/>
+
+    <rect x="224" y="48" width="40" height="18" fill="#3B82F6"/>
+    <rect x="224" y="70" width="40" height="18" fill="#3B82F6"/>
+    <rect x="224" y="92" width="40" height="18" fill="#1E40AF"/>
+    <rect x="224" y="116" width="40" height="12" fill="#BFDBFE"/>
+
+    <rect x="272" y="50" width="40" height="16" fill="#BFDBFE"/>
+    <rect x="272" y="72" width="40" height="16" fill="#93C5FD"/>
+    <rect x="272" y="94" width="40" height="16" fill="#F59E0B" fill-opacity="0.75"/>
+    <rect x="272" y="116" width="40" height="12" fill="#DBEAFE"/>
+
+    <rect x="320" y="46" width="40" height="20" fill="#3B82F6"/>
+    <rect x="320" y="68" width="40" height="20" fill="#1E40AF"/>
+    <rect x="320" y="90" width="40" height="22" fill="#1E40AF"/>
+    <rect x="320" y="116" width="40" height="14" fill="#93C5FD"/>
+
+    <rect x="368" y="52" width="40" height="14" fill="#BFDBFE"/>
+    <rect x="368" y="74" width="40" height="14" fill="#BFDBFE"/>
+    <rect x="368" y="96" width="40" height="14" fill="#93C5FD"/>
+    <rect x="368" y="116" width="40" height="10" fill="#DBEAFE"/>
+  </g>
+
+  <!-- Phase markers on day header -->
+  <g font-family="Inter" font-size="7" fill="#FFFFFF" text-anchor="middle" font-weight="600">
+    <rect x="138" y="28" width="20" height="10" rx="5" fill="#D97706"/>
+    <text x="148" y="36">HARD</text>
+    <rect x="234" y="28" width="20" height="10" rx="5" fill="#D97706"/>
+    <text x="244" y="36">HARD</text>
+    <rect x="330" y="28" width="20" height="10" rx="5" fill="#D97706"/>
+    <text x="340" y="36">LSD</text>
+    <rect x="378" y="28" width="20" height="10" rx="5" fill="#10B981"/>
+    <text x="388" y="36">REST</text>
+  </g>
+
+  <text x="420" y="62" font-family="Inter" font-size="8" fill="#64748B" text-anchor="end">파동형 섭취</text>
+</g>
+
+<!-- Section divider -->
+<line x1="284" y1="44" x2="284" y2="406" stroke="#CBD5E1" stroke-width="0.6" stroke-dasharray="3 4"/>
+
+<!-- Badge -->
+<rect x="660" y="410" width="120" height="26" rx="4" fill="#0F172A" fill-opacity="0.9"/>
+<text x="720" y="427" font-family="Inter" font-size="10" fill="#DBEAFE" text-anchor="middle" letter-spacing="1.2" font-weight="600">AI NUTRITIONIST</text>
+</svg>

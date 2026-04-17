@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Reading Log: 12 book spines, genre distribution, monthly completion chart, Claude Projects structured summary">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#F8FAFC"/>
+    <stop offset="100%" stop-color="#DCE8FB"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="58%" cy="46%" r="60%">
+    <stop offset="0%" stop-color="#60A5FA" stop-opacity="0.16"/>
+    <stop offset="100%" stop-color="#60A5FA" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+
+<rect width="800" height="450" fill="url(#bg)"/>
+<rect width="800" height="450" fill="url(#glow)"/>
+
+<!-- Left text panel -->
+<text x="40" y="50" font-family="Inter" font-size="11" fill="#3B82F6" font-weight="600" letter-spacing="1.4">LIFE LOG · READING</text>
+<text x="40" y="94" font-family="Inter" font-size="30" fill="#0F172A" font-weight="700" letter-spacing="-0.5">Book</text>
+<text x="40" y="126" font-family="Inter" font-size="30" fill="#0F172A" font-weight="700" letter-spacing="-0.5">Shelf</text>
+<text x="40" y="156" font-family="Inter" font-size="12" fill="#475569">Claude Projects 구조화 독서</text>
+<text x="40" y="174" font-family="Inter" font-size="12" fill="#475569">장르 · 월별 완독 · 개념 맵</text>
+
+<!-- Stat badges -->
+<g font-family="Inter">
+  <rect x="40" y="200" width="222" height="40" rx="8" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="56" y="218" font-size="10" fill="#64748B" font-weight="600" letter-spacing="1">CUMULATIVE</text>
+  <text x="56" y="234" font-size="16" fill="#1E40AF" font-weight="700">84 권 · 3.2/월</text>
+  <rect x="40" y="250" width="222" height="40" rx="8" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="56" y="268" font-size="10" fill="#64748B" font-weight="600" letter-spacing="1">AVG RATING</text>
+  <text x="56" y="284" font-size="16" fill="#1E40AF" font-weight="700">★ 4.2 / 5</text>
+  <rect x="40" y="300" width="222" height="40" rx="8" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="56" y="318" font-size="10" fill="#64748B" font-weight="600" letter-spacing="1">AI SUMMARY</text>
+  <text x="56" y="334" font-size="16" fill="#1E40AF" font-weight="700">62 % 생성</text>
+</g>
+
+<!-- Book spines shelf -->
+<g transform="translate(300, 50)">
+  <rect x="0" y="0" width="460" height="190" rx="10" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="16" y="20" font-family="Inter" font-size="10" fill="#64748B" font-weight="600" letter-spacing="0.8">SHELF · RECENT 12</text>
+
+  <!-- 12 book spines of varying heights and blue tones -->
+  <g transform="translate(16, 30)">
+    <!-- book 1 -->
+    <rect x="0" y="20" width="26" height="130" rx="2" fill="#1E40AF"/>
+    <text x="13" y="145" font-family="Inter" font-size="8" fill="#DBEAFE" font-weight="600" text-anchor="middle" transform="rotate(-90 13 145)">혁신기업의 딜레마</text>
+
+    <rect x="32" y="10" width="28" height="140" rx="2" fill="#2F4FC2"/>
+    <text x="46" y="145" font-family="Inter" font-size="8" fill="#DBEAFE" font-weight="600" text-anchor="middle" transform="rotate(-90 46 145)">플랫폼 레볼루션</text>
+
+    <rect x="66" y="28" width="22" height="122" rx="2" fill="#3B82F6"/>
+    <text x="77" y="145" font-family="Inter" font-size="8" fill="#DBEAFE" font-weight="600" text-anchor="middle" transform="rotate(-90 77 145)">AI Age Competing</text>
+
+    <rect x="94" y="0" width="32" height="150" rx="2" fill="#4669CC"/>
+    <text x="110" y="145" font-family="Inter" font-size="8" fill="#DBEAFE" font-weight="600" text-anchor="middle" transform="rotate(-90 110 145)">생각에 관한 생각</text>
+
+    <rect x="132" y="18" width="24" height="132" rx="2" fill="#60A5FA"/>
+    <text x="144" y="145" font-family="Inter" font-size="8" fill="#FFFFFF" font-weight="600" text-anchor="middle" transform="rotate(-90 144 145)">Give and Take</text>
+
+    <rect x="162" y="38" width="20" height="112" rx="2" fill="#7F9BE1"/>
+
+    <rect x="188" y="14" width="26" height="136" rx="2" fill="#2F4FC2"/>
+    <text x="201" y="145" font-family="Inter" font-size="8" fill="#DBEAFE" font-weight="600" text-anchor="middle" transform="rotate(-90 201 145)">가치혁신 전략</text>
+
+    <rect x="220" y="22" width="24" height="128" rx="2" fill="#1E40AF"/>
+    <text x="232" y="145" font-family="Inter" font-size="8" fill="#DBEAFE" font-weight="600" text-anchor="middle" transform="rotate(-90 232 145)">Weapons of Math</text>
+
+    <rect x="250" y="8" width="30" height="142" rx="2" fill="#4669CC"/>
+    <text x="265" y="145" font-family="Inter" font-size="8" fill="#DBEAFE" font-weight="600" text-anchor="middle" transform="rotate(-90 265 145)">악의 평범성</text>
+
+    <rect x="286" y="0" width="30" height="150" rx="2" fill="#3B82F6"/>
+    <text x="301" y="145" font-family="Inter" font-size="8" fill="#DBEAFE" font-weight="600" text-anchor="middle" transform="rotate(-90 301 145)">Diffusion of Innov.</text>
+
+    <rect x="322" y="32" width="22" height="118" rx="2" fill="#60A5FA"/>
+    <text x="333" y="145" font-family="Inter" font-size="8" fill="#FFFFFF" font-weight="600" text-anchor="middle" transform="rotate(-90 333 145)">불편한 편의점</text>
+
+    <rect x="350" y="20" width="26" height="130" rx="2" fill="#7F9BE1"/>
+
+    <!-- shelf bottom -->
+    <rect x="-4" y="150" width="420" height="4" fill="#1E40AF" fill-opacity="0.15"/>
+  </g>
+
+  <!-- Right side: stars badge -->
+  <g transform="translate(400, 32)">
+    <rect x="0" y="0" width="50" height="120" rx="8" fill="#EFF4FB" stroke="#DBEAFE"/>
+    <text x="25" y="18" font-family="Inter" font-size="8" fill="#64748B" font-weight="600" text-anchor="middle" letter-spacing="0.6">RATING</text>
+    <text x="25" y="44" font-family="Inter" font-size="14" fill="#D97706" font-weight="700" text-anchor="middle">★★★★★</text>
+    <text x="25" y="64" font-family="Inter" font-size="9" fill="#64748B" text-anchor="middle">12 권</text>
+    <text x="25" y="86" font-family="Inter" font-size="14" fill="#D97706" font-weight="700" text-anchor="middle">★★★★</text>
+    <text x="25" y="106" font-family="Inter" font-size="9" fill="#64748B" text-anchor="middle">24 권</text>
+  </g>
+</g>
+
+<!-- Monthly bars + AI summary -->
+<g transform="translate(300, 258)">
+  <rect x="0" y="0" width="286" height="158" rx="10" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="16" y="20" font-family="Inter" font-size="10" fill="#64748B" font-weight="600" letter-spacing="0.8">MONTHLY COMPLETION (15M)</text>
+
+  <g transform="translate(16, 40)">
+    <!-- 15 bars -->
+    <rect x="0"   y="44" width="12" height="28" fill="#60A5FA"/>
+    <rect x="16"  y="52" width="12" height="20" fill="#60A5FA"/>
+    <rect x="32"  y="36" width="12" height="36" fill="#3B82F6"/>
+    <rect x="48"  y="44" width="12" height="28" fill="#3B82F6"/>
+    <rect x="64"  y="52" width="12" height="20" fill="#60A5FA"/>
+    <rect x="80"  y="58" width="12" height="14" fill="#60A5FA"/>
+    <rect x="96"  y="44" width="12" height="28" fill="#3B82F6"/>
+    <rect x="112" y="36" width="12" height="36" fill="#3B82F6"/>
+    <rect x="128" y="62" width="12" height="10" fill="#94A3B8"/>
+    <rect x="144" y="58" width="12" height="14" fill="#60A5FA"/>
+    <rect x="160" y="44" width="12" height="28" fill="#3B82F6"/>
+    <rect x="176" y="36" width="12" height="36" fill="#1E40AF"/>
+    <rect x="192" y="28" width="12" height="44" fill="#1E40AF"/>
+    <rect x="208" y="44" width="12" height="28" fill="#3B82F6"/>
+    <rect x="224" y="36" width="12" height="36" fill="#1E40AF"/>
+    <rect x="240" y="52" width="12" height="20" fill="#60A5FA"/>
+
+    <line x1="-4" y1="72" x2="256" y2="72" stroke="#CBD5E1" stroke-width="0.8"/>
+
+    <!-- 3-mo MA line -->
+    <polyline points="6,50 22,48 38,40 54,42 70,44 86,48 102,42 118,38 134,48 150,50 166,46 182,40 198,34 214,36 230,30 246,40"
+              fill="none" stroke="#0F172A" stroke-width="1.2" stroke-opacity="0.6"/>
+  </g>
+
+  <!-- Trend badge -->
+  <g transform="translate(16, 124)">
+    <text font-family="Inter" font-size="9" fill="#1E40AF" font-weight="600">방학(1·8월) 피크 · 학기중(9·10월) 저점</text>
+  </g>
+</g>
+
+<!-- AI structured summary card -->
+<g transform="translate(596, 258)">
+  <rect x="0" y="0" width="164" height="158" rx="10" fill="#EFF4FB" stroke="#DBEAFE"/>
+  <text x="14" y="20" font-family="Inter" font-size="9" fill="#1E40AF" font-weight="700" letter-spacing="0.8">CLAUDE PROJECTS</text>
+  <text x="14" y="36" font-family="Inter" font-size="9" fill="#64748B">JSON Structured Output</text>
+
+  <g transform="translate(14, 48)" font-family="Inter" font-size="9" fill="#0F172A">
+    <circle cx="4" cy="6" r="2.5" fill="#1E40AF"/>
+    <text x="14" y="9">주장·논지 (5줄)</text>
+    <circle cx="4" cy="26" r="2.5" fill="#3B82F6"/>
+    <text x="14" y="29">핵심 개념 10개</text>
+    <circle cx="4" cy="46" r="2.5" fill="#60A5FA"/>
+    <text x="14" y="49">반대·반례</text>
+    <circle cx="4" cy="66" r="2.5" fill="#1E40AF"/>
+    <text x="14" y="69">내 연구 접점</text>
+    <circle cx="4" cy="86" r="2.5" fill="#3B82F6"/>
+    <text x="14" y="89">Notion DB 태그</text>
+  </g>
+</g>
+
+<!-- Section divider -->
+<line x1="284" y1="44" x2="284" y2="406" stroke="#CBD5E1" stroke-width="0.6" stroke-dasharray="3 4"/>
+
+<!-- Badge -->
+<rect x="670" y="410" width="110" height="26" rx="4" fill="#0F172A" fill-opacity="0.9"/>
+<text x="725" y="427" font-family="Inter" font-size="10" fill="#DBEAFE" text-anchor="middle" letter-spacing="1.2" font-weight="600">AI READ STACK</text>
+</svg>
