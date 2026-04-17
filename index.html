@@ -264,6 +264,50 @@
       font-weight: 500;
     }
     .card-media svg { width: 42%; height: 42%; opacity: 0.85; }
+    .card-media--has-image {
+      background:
+        radial-gradient(circle at 50% 30%, rgba(96, 165, 250, 0.18), transparent 60%),
+        linear-gradient(135deg, var(--bg-soft) 0%, #DCE8FB 100%);
+      padding: 0;
+    }
+    .card-media--has-image::after { content: none; }
+    .card-media--has-image img {
+      width: 50%; height: 100%;
+      object-fit: cover; object-position: center top;
+      display: block;
+      margin: 0 auto;
+    }
+    .card-media--cover {
+      background: #F8FAFC;
+      padding: 0;
+    }
+    .card-media--cover::after { content: none; }
+    .card-media--cover img {
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center;
+      display: block;
+    }
+    a.card-media--link {
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      overflow: hidden;
+      transition: filter .18s ease;
+    }
+    a.card-media--link img {
+      transition: transform .35s ease;
+    }
+    a.card-media--link:hover img {
+      transform: scale(1.04);
+    }
+    a.card-media--link:hover {
+      filter: brightness(1.02);
+    }
+    a.card-media--link:focus-visible {
+      outline: 2px solid var(--secondary);
+      outline-offset: -2px;
+    }
     .card-body { padding: 22px 22px 24px; display: flex; flex-direction: column; flex-grow: 1; }
     .card-meta {
       font-size: 0.72rem; font-weight: 600;
@@ -382,7 +426,7 @@
         </div>
 
         <div class="hero-avatar">
-          <img src="./profile.jpg" alt="백마탄 프로필 사진" loading="eager" decoding="async" width="800" height="800">
+          <img src="./assets/images/profile.jpg" alt="백마탄 프로필 사진" loading="eager" decoding="async" width="597" height="800">
         </div>
       </div>
     </section>
@@ -534,9 +578,9 @@
         <span class="section-label">Research Projects</span>
         <h2 id="projects-heading" class="section-heading">연구 프로젝트</h2>
         <p class="section-sub">
-          KAIST I&amp;TM 코어 수업 5개와 연계한 데이터 분석 웹앱 5개,
-          그리고 IP 법 쟁점을 분석한 사례 연구 1개. 각 프로젝트는 약 2,000건 규모 표본을
-          다루며 인터랙티브 시각화로 제공될 예정입니다.
+          KAIST I&amp;TM 코어 수업 5개와 ITM580 케이스 스터디 1개로 구성된 6개 프로젝트.
+          각 프로젝트는 서로 다른 연구 방법론 — 네트워크 분석, 인과 추론, AI 델파이,
+          사용자 수용 모델, 합성 설문(Synthetic Survey), 케이스 스터디 — 을 적용합니다.
         </p>
 
         <div class="card-grid" id="projects-grid">
@@ -635,49 +679,64 @@
         meta: "ITM675 · 기업가치와벤처투자의 실제",
         title: "AI 스타트업 투자 네트워크",
         titleEn: "AI Startup Investment Network",
-        desc: "혁신의숲·TheVC 공개 데이터로 국내 AI 스타트업 펀딩 이벤트 약 2,000건을 네트워크·히트맵·타임라인으로 시각화.",
+        desc: "혁신의숲·TheVC 공개 데이터로 국내 주요 AI 스타트업의 펀딩 이벤트를 수집. 투자자–스타트업 이분 네트워크 구조와 라운드별 자본 집중도(Power Law)를 분석해 국내 AI 투자 생태계의 허브와 주변부를 식별.",
         slug: "ai-startup-network",
-        badge: "Network"
+        badge: "Network Analysis",
+        image: "assets/images/projects/ai-startup-network.svg",
+        imageFit: "cover",
+        ready: true
       },
       {
         meta: "ITM560 · 혁신조직과 리더십",
-        title: "IT 채용 공고 AI 스킬 수요",
-        titleEn: "IT Job Posting AI Skills",
-        desc: "사람인·원티드 최근 24개월 공고 약 2,000건에서 AI 스킬 키워드 변화를 워드클라우드·박스플롯·동반출현 네트워크로 추적.",
+        title: "Agentic AI 등장과 AI 스킬 수요",
+        titleEn: "Causal Impact on AI Skill Demand",
+        desc: "사람인·원티드 IT 직군 공고를 시계열로 수집. Agentic AI 본격화 시점을 기준으로 단절적 시계열 분석(ITS)과 이중차분(DID)을 적용해 LLM·에이전트 관련 스킬 수요의 인과 효과를 추정.",
         slug: "ai-job-skills",
-        badge: "Text Mining"
+        badge: "Causal Inference",
+        image: "assets/images/projects/ai-job-skills.svg",
+        imageFit: "cover",
+        ready: true
       },
       {
         meta: "ITM660 · 하이테크 전략적 혁신경영",
-        title: "국내 AI·에이전트 특허 경쟁 지형",
-        titleEn: "AI &amp; Agent Patent Landscape",
-        desc: "KIPRIS 공개 API로 수집한 AI·에이전트 특허 약 2,000건을 선버스트·트리맵·시계열로 시각화하여 전유성 구조 분석.",
+        title: "AI 에이전트 특허 지도 · AI 델파이",
+        titleEn: "AI Agent Patent Map · AI Delphi",
+        desc: "KIPRIS에서 AI 에이전트 관련 특허만 선별해 기술 분류 트리맵·출원 시계열 특허 지도를 작성. 다수의 AI 전문가 페르소나가 상호 토론하는 AI 델파이(AI Delphi) 기법으로 기술 성숙도(TRL)를 평가.",
         slug: "ai-patent-landscape",
-        badge: "Patents"
+        badge: "Patents · Delphi",
+        image: "assets/images/projects/ai-patent-landscape.svg",
+        imageFit: "cover",
+        ready: true
       },
       {
         meta: "ITM622 · 가치혁신",
-        title: "한국 AI 서비스 앱 리뷰 감성",
-        titleEn: "AI App Sentiment",
-        desc: "구글 플레이스토어 주요 AI 앱 리뷰 약 2,000건을 수집해 감성 시계열·이슈 토픽 클러스터로 사용자 수용 패턴 분석.",
+        title: "AI 서비스 앱 사용자 수용도",
+        titleEn: "User Acceptance &amp; Pain Points",
+        desc: "구글 플레이스토어 주요 AI 앱 리뷰를 UTAUT/TAM 기반 사용자 수용 모델로 코딩하고 토픽 모델링으로 사용자 pain point를 추출. AI 서비스 정착을 가로막는 장벽을 구조화해 제시.",
         slug: "ai-app-sentiment",
-        badge: "Sentiment"
+        badge: "User Acceptance",
+        image: "assets/images/projects/ai-app-sentiment.svg",
+        imageFit: "cover",
+        ready: true
       },
       {
         meta: "ITM501 · 이노베이션경영",
-        title: "네이버 데이터랩 AI 검색 확산",
-        titleEn: "AI Search Diffusion",
-        desc: "네이버 데이터랩 오픈 API 약 2,000 시점 데이터를 지역 choropleth·연령 스트림그래프·상관 행렬로 분석한 확산 연구.",
+        title: "AI에게 물은 AI 수용도: 합성 페르소나 2,000인 설문",
+        titleEn: "Asking AI about AI: Synthetic Persona Survey",
+        desc: "KOSIS 2024 인구 마진에 IPF(Iterative Proportional Fitting)로 합성 프레임을 맞춘 2,000인 페르소나에게 3종 LLM(GPT-4o·Claude Opus 4·Gemini 2.0 Pro)으로 UTAUT2 기반 AI 수용도를 설문. Jensen-Shannon 0.043·ICC(2,k) 0.81로 대표성을 검증하고, Rogers 채택자 범주로 확산 단계를 해석.",
         slug: "ai-search-diffusion",
-        badge: "Diffusion"
+        badge: "Synthetic Survey",
+        image: "assets/images/projects/ai-search-diffusion.svg",
+        imageFit: "cover",
+        ready: true
       },
       {
-        meta: "지적재산권법 개론",
+        meta: "ITM580 · 지적재산권법 개론",
         title: "NYT vs OpenAI 저작권 분쟁",
         titleEn: "Copyright Case Study",
-        desc: "생성형 AI 학습 데이터 쟁점을 다룬 NYT vs OpenAI 사건을 타임라인·Fair Use 체크리스트·유사 판례 비교로 정리한 법 분석.",
+        desc: "생성형 AI 학습 데이터 쟁점을 다룬 NYT vs OpenAI 사건 케이스 스터디. 사건 전개를 동적(인터랙티브) 타임라인으로 구현하고 Fair Use 4요소·유사 판례를 비교.",
         slug: "ai-copyright-case",
-        badge: "IP / Law"
+        badge: "Case Study"
       }
     ];
 
@@ -689,7 +748,8 @@
         titleKr: "클레이튼 크리스텐슨",
         desc: "파괴적 혁신과 혁신가의 딜레마. AI OS 플랫폼 전략에서 존속적 혁신의 함정을 짚어주는 파트너.",
         slug: "christensen",
-        badge: "Disruption"
+        badge: "Disruption",
+        image: "assets/images/bots/christensen.jpg"
       },
       {
         meta: "정치철학 · 인문학",
@@ -697,15 +757,8 @@
         titleKr: "한나 아렌트",
         desc: "악의 평범성과 기술 시대의 인간 조건. AI 기술 결정의 윤리적 측면을 성찰하는 대화 파트너.",
         slug: "arendt",
-        badge: "Ethics"
-      },
-      {
-        meta: "행동경제학 · 심리학",
-        title: "Daniel Kahneman",
-        titleKr: "대니얼 카너먼",
-        desc: "시스템 1·2 사고와 판단 편향. 투자·제품 의사결정에서 나의 편향을 점검하도록 돕는 파트너.",
-        slug: "kahneman",
-        badge: "Cognition"
+        badge: "Ethics",
+        image: "assets/images/bots/arendt.jpg"
       },
       {
         meta: "조직심리학",
@@ -713,7 +766,8 @@
         titleKr: "애덤 그랜트",
         desc: "기브 앤 테이크와 조직문화. 팀 내 협업·리더십 고민을 조직심리학 관점에서 상담하는 파트너.",
         slug: "grant",
-        badge: "Org Psych"
+        badge: "Org Psych",
+        image: "assets/images/bots/grant.jpg"
       }
     ];
 
@@ -765,13 +819,24 @@
     }
 
     function renderCard(item, basePath) {
-      const isDisabled = true; // Section pages not yet built
+      const isDisabled = !item.ready;
       const linkLabel = isDisabled ? "준비 중" : "자세히 보기";
-      const href = `${basePath}/${item.slug}/`;
+      const href = `${basePath}/${item.slug}/index.html`;
       const secondaryTitle = item.titleEn || item.titleKr || "";
+      const mediaInner = item.image
+        ? `<img src="${item.image}" alt="${item.title}" loading="lazy" decoding="async">`
+        : mediaGlyph();
+      const mediaClass = item.image
+        ? (item.imageFit === "cover"
+            ? "card-media card-media--has-image card-media--cover"
+            : "card-media card-media--has-image")
+        : "card-media";
+      const mediaBlock = isDisabled
+        ? `<div class="${mediaClass}" aria-hidden="true">${mediaInner}</div>`
+        : `<a class="${mediaClass} card-media--link" href="${href}" aria-label="${item.title} 상세 보기">${mediaInner}</a>`;
       return `
         <article class="card">
-          <div class="card-media" aria-hidden="true">${mediaGlyph()}</div>
+          ${mediaBlock}
           <div class="card-body">
             <div class="card-meta">${item.meta}</div>
             <h3 class="card-title">${item.title}</h3>
